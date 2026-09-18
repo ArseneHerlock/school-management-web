@@ -1,0 +1,45 @@
+'use client'
+
+import { useMemo, useState, type ElementType } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, School, Users, UserCheck, ClipboardCheck, CalendarDays, Star, Heart, Bell, Receipt, MessageCircle, BarChart3, ChevronLeft, ChevronRight, Search, BellRing, MessageSquare, Menu, X, LogOut, Settings, UserRound } from 'lucide-react'
+import Dashboard from './pages/Dashboard'
+import TruongLop from './pages/TruongLop'
+import HocSinh from './pages/HocSinh'
+import PhuHuynhNhanSu from './pages/PhuHuynhNhanSu'
+import DiemDanh from './pages/DiemDanh'
+import LichHoc from './pages/LichHoc'
+import DanhGia from './pages/DanhGia'
+import SucKhoe from './pages/SucKhoe'
+import TinTuc from './pages/TinTuc'
+import ThuChi from './pages/ThuChi'
+import LienLac from './pages/LienLac'
+import BaoCao from './pages/BaoCao'
+
+type PageId='dashboard'|'truong-lop'|'hoc-sinh'|'phu-huynh-nhan-su'|'diem-danh'|'lich-hoc'|'danh-gia'|'suc-khoe'|'tin-tuc'|'thu-chi'|'lien-lac'|'bao-cao'
+type Item={id:PageId;label:string;icon:ElementType;group?:string;badge?:number}
+const MENU:Item[]=[
+{id:'dashboard',label:'Tổng quan',icon:LayoutDashboard},
+{id:'truong-lop',label:'Trường & Lớp',icon:School,group:'Trường học'},
+{id:'hoc-sinh',label:'Học sinh',icon:Users,group:'Trường học'},
+{id:'phu-huynh-nhan-su',label:'Phụ huynh & Nhân sự',icon:UserCheck,group:'Trường học'},
+{id:'diem-danh',label:'Điểm danh',icon:ClipboardCheck,group:'Học vụ',badge:5},
+{id:'lich-hoc',label:'Lịch học',icon:CalendarDays,group:'Học vụ'},
+{id:'danh-gia',label:'Đánh giá trẻ',icon:Star,group:'Phát triển'},
+{id:'suc-khoe',label:'Sức khỏe',icon:Heart,group:'Phát triển'},
+{id:'tin-tuc',label:'Tin tức & Sự kiện',icon:Bell,group:'Thông tin'},
+{id:'lien-lac',label:'Liên lạc',icon:MessageCircle,group:'Thông tin',badge:3},
+{id:'thu-chi',label:'Thu chi & Hóa đơn',icon:Receipt,group:'Tài chính'},
+{id:'bao-cao',label:'Báo cáo & Cấu hình',icon:BarChart3,group:'Quản trị'}]
+const TITLES=Object.fromEntries(MENU.map(x=>[x.id,x.label])) as Record<PageId,string>
+const GROUPS=[...new Set(MENU.map(x=>x.group).filter(Boolean))] as string[]
+
+export default function AdminApp(){
+ const router=useRouter(); const pathname=usePathname(); const [collapsed,setCollapsed]=useState(false); const [mobileOpen,setMobileOpen]=useState(false); const [userOpen,setUserOpen]=useState(false); const [search,setSearch]=useState('')
+ const current=(pathname?.split('/')[2] as PageId)||'dashboard'
+ const page=current in TITLES?current:'dashboard'
+ const navigate=(id:PageId)=>{setMobileOpen(false);router.push(id==='dashboard'?'/admin':`/admin/${id}`)}
+ const pageContent=useMemo(()=>{switch(page){case'dashboard':return <Dashboard navigate={navigate}/>;case'truong-lop':return <TruongLop/>;case'hoc-sinh':return <HocSinh/>;case'phu-huynh-nhan-su':return <PhuHuynhNhanSu/>;case'diem-danh':return <DiemDanh/>;case'lich-hoc':return <LichHoc/>;case'danh-gia':return <DanhGia/>;case'suc-khoe':return <SucKhoe/>;case'tin-tuc':return <TinTuc/>;case'thu-chi':return <ThuChi/>;case'lien-lac':return <LienLac/>;case'bao-cao':return <BaoCao/>}},[page])
+ const nav=<><div className="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Không gian quản trị</div><button onClick={()=>navigate('dashboard')} className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${page==='dashboard'?'bg-rose-50 text-rose-600':'text-slate-600 hover:bg-slate-50'}`}><LayoutDashboard size={18}/>{!collapsed&&'Tổng quan'}</button>{GROUPS.map(group=><div key={group} className="mt-4"><div className={`mb-1 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 ${collapsed?'text-center':''}`}>{collapsed?'•':group}</div>{MENU.filter(x=>x.group===group).map(item=>{const Icon=item.icon;return <button key={item.id} onClick={()=>navigate(item.id)} title={collapsed?item.label:undefined} className={`group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${page===item.id?'bg-rose-50 text-rose-600':'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}><Icon size={18} className="shrink-0"/>{!collapsed&&<><span className="min-w-0 flex-1 truncate text-left">{item.label}</span>{item.badge&&<span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-600">{item.badge}</span>}</>}{collapsed&&item.badge&&<span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500"/>}</button>})}</div>)}</>
+ return <div className="flex min-h-screen bg-slate-50 text-slate-900"><div className={`fixed inset-0 z-40 bg-slate-900/30 transition lg:hidden ${mobileOpen?'opacity-100':'pointer-events-none opacity-0'}`} onClick={()=>setMobileOpen(false)}/><aside className={`fixed inset-y-0 left-0 z-50 flex w-[276px] flex-col border-r border-slate-200 bg-white shadow-xl transition-transform lg:static lg:shadow-none ${mobileOpen?'translate-x-0':'-translate-x-full lg:translate-x-0'} ${collapsed?'lg:w-[76px]':'lg:w-[276px]'}`}><div className="flex h-[72px] items-center border-b border-slate-100 px-4"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500 font-extrabold text-white shadow-lg shadow-rose-500/20">HS</div>{!collapsed&&<div className="min-w-0"><p className="truncate text-sm font-extrabold text-slate-900">Mầm Non Hoa Sen</p><p className="mt-0.5 truncate text-[11px] text-slate-400">Quản trị trường học</p></div>}</div><button className="p-2 text-slate-400 lg:hidden" onClick={()=>setMobileOpen(false)}><X size={18}/></button></div><div className="flex-1 overflow-y-auto px-2 pb-4">{nav}</div><div className="border-t border-slate-100 p-2"><button onClick={()=>setCollapsed(!collapsed)} className="hidden w-full items-center justify-center gap-2 rounded-xl p-2.5 text-xs font-semibold text-slate-400 hover:bg-slate-50 lg:flex">{collapsed?<ChevronRight size={17}/>:<><ChevronLeft size={17}/>Thu gọn</>}</button><div className="mt-1 flex items-center gap-3 rounded-xl bg-slate-50 p-2.5"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-sm font-bold text-rose-600">NP</div>{!collapsed&&<div className="min-w-0"><p className="truncate text-xs font-bold text-slate-700">Nguyễn Phương</p><p className="truncate text-[10px] text-slate-400">Quản trị viên</p></div>}</div></div></aside><main className="min-w-0 flex-1"><header className="sticky top-0 z-30 flex h-[72px] items-center gap-3 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-6"><button className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 lg:hidden" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button><div className="hidden items-center gap-2 text-sm md:flex"><span className="text-slate-400">Quản trị</span><ChevronRight size={14} className="text-slate-300"/><span className="font-semibold text-slate-800">{TITLES[page]}</span></div><div className="relative ml-auto hidden w-full max-w-md sm:block"><Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Tìm học sinh, lớp, giáo viên..." className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-sm outline-none focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-500/10"/></div><button className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-50" onClick={()=>navigate('lien-lac')}><MessageSquare size={18}/><span className="sr-only">Tin nhắn</span></button><button className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-50" onClick={()=>navigate('tin-tuc')}><BellRing size={18}/><span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white"/></button><div className="relative"><button onClick={()=>setUserOpen(!userOpen)} className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-50"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-600">NP</div><span className="hidden text-left lg:block"><span className="block text-xs font-bold text-slate-700">Nguyễn Phương</span><span className="block text-[10px] text-slate-400">Admin</span></span></button>{userOpen&&<div className="absolute right-0 top-12 w-52 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl"><button className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50"><UserRound size={16}/>Hồ sơ</button><button className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50"><Settings size={16}/>Cài đặt</button><div className="my-1 border-t border-slate-100"/><button className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50"><LogOut size={16}/>Đăng xuất</button></div>}</div></header><div className="p-4 sm:p-6 lg:p-8">{pageContent}</div></main></div>
+}

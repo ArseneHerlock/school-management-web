@@ -1,0 +1,25 @@
+/* Admin-only polish. Keep app-wide reset/theme in src/app/globals.css. */
+.admin-scroll::-webkit-scrollbar{width:5px;height:5px}.admin-scroll::-webkit-scrollbar-thumb{border-radius:999px;background:#cbd5e1}
+
+
+/* Keep long datasets contained so admin pages stay scannable. */
+.admin-data-scroll {
+  max-height: 520px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+.admin-data-scroll::-webkit-scrollbar { width: 7px; height: 7px; }
+.admin-data-scroll::-webkit-scrollbar-track { background: transparent; }
+.admin-data-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+
+.admin-card-list {
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+.admin-card-list::-webkit-scrollbar { width: 7px; }
+.admin-card-list::-webkit-scrollbar-track { background: transparent; }
+.admin-card-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
