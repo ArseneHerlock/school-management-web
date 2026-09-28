@@ -13,6 +13,7 @@ const NAV = [
   { path:'/teacher/album',        icon:'📸', label:'Album'                   },
   { path:'/teacher/schedule',     icon:'📅', label:'Lịch công tác'          },
   { path:'/teacher/messages',     icon:'💬', label:'Tin nhắn'               },
+  { path:'/teacher/news',         icon:'📰', label:'Tin tức'                },
   { path:'/teacher/leave',        icon:'📝', label:'Xin nghỉ'               },
   { path:'/teacher/profile',      icon:'👤', label:'Hồ sơ'                  },
 ];
