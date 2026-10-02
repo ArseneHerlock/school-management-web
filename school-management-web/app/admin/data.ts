@@ -98,20 +98,6 @@ export interface Event {
   status: 'Sắp diễn ra' | 'Đang diễn ra' | 'Đã hoàn thành';
 }
 
-export interface HealthRecord {
-  id: string;
-  studentName: string;
-  className: string;
-  allergies: string[];
-  medications: string[];
-  conditions: string[];
-  lastCheckup: string;
-  weight: string;
-  height: string;
-  bloodType: string;
-  emergencyContact: string;
-  note?: string;
-}
 
 export interface Message {
   id: string;
@@ -121,6 +107,14 @@ export interface Message {
   time: string;
   unread: number;
   avatar: string;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  sub: string;
+  time: string;
+  read: boolean;
 }
 
 export interface ChatMessage {
@@ -210,15 +204,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
 export const EVENTS: Event[] = [
   { id: 'SK001', title: 'Ngày hội "Bé với thiên nhiên"', date: '2024-11-25', time: '07:30 - 11:00', location: 'Sân trường', type: 'Hoạt động ngoài trời', participants: 420, status: 'Sắp diễn ra' },
   { id: 'SK002', title: 'Họp phụ huynh cuối học kỳ I', date: '2024-11-30', time: '08:00 - 10:30', location: 'Hội trường', type: 'Họp phụ huynh', participants: 280, status: 'Sắp diễn ra' },
-  { id: 'SK003', title: 'Tiêm chủng định kỳ', date: '2024-11-22', time: '08:00 - 11:30', location: 'Phòng y tế', type: 'Y tế', participants: 150, status: 'Sắp diễn ra' },
   { id: 'SK004', title: 'Hội thi "Bé khéo tay"', date: '2024-12-05', time: '08:00 - 11:00', location: 'Hội trường', type: 'Hoạt động học tập', participants: 200, status: 'Sắp diễn ra' },
-];
-
-export const HEALTH_RECORDS: HealthRecord[] = [
-  { id: 'SK001', studentName: 'Trần Gia Hân', className: 'Mầm 1', allergies: ['Hải sản', 'Cua'], medications: [], conditions: [], lastCheckup: '2024-09-15', weight: '13.5 kg', height: '92 cm', bloodType: 'A', emergencyContact: 'Trần Thị Mai - 0912 345 678', note: 'Cần thông báo ngay nếu trẻ tiếp xúc với hải sản' },
-  { id: 'SK002', studentName: 'Lê Hoàng Nam', className: 'Chồi 1', allergies: ['Đậu phộng'], medications: ['Ventolin (hen suyễn nhẹ)'], conditions: ['Hen suyễn nhẹ'], lastCheckup: '2024-10-01', weight: '16.2 kg', height: '102 cm', bloodType: 'O', emergencyContact: 'Lê Văn Bình - 0923 456 789', note: 'Giữ thuốc Ventolin tại phòng y tế' },
-  { id: 'SK003', studentName: 'Vũ Bảo Châu', className: 'Lá 1', allergies: ['Sữa bò'], medications: [], conditions: ['Không dung nạp lactose'], lastCheckup: '2024-09-20', weight: '17.8 kg', height: '108 cm', bloodType: 'B', emergencyContact: 'Vũ Văn Long - 0967 890 123', note: 'Thay thế sữa bò bằng sữa đậu nành trong thực đơn' },
-  { id: 'SK004', studentName: 'Đinh Tuấn Khang', className: 'Lá 2', allergies: ['Trứng'], medications: [], conditions: [], lastCheckup: '2024-10-10', weight: '18.5 kg', height: '110 cm', bloodType: 'AB', emergencyContact: 'Đinh Thị Lan - 0990 123 456', note: '' },
 ];
 
 export const MESSAGES: Message[] = [
@@ -227,6 +213,14 @@ export const MESSAGES: Message[] = [
   { id: 'M003', from: 'Trần Thị Mai', role: 'Phụ huynh', preview: 'Chào cô, gia đình em xin đơn xin nghỉ phép cho bé Gia Hân...', time: 'Hôm qua', unread: 2, avatar: 'TM' },
   { id: 'M004', from: 'Cô Hoàng Thị Linh', role: 'GVCN Lá 1', preview: 'Ban giám hiệu ơi, lớp Lá 1 cần bổ sung thêm đồ dùng học tập...', time: 'Hôm qua', unread: 0, avatar: 'HL' },
   { id: 'M005', from: 'Lê Văn Bình', role: 'Phụ huynh', preview: 'Dạ cô ơi, cho em hỏi lịch nghỉ lễ tháng 12 ạ?', time: '17/11', unread: 0, avatar: 'LB' },
+];
+
+export const NOTIFICATIONS: Notification[] = [
+  { id: 'N001', title: 'Có yêu cầu nghỉ học mới', sub: 'Nguyễn Văn Hùng • Nguyễn Minh Anh • Mầm 1', time: '08:35', read: false },
+  { id: 'N002', title: 'Giáo viên đã hoàn thành đánh giá', sub: 'Cô Nguyễn Thị Lan • Mầm 1', time: '07:52', read: false },
+  { id: 'N003', title: 'Có khoản thu quá hạn cần xử lý', sub: '2 hóa đơn học phí tháng 11', time: 'Hôm qua', read: true },
+  { id: 'N004', title: 'Cảnh báo hồ sơ sức khỏe', sub: 'Trần Gia Hân • dị ứng hải sản', time: 'Hôm qua', read: true },
+  { id: 'N005', title: 'Lịch hoạt động mới được tạo', sub: 'Ngày hội Bé với thiên nhiên • Toàn trường', time: '17/11', read: true },
 ];
 
 export const CHAT_MESSAGES: ChatMessage[] = [
@@ -276,7 +270,7 @@ export const SCHEDULE_EVENTS: ScheduleEvent[] = [
 
 export const TASK_ITEMS = [
   { id: 1, type: 'error', message: '3 học sinh chưa hoàn tất hồ sơ nhập học', link: 'hoc-sinh', count: 3 },
-  { id: 2, type: 'warning', message: '1 lớp thiếu giáo viên chủ nhiệm (Lá 5)', link: 'truong-lop', count: 1 },
+  { id: 2, type: 'warning', message: '1 lớp thiếu giáo viên chủ nhiệm (Lá 5)', link: 'lop', count: 1 },
   { id: 3, type: 'warning', message: '5 đơn xin nghỉ đang chờ duyệt', link: 'diem-danh', count: 5 },
   { id: 4, type: 'error', message: '4 hóa đơn quá hạn cần thu', link: 'thu-chi', count: 4 },
   { id: 5, type: 'warning', message: '1 xung đột lịch hoạt động ngoài trời', link: 'lich-hoc', count: 1 },

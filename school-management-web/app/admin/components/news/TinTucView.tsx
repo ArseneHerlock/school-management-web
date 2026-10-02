@@ -143,11 +143,11 @@ export default function TinTuc() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3 pt-3 border-t border-gray-50">
-                  <button className="text-xs text-gray-500 hover:text-gray-700 font-medium">Chỉnh sửa</button>
+                  <button onClick={() => window.alert('Mở trình chỉnh sửa bài viết')} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Chỉnh sửa</button>
                   <span className="text-gray-200">·</span>
-                  <button className="text-xs text-gray-500 hover:text-gray-700 font-medium">{ann.pinned ? 'Bỏ ghim' : 'Ghim'}</button>
+                  <button onClick={() => window.alert(ann.pinned ? 'Đã bỏ ghim bài viết' : 'Đã ghim bài viết')} className="text-xs text-gray-500 hover:text-gray-700 font-medium">{ann.pinned ? 'Bỏ ghim' : 'Ghim'}</button>
                   <span className="text-gray-200">·</span>
-                  <button className="text-xs text-gray-500 hover:text-gray-700 font-medium">Gửi nhắc nhở</button>
+                  <button onClick={() => window.alert('Đã mở chức năng gửi nhắc nhở')} className="text-xs text-gray-500 hover:text-gray-700 font-medium">Gửi nhắc nhở</button>
                 </div>
               </div>
             ))}
@@ -181,7 +181,7 @@ export default function TinTuc() {
                     <span>Số người tham dự: {event.participants}</span>
                   </div>
                 </div>
-                <button className="shrink-0 text-xs text-rose-500 font-medium hover:underline">Chỉnh sửa</button>
+                <button onClick={() => window.alert('Mở trình chỉnh sửa bài viết')} className="shrink-0 text-xs text-rose-500 font-medium hover:underline">Chỉnh sửa</button>
               </div>
             </div>
           ))}
@@ -256,7 +256,7 @@ export default function TinTuc() {
                 Hủy
               </button>
               <div className="flex gap-2">
-                <button className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                <button onClick={() => window.alert('Bài viết đã được lưu nháp')} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
                   Lưu nháp
                 </button>
                 <button

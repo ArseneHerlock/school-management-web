@@ -5,7 +5,7 @@ import { Users, UserCheck, UserX, Clock, BookOpen, Briefcase, MessageSquare, Bel
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
 import { MONTHLY_REVENUE, ATTENDANCE_TREND, TASK_ITEMS, EVENTS, ANNOUNCEMENTS } from '../../data'
 
-type PageId = 'dashboard' | 'truong-lop' | 'hoc-sinh' | 'phu-huynh-nhan-su' | 'diem-danh' | 'lich-hoc' | 'danh-gia' | 'suc-khoe' | 'tin-tuc' | 'thu-chi' | 'lien-lac' | 'bao-cao'
+type PageId = 'dashboard' | 'truong' | 'khoi' | 'lop' | 'tuyen-sinh' | 'hoc-sinh' | 'phu-huynh' | 'nhan-su' | 'diem-danh' | 'lich-hoc' | 'danh-gia' | 'suc-khoe' | 'tin-tuc' | 'thu-chi' | 'lien-lac' | 'bao-cao'
 
 interface DashboardProps {
   navigate: (page: PageId) => void
@@ -58,7 +58,7 @@ export default function Dashboard({ navigate }: DashboardProps) {
           { label: '+ Thêm học sinh', page: 'hoc-sinh' as PageId },
           { label: '+ Tạo thông báo', page: 'tin-tuc' as PageId },
           { label: '+ Tạo lịch', page: 'lich-hoc' as PageId },
-          { label: '+ Tạo hóa đơn', page: 'thu-chi' as PageId },
+          { label: '+ Quản lý khoản thu', page: 'thu-chi' as PageId },
           { label: '+ Tạo sự kiện', page: 'tin-tuc' as PageId },
         ].map(action => (
           <button
@@ -117,7 +117,7 @@ export default function Dashboard({ navigate }: DashboardProps) {
           icon={BookOpen}
           color="indigo"
           alert={true}
-          onClick={() => navigate('truong-lop')}
+          onClick={() => navigate('truong')}
         />
         <KPICard
           label="Nhân sự hôm nay"
@@ -125,7 +125,7 @@ export default function Dashboard({ navigate }: DashboardProps) {
           sub="4 người nghỉ phép"
           icon={Briefcase}
           color="purple"
-          onClick={() => navigate('phu-huynh-nhan-su')}
+          onClick={() => navigate('phu-huynh')}
         />
         <KPICard
           label="Tin nhắn chưa đọc"

@@ -1,251 +1,70 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Plus, Phone, Mail, AlertTriangle, CheckCircle, Calendar, UserCheck, Users, Edit } from 'lucide-react'
-import { PARENTS, TEACHERS } from '../../data'
+import { useMemo, useState } from 'react'
+import { CalendarClock, Check, ChevronRight, Clock3, MessageSquare, Search, UserCheck, Users, WalletCards, X, UserRoundCog, UserRoundPlus } from 'lucide-react'
+import { CLASSES, PARENTS, TEACHERS } from '../../data'
+import Modal from '../shared/Modal'
 
-const STATUS_COLORS: Record<string, string> = {
-  'Đang làm': 'bg-green-100 text-green-700',
-  'Nghỉ phép': 'bg-amber-100 text-amber-700',
-  'Nghỉ bệnh': 'bg-rose-100 text-rose-600',
+type Leave = {id:string; name:string; className?:string; type:string; from:string; to:string; reason:string; status:'Chờ duyệt'|'Đã duyệt'|'Từ chối'}
+type Attendance = {id:string; name:string; status:'Có mặt'|'Đi muộn'|'Nghỉ phép'|'Nghỉ bệnh'|'Chưa chấm'; inTime:string; outTime:string}
+
+const STAFF = TEACHERS.map((t,i)=>({...t, department:t.role==='Ban giám hiệu'?'Ban giám hiệu':t.role==='Nhân viên'?'Hành chính - hỗ trợ':'Chuyên môn', salaryBase:9000000+i*350000, allowance:1200000+(i%3)*300000, leaveBalance:12-(i%4)}))
+const INITIAL_LEAVES:Leave[] = [
+ {id:'NP01',name:'Phạm Thị Mai',className:'Mầm 2',type:'Nghỉ phép',from:'19/09/2026',to:'20/09/2026',reason:'Việc gia đình',status:'Chờ duyệt'},
+ {id:'NP02',name:'Võ Thị Thanh',className:'Chồi 1',type:'Nghỉ bệnh',from:'18/09/2026',to:'18/09/2026',reason:'Không khỏe',status:'Đã duyệt'},
+ {id:'NP03',name:'Tô Thị Yến',className:'Lá 2',type:'Nghỉ phép',from:'25/09/2026',to:'26/09/2026',reason:'Việc riêng',status:'Chờ duyệt'},
+]
+const INITIAL_ATTENDANCE:Attendance[] = STAFF.slice(0,8).map((s,i)=>({id:s.id,name:s.name,status:i===3?'Đi muộn':i===6?'Nghỉ phép':'Có mặt',inTime:i===3?'08:18':i===6?'—':'07:55',outTime:i===6?'—':'17:05'}))
+
+export default function PhuHuynhNhanSu({mode='parents'}:{mode?:'parents'|'staff'|'all'}){
+ const isParents=mode==='parents'
+ const [tab,setTab]=useState(isParents?'directory':'overview')
+ const [search,setSearch]=useState(''); const [status,setStatus]=useState('Tất cả'); const [selected,setSelected]=useState<any>(null); const [notice,setNotice]=useState('')
+ const [leaves,setLeaves]=useState<Leave[]>(INITIAL_LEAVES); const [attendance,setAttendance]=useState<Attendance[]>(INITIAL_ATTENDANCE)
+ const [classAssignments,setClassAssignments]=useState<Record<string,{teacher:string;assistant:string}>>(()=>Object.fromEntries(CLASSES.map(c=>[c.name,{teacher:c.teacher,assistant:c.assistant}])))
+ const [compose,setCompose]=useState<{kind:string;data?:any}|null>(null)
+ const parents=useMemo(()=>PARENTS.filter(p=>(!search||`${p.name} ${p.phone} ${p.email} ${p.studentNames.join(' ')}`.toLowerCase().includes(search.toLowerCase()))&&(status==='Tất cả'||p.accountStatus===status)),[search,status])
+ const staff=useMemo(()=>STAFF.filter(s=>(!search||`${s.name} ${s.phone} ${s.email} ${s.className||''}`.toLowerCase().includes(search.toLowerCase()))&&(status==='Tất cả'||s.status===status)),[search,status])
+ const parentTabs=[['directory','Phụ huynh',Users],['relationships','Quan hệ với trẻ',UserCheck]] as const
+ const staffTabs=[['overview','Tổng quan',Users],['directory','Hồ sơ nhân sự',UserCheck],['assignment','Phân công lớp',UserRoundCog],['attendance','Chấm công',Clock3],['leave','Nghỉ phép',CalendarClock],['payroll','Lương',WalletCards]] as const
+ const action=(text:string)=>setNotice(text)
+ const approveLeave=(id:string,ok:boolean)=>{setLeaves(xs=>xs.map(x=>x.id===id?{...x,status:ok?'Đã duyệt':'Từ chối'}:x));action(ok?'Đã duyệt đơn nghỉ và cập nhật trạng thái nhân sự.':'Đã từ chối đơn nghỉ.')}
+ const setAttend=(id:string,s:Attendance['status'])=>{setAttendance(xs=>xs.map(x=>x.id===id?{...x,status:s,inTime:s==='Nghỉ phép'||s==='Nghỉ bệnh'?'—':x.inTime}:x));action('Đã cập nhật chấm công.')}
+ return <div className="space-y-5 p-6">
+  <header><p className="text-xs font-bold uppercase tracking-[.16em] text-rose-500">{isParents?'Quan hệ nhà trường - gia đình':'Vận hành nhân sự'}</p><h1 className="mt-1 text-2xl font-bold text-slate-900">{isParents?'Quản lý phụ huynh':'Quản lý nhân sự'}</h1><p className="mt-1 max-w-3xl text-sm text-slate-500">{isParents?'Quản lý hồ sơ phụ huynh và quan hệ giữa phụ huynh với trẻ đang theo học.':'Quản lý nhân sự theo đúng nghiệp vụ vận hành: phân công lớp, chấm công, duyệt nghỉ và tính lương.'}</p></header>
+  {notice&&<div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"><span>{notice}</span><button onClick={()=>setNotice('')}><X size={15}/></button></div>}
+  {isParents?<ParentKpis parents={PARENTS}/>:<StaffKpis leaves={leaves} attendance={attendance}/>} 
+  <div className="flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">{(isParents?parentTabs:staffTabs).map(([id,label,Icon])=><button key={id} onClick={()=>{setTab(id);setSearch('');setStatus('Tất cả')}} className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${tab===id?'bg-white text-slate-900 shadow-sm':'text-slate-500'}`}><Icon size={14}/>{label}</button>)}</div>
+  {isParents&&tab==='directory'&&<section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><Toolbar search={search} setSearch={setSearch} placeholder="Tìm phụ huynh, số điện thoại, email..." status={status} setStatus={setStatus} options={['Hoạt động','Không hoạt động']} action={()=>setCompose({kind:'parent'})} label="Thêm phụ huynh"/><Table headers={['Phụ huynh','Con đang học','Liên hệ','Tài khoản','Tương tác','Thao tác']} rows={parents.map(p=><tr key={p.id} className="hover:bg-slate-50"><Td><p className="font-semibold">{p.name}</p><p className="text-[10px] text-slate-400">{p.relationship} · {p.id}</p></Td><Td>{p.studentNames.map(n=><span key={n} className="mr-1 mb-1 inline-block rounded-full bg-slate-100 px-2 py-1 text-[10px]">{n}</span>)}</Td><Td><p>{p.phone}</p><p className="text-[10px] text-slate-400">{p.email}</p></Td><Td><Badge text={p.accountStatus} ok={p.accountStatus==='Hoạt động'}/></Td><Td>{p.lastContact}</Td><Td><button onClick={()=>setSelected(p)} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold hover:bg-slate-50">Xem & xử lý</button></Td></tr>)}/></section>}
+  {isParents&&tab==='relationships'&&<ParentRelationships parents={PARENTS} onOpen={setSelected} onAction={action}/>} 
+  
+  {!isParents&&tab==='overview'&&<StaffOverview leaves={leaves} attendance={attendance} onTab={setTab}/>} 
+  {!isParents&&tab==='directory'&&<section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><Toolbar search={search} setSearch={setSearch} placeholder="Tìm tên, mã nhân sự, lớp, email..." status={status} setStatus={setStatus} options={['Đang làm','Nghỉ phép','Nghỉ bệnh']} action={()=>setCompose({kind:'staff'})} label="Thêm nhân sự"/><Table headers={['Nhân sự','Vị trí','Lớp/đơn vị','Trạng thái','Ngày vào làm','Thao tác']} rows={staff.map(s=><tr key={s.id} className="hover:bg-slate-50"><Td><p className="font-semibold">{s.name}</p><p className="text-[10px] text-slate-400">{s.id} · {s.email}</p></Td><Td>{s.role}</Td><Td>{s.className||s.department}</Td><Td><Badge text={s.status} ok={s.status==='Đang làm'}/></Td><Td>{s.joinDate}</Td><Td><button onClick={()=>setSelected(s)} className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold hover:bg-slate-50">Mở hồ sơ</button></Td></tr>)}/></section>}
+  {!isParents&&tab==='assignment'&&<Assignment assignments={classAssignments} setAssignments={setClassAssignments} staff={STAFF} onAction={action}/>} 
+  {!isParents&&tab==='attendance'&&<StaffAttendance attendance={attendance} setAttend={setAttend} onAction={action}/>} 
+  {!isParents&&tab==='leave'&&<Leave leaves={leaves} onApprove={approveLeave} onOpen={setSelected} onAdd={()=>setCompose({kind:'leave'})}/>} 
+  {!isParents&&tab==='payroll'&&<Payroll staff={STAFF} attendance={attendance} onAction={action}/>} 
+  <Modal open={!!selected} onClose={()=>setSelected(null)} title={selected?.name||''} description={isParents?'Hồ sơ phụ huynh và các nghiệp vụ liên quan.':'Hồ sơ nhân sự và thao tác vận hành.'}>{selected&&<Detail selected={selected} isParents={isParents} onAction={action}/>}</Modal>
+  <Modal open={!!compose} onClose={()=>setCompose(null)} title={compose?.kind==='leave'?'Tạo đơn nghỉ hộ nhân sự':compose?.kind==='parent'?'Thêm phụ huynh':'Thêm nhân sự'} description="Biểu mẫu thao tác trực tiếp trong giao diện quản trị." footer={<><button onClick={()=>setCompose(null)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold">Hủy</button><button onClick={()=>{setCompose(null);action(compose?.kind==='leave'?'Đã tạo đơn nghỉ và chuyển sang trạng thái chờ duyệt.':compose?.kind==='parent'?'Đã thêm phụ huynh vào danh sách quản lý.':'Đã tạo hồ sơ nhân sự mới.')}} className="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white">Lưu</button></>}>{compose?.kind==='leave'?<div className="grid gap-3 sm:grid-cols-2"><Field label="Nhân sự"><select className="input">{STAFF.map(s=><option key={s.id}>{s.name}</option>)}</select></Field><Field label="Loại nghỉ"><select className="input"><option>Nghỉ phép</option><option>Nghỉ bệnh</option></select></Field><Field label="Từ ngày"><input type="date" className="input"/></Field><Field label="Đến ngày"><input type="date" className="input"/></Field><Field label="Lý do" full><textarea className="input h-24"/></Field></div>:<div className="space-y-3"><Field label="Họ và tên"><input className="input" placeholder="Nhập họ tên"/></Field><Field label="Số điện thoại"><input className="input" placeholder="09xx xxx xxx"/></Field><Field label={compose?.kind==='parent'?'Quan hệ':'Vị trí'}><select className="input">{(compose?.kind==='parent'?['Bố','Mẹ','Người giám hộ']:['Giáo viên chủ nhiệm','Giáo viên phụ','Nhân viên']).map(x=><option key={x}>{x}</option>)}</select></Field></div>}</Modal>
+ </div>
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  'Ban giám hiệu': 'bg-purple-100 text-purple-700',
-  'Giáo viên chủ nhiệm': 'bg-blue-100 text-blue-700',
-  'Giáo viên phụ': 'bg-indigo-100 text-indigo-700',
-  'Nhân viên': 'bg-gray-100 text-gray-600',
-}
-
-export default function PhuHuynhNhanSu() {
-  const [activeTab, setActiveTab] = useState<'phu-huynh' | 'nhan-su'>('phu-huynh')
-  const [search, setSearch] = useState('')
-
-  const filteredParents = PARENTS.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
-  const filteredTeachers = TEACHERS.filter(t => t.name.toLowerCase().includes(search.toLowerCase()))
-
-  const staffStats = {
-    total: TEACHERS.length,
-    working: TEACHERS.filter(t => t.status === 'Đang làm').length,
-    leave: TEACHERS.filter(t => t.status === 'Nghỉ phép').length,
-    sick: TEACHERS.filter(t => t.status === 'Nghỉ bệnh').length,
-    teachers: TEACHERS.filter(t => t.role.includes('Giáo viên')).length,
-  }
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Phụ huynh & Nhân sự</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Quản lý phụ huynh và toàn bộ nhân sự nhà trường</p>
-        </div>
-        <button className="flex items-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600 transition-colors">
-          <Plus size={15} /> {activeTab === 'phu-huynh' ? 'Thêm phụ huynh' : 'Thêm nhân sự'}
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
-        {[
-          { id: 'phu-huynh' as const, label: 'Phụ huynh', count: PARENTS.length, icon: Users },
-          { id: 'nhan-su' as const, label: 'Nhân sự', count: TEACHERS.length, icon: UserCheck },
-        ].map(tab => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setSearch('') }}
-              className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Icon size={15} /> {tab.label}
-              <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
-                activeTab === tab.id ? 'bg-rose-100 text-rose-600' : 'bg-gray-200 text-gray-500'
-              }`}>{tab.count}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Staff summary (only for nhân sự) */}
-      {activeTab === 'nhan-su' && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Tổng nhân sự', value: staffStats.total, color: 'gray' },
-            { label: 'Đang làm việc', value: staffStats.working, color: 'green' },
-            { label: 'Đang nghỉ phép', value: staffStats.leave, color: 'amber' },
-            { label: 'Nghỉ bệnh', value: staffStats.sick, color: 'rose' },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={`Tìm ${activeTab === 'phu-huynh' ? 'phụ huynh' : 'nhân sự'}...`}
-          className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-        />
-      </div>
-
-      {/* Parent table */}
-      {activeTab === 'phu-huynh' && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden max-h-[520px] overflow-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 z-10 bg-white">
-              <tr className="border-b border-gray-100">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Phụ huynh</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Quan hệ</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Liên hệ</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Con đang học</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Liên lạc gần nhất</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Tài khoản</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 max-h-[520px] overflow-y-auto">
-              {filteredParents.map(parent => (
-                <tr key={parent.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xs font-bold">
-                        {parent.name.split(' ').pop()?.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{parent.name}</p>
-                        <p className="text-xs text-gray-400">ID: {parent.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">{parent.relationship}</span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600"><Phone size={11} /> {parent.phone}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400"><Mail size={11} /> {parent.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {parent.studentNames.map(n => (
-                      <span key={n} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full mr-1">{n}</span>
-                    ))}
-                  </td>
-                  <td className="px-4 py-3.5 text-sm text-gray-500">
-                    {new Date(parent.lastContact).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      parent.accountStatus === 'Hoạt động' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {parent.accountStatus}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <button className="text-xs text-rose-500 font-medium hover:underline">Chi tiết</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Staff table */}
-      {activeTab === 'nhan-su' && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden max-h-[520px] overflow-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 z-10 bg-white">
-              <tr className="border-b border-gray-100">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Nhân sự</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Vị trí</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Lớp phụ trách</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Liên hệ</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Ngày vào làm</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Trạng thái</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 max-h-[520px] overflow-y-auto">
-              {filteredTeachers.map(teacher => (
-                <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold">
-                        {teacher.name.split(' ').pop()?.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{teacher.name}</p>
-                        <p className="text-xs text-gray-400">ID: {teacher.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_COLORS[teacher.role] || 'bg-gray-100 text-gray-600'}`}>
-                      {teacher.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {teacher.className ? (
-                      <span className="text-sm text-gray-800">{teacher.className}</span>
-                    ) : (
-                      <span className="text-sm text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600"><Phone size={11} /> {teacher.phone}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400"><Mail size={11} /> {teacher.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5 text-sm text-gray-500">
-                    {new Date(teacher.joinDate).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[teacher.status]}`}>
-                      {teacher.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-                      <Edit size={14} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Assignment panel (for nhân sự) */}
-      {activeTab === 'nhan-su' && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-5">
-          <div className="flex items-start gap-3">
-            <AlertTriangle size={18} className="text-rose-500 mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-rose-800">Lớp Lá 5 chưa có giáo viên chủ nhiệm</p>
-              <p className="text-xs text-rose-600 mt-1">Giáo viên chủ nhiệm cũ đã nghỉ việc từ 01/11/2024. Cần phân công giáo viên ngay.</p>
-              <div className="flex gap-2 mt-3">
-                <button className="px-4 py-2 bg-rose-500 text-white rounded-lg text-xs font-medium hover:bg-rose-600 transition-colors">
-                  Phân công ngay
-                </button>
-                <button className="px-4 py-2 bg-white text-rose-600 border border-rose-200 rounded-lg text-xs font-medium hover:bg-rose-50 transition-colors">
-                  Xem lịch làm việc
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+function StaffKpis({leaves,attendance}:{leaves:Leave[];attendance:Attendance[]}){return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Kpi label="Nhân sự đang làm" value={STAFF.filter(s=>s.status==='Đang làm').length} sub="Có trạng thái làm việc"/><Kpi label="Lớp đã phân công" value={`${CLASSES.filter(c=>c.teacher).length}/${CLASSES.length}`} sub="Có GVCN"/><Kpi label="Chờ duyệt nghỉ" value={leaves.filter(l=>l.status==='Chờ duyệt').length} sub="Cần xử lý" tone="amber"/><Kpi label="Cần xử lý chấm công" value={attendance.filter(a=>a.status!=='Có mặt').length} sub="Đi muộn / nghỉ / thiếu" tone="rose"/></div>}
+function ParentKpis({parents}:{parents:any[]}){return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Kpi label="Phụ huynh" value={parents.length} sub="Đang có hồ sơ"/><Kpi label="Tài khoản hoạt động" value={parents.filter(p=>p.accountStatus==='Hoạt động').length} sub="Có thể đăng nhập"/><Kpi label="Trẻ đang liên kết" value={parents.reduce((n,p)=>n+p.studentNames.length,0)} sub="Quan hệ phụ huynh - trẻ"/><Kpi label="Cần cập nhật" value={parents.filter(p=>p.accountStatus==='Không hoạt động').length} sub="Tài khoản cần xử lý" tone="amber"/></div>}
+function StaffOverview({leaves,attendance,onTab}:{leaves:Leave[];attendance:Attendance[];onTab:(s:string)=>void}){const pending=leaves.filter(x=>x.status==='Chờ duyệt');return <div className="grid gap-4 lg:grid-cols-3"><ActionCard title="Đơn nghỉ chờ duyệt" value={pending.length} desc="Duyệt hoặc từ chối, đồng thời kiểm tra lớp bị ảnh hưởng." action={()=>onTab('leave')} label="Xử lý đơn nghỉ"/><ActionCard title="Chấm công cần xử lý" value={attendance.filter(a=>a.status!=='Có mặt').length} desc="Đi muộn, nghỉ và thiếu chấm công cần cập nhật trước khi tính lương." action={()=>onTab('attendance')} label="Mở chấm công"/><ActionCard title="Lớp thiếu GVCN" value={CLASSES.filter(c=>!c.teacher).length} desc="Phân công giáo viên chủ nhiệm và giáo viên phụ theo từng lớp." action={()=>onTab('assignment')} label="Phân công lớp"/></div>}
+function Assignment({assignments,setAssignments,staff,onAction}:{assignments:Record<string,{teacher:string;assistant:string}>;setAssignments:any;staff:any[];onAction:(s:string)=>void}){const [edit,setEdit]=useState<string|null>(null);return <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-100 p-5"><h2 className="font-bold">Phân công nhân sự theo lớp</h2><p className="mt-1 text-xs text-slate-400">Đây là nơi Admin thực hiện phân công, không chỉ xem danh sách. Mỗi lớp có GVCN và GV phụ riêng.</p></div><div className="overflow-auto"><table className="w-full min-w-[900px]"><thead className="bg-slate-50"><tr>{['Lớp','Khối','Sĩ số','GVCN','GV phụ','Trạng thái','Thao tác'].map(h=><th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{CLASSES.map(c=>{const a=assignments[c.name];const missing=!a?.teacher||a.teacher==='Chưa phân công';return <tr key={c.name}><td className="px-4 py-4 text-sm font-bold">{c.name}</td><td className="px-4 py-4 text-xs">{c.block}</td><td className="px-4 py-4 text-xs">{c.currentCount}</td><td className="px-4 py-4 text-xs">{a?.teacher||'Chưa phân công'}</td><td className="px-4 py-4 text-xs">{a?.assistant||'Chưa phân công'}</td><td className="px-4 py-4"><Badge text={missing?'Thiếu GVCN':'Đủ nhân sự'} ok={!missing}/></td><td className="px-4 py-4"><button onClick={()=>setEdit(c.name)} className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white">Phân công / đổi người</button></td></tr>})}</tbody></table></div><Modal open={!!edit} onClose={()=>setEdit(null)} title={`Phân công ${edit||''}`} description="Chọn GVCN và giáo viên phụ. Hệ thống không cho cùng một người làm GVCN và GV phụ của chính lớp đó.">{edit&&<AssignmentForm className={edit} assignments={assignments} staff={staff} onSave={(teacher:string,assistant:string)=>{if(teacher===assistant)return onAction('GVCN và GV phụ không được trùng cùng một người.');setAssignments((x:any)=>({...x,[edit]:{teacher,assistant}}));setEdit(null);onAction(`Đã cập nhật phân công cho lớp ${edit}.`)}}/>}</Modal></section>}
+function AssignmentForm({className,assignments,staff,onSave}:{className:string;assignments:any;staff:any[];onSave:(a:string,b:string)=>void}){const [teacher,setTeacher]=useState(assignments[className]?.teacher||'');const [assistant,setAssistant]=useState(assignments[className]?.assistant||'');return <div className="space-y-3"><Field label="Giáo viên chủ nhiệm"><select className="input" value={teacher} onChange={e=>setTeacher(e.target.value)}><option value="">Chưa phân công</option>{staff.filter(s=>s.role.includes('Giáo viên')).map(s=><option key={s.id}>{s.name}</option>)}</select></Field><Field label="Giáo viên phụ"><select className="input" value={assistant} onChange={e=>setAssistant(e.target.value)}><option value="">Chưa phân công</option>{staff.filter(s=>s.role.includes('Giáo viên')).map(s=><option key={s.id}>{s.name}</option>)}</select></Field><button onClick={()=>onSave(teacher,assistant)} className="w-full rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white">Lưu phân công</button></div>}
+function StaffAttendance({attendance,setAttend,onAction}:{attendance:Attendance[];setAttend:(id:string,s:Attendance['status'])=>void;onAction:(s:string)=>void}){return <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-100 p-5"><h2 className="font-bold">Chấm công nhân sự</h2><p className="mt-1 text-xs text-slate-400">Admin có thể chỉnh trạng thái từng người trong ngày và ghi nhận dữ liệu làm đầu vào cho lương.</p></div><div className="grid gap-3 border-b border-slate-100 p-5 sm:grid-cols-4"><Info label="Có mặt" value={String(attendance.filter(a=>a.status==='Có mặt').length)}/><Info label="Đi muộn" value={String(attendance.filter(a=>a.status==='Đi muộn').length)}/><Info label="Nghỉ" value={String(attendance.filter(a=>a.status.includes('Nghỉ')).length)}/><Info label="Chưa chấm" value={String(attendance.filter(a=>a.status==='Chưa chấm').length)}/></div><div className="divide-y divide-slate-100">{attendance.map(a=><div key={a.id} className="flex flex-wrap items-center gap-3 px-5 py-4"><div className="min-w-[220px] flex-1"><p className="text-sm font-semibold">{a.name}</p><p className="text-[10px] text-slate-400">Vào {a.inTime} · Ra {a.outTime}</p></div><select value={a.status} onChange={e=>setAttend(a.id,e.target.value as Attendance['status'])} className="h-9 rounded-lg border border-slate-200 px-2 text-xs font-semibold"><option>Có mặt</option><option>Đi muộn</option><option>Nghỉ phép</option><option>Nghỉ bệnh</option><option>Chưa chấm</option></select><button onClick={()=>onAction(`Đã mở chi tiết chấm công của ${a.name}.`)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold">Chi tiết</button></div>)}</div></section>}
+function Leave({leaves,onApprove,onOpen,onAdd}:{leaves:Leave[];onApprove:(id:string,ok:boolean)=>void;onOpen:(x:any)=>void;onAdd:()=>void}){return <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center"><div className="mr-auto"><h2 className="font-bold">Nghỉ phép & bố trí thay thế</h2><p className="mt-1 text-xs text-slate-400">Duyệt đơn và xử lý ảnh hưởng tới lớp, không chỉ xem trạng thái.</p></div><button onClick={onAdd} className="rounded-xl bg-rose-500 px-3 py-2 text-xs font-semibold text-white"><Plus size={14} className="mr-1 inline"/>Tạo đơn</button></div><div className="divide-y divide-slate-100">{leaves.map(l=><div key={l.id} className="flex flex-wrap items-center gap-3 p-5"><div className="min-w-[250px] flex-1"><p className="text-sm font-semibold">{l.name}</p><p className="text-[11px] text-slate-400">{l.className} · {l.type} · {l.from} → {l.to}</p><p className="mt-1 text-xs text-slate-500">{l.reason}</p></div><Badge text={l.status} ok={l.status==='Đã duyệt'}/>{l.status==='Chờ duyệt'&&<><button onClick={()=>onApprove(l.id,true)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"><Check size={13} className="mr-1 inline"/>Duyệt</button><button onClick={()=>onApprove(l.id,false)} className="rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-600">Từ chối</button></>}<button onClick={()=>onOpen(l)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold">Chi tiết</button></div>)}</div></section>}
+function Payroll({staff,attendance,onAction}:{staff:any[];attendance:Attendance[];onAction:(s:string)=>void}){const [locked,setLocked]=useState(false);return <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center"><div className="mr-auto"><h2 className="font-bold">Lương tháng 09/2026</h2><p className="mt-1 text-xs text-slate-400">Tính từ ngày công và phụ cấp; kiểm tra trước khi khóa kỳ lương.</p></div><button disabled={locked} onClick={()=>{setLocked(true);onAction('Đã khóa kỳ lương tháng 09/2026.')}} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{locked?'Đã khóa kỳ lương':'Khóa kỳ lương'}</button></div><div className="overflow-auto"><table className="w-full min-w-[800px]"><thead className="bg-slate-50"><tr>{['Nhân sự','Ngày công','Lương cơ bản','Phụ cấp','Tạm tính','Trạng thái'].map(h=><th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase text-slate-400">{h}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{staff.map((s,i)=>{const days=26-(i%3);const total=s.salaryBase+s.allowance;return <tr key={s.id}><td className="px-4 py-4 text-xs font-semibold">{s.name}</td><td className="px-4 py-4 text-xs">{days}</td><td className="px-4 py-4 text-xs">{money(s.salaryBase)}</td><td className="px-4 py-4 text-xs">{money(s.allowance)}</td><td className="px-4 py-4 text-xs font-bold">{money(total)}</td><td className="px-4 py-4"><Badge text={locked?'Đã khóa':'Chờ kiểm tra'} ok={locked}/></td></tr>})}</tbody></table></div></section>}
+function ParentRelationships({parents,onOpen,onAction}:{parents:any[];onOpen:(x:any)=>void;onAction:(s:string)=>void}){return <div className="grid gap-4 lg:grid-cols-2">{parents.map(p=><section key={p.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-start gap-3"><div className="rounded-xl bg-blue-50 p-2 text-blue-600"><UserCheck size={18}/></div><div className="flex-1"><h2 className="font-bold">{p.name}</h2><p className="text-xs text-slate-400">{p.relationship} · {p.phone}</p></div><button onClick={()=>onOpen(p)} className="rounded-lg border border-slate-200 p-2"><ChevronRight size={15}/></button></div><div className="mt-4 space-y-2">{p.studentNames.map((n:string)=><div key={n} className="flex items-center justify-between rounded-xl bg-slate-50 p-3"><div><p className="text-xs font-semibold">{n}</p><p className="text-[10px] text-slate-400">Được phép nhận thông tin của trẻ</p></div><button onClick={()=>onAction(`Đã mở biểu mẫu chỉnh quan hệ ${p.name} – ${n}.`)} className="text-xs font-semibold text-rose-600">Chỉnh quan hệ</button></div>)}</div></section>)}</div>}
+function Detail({selected,isParents,onAction}:{selected:any;isParents:boolean;onAction:(s:string)=>void}){return <div className="space-y-4"><div className="grid grid-cols-2 gap-3"><Info label={isParents?'Quan hệ':'Vị trí'} value={isParents?selected.relationship:selected.role}/><Info label="Điện thoại" value={selected.phone}/><Info label="Email" value={selected.email}/><Info label={isParents?'Tài khoản':'Ngày vào làm'} value={isParents?selected.accountStatus:selected.joinDate}/></div>{isParents?<><div><p className="text-xs font-bold">Trẻ được liên kết</p><div className="mt-2 flex flex-wrap gap-2">{selected.studentNames.map((n:string)=><span key={n} className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">{n}</span>)}</div></div><div className="flex gap-2"><button onClick={()=>onAction('Đã mở biểu mẫu chỉnh quan hệ phụ huynh – trẻ.')} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">Chỉnh quan hệ</button><button onClick={()=>onAction('Đã mở lịch sử tương tác với phụ huynh.')} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold">Lịch sử tương tác</button></div></>:<><div className="grid grid-cols-3 gap-3"><Info label="Lương cơ bản" value={money(selected.salaryBase)}/><Info label="Phụ cấp" value={money(selected.allowance)}/><Info label="Phép còn" value={`${selected.leaveBalance} ngày`}/></div><div className="grid grid-cols-2 gap-2"><button onClick={()=>onAction('Đã mở phân công lớp của nhân sự.')} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">Phân công lớp</button><button onClick={()=>onAction('Đã mở chấm công của nhân sự.')} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold">Chấm công</button><button onClick={()=>onAction('Đã mở lịch sử nghỉ của nhân sự.')} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold">Lịch nghỉ</button><button onClick={()=>onAction('Đã mở bảng lương của nhân sự.')} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold">Bảng lương</button></div></>}</div>}
+function Toolbar({search,setSearch,placeholder,status,setStatus,options,action,label}:{search:string;setSearch:(s:string)=>void;placeholder:string;status:string;setStatus:(s:string)=>void;options:string[];action:()=>void;label:string}){return <div className="flex flex-col gap-3 border-b border-slate-100 p-4 lg:flex-row lg:items-center"><div className="relative w-full max-w-md"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder={placeholder} className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-rose-300"/></div><select value={status} onChange={e=>setStatus(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm"><option>Tất cả</option>{options.map(o=><option key={o}>{o}</option>)}</select><button onClick={action} className="ml-auto inline-flex items-center gap-2 rounded-xl bg-rose-500 px-3 py-2 text-xs font-semibold text-white"><UserRoundPlus size={14}/>{label}</button></div>}
+function Table({headers,rows}:{headers:string[];rows:any[]}){return <div className="overflow-auto"><table className="w-full min-w-[900px]"><thead className="bg-slate-50"><tr>{headers.map(h=><th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{rows}</tbody></table></div>}
+function Td({children}:{children:any}){return <td className="px-4 py-4 align-top text-xs text-slate-600">{children}</td>}
+function Badge({text,ok}:{text:string;ok:boolean}){return <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${ok?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700'}`}>{text}</span>}
+function Kpi({label,value,sub,tone='default'}:{label:string;value:string|number;sub:string;tone?:string}){return <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs text-slate-400">{label}</p><p className={`mt-1 text-xl font-bold ${tone==='amber'?'text-amber-600':tone==='rose'?'text-rose-600':'text-slate-900'}`}>{value}</p><p className="mt-1 text-[10px] text-slate-400">{sub}</p></div>}
+function ActionCard({title,value,desc,action,label}:{title:string;value:number;desc:string;action:()=>void;label:string}){return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs text-slate-400">{title}</p><p className="mt-2 text-3xl font-bold">{value}</p><p className="mt-2 text-xs leading-5 text-slate-500">{desc}</p><button onClick={action} className="mt-4 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">{label} <ChevronRight size={14} className="ml-1 inline"/></button></section>}
+function Info({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="text-[10px] text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold text-slate-800">{value}</p></div>}
+function Field({label,children,full}:{label:string;children:any;full?:boolean}){return <label className={full?'sm:col-span-2':''}><span className="mb-1.5 block text-xs font-semibold text-slate-600">{label}</span>{children}</label>}
+function money(n:number){return new Intl.NumberFormat('vi-VN').format(n)+' đ'}

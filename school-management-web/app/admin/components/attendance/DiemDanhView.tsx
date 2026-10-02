@@ -43,7 +43,9 @@ export default function DiemDanh() {
   const [selectedClass, setSelectedClass] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'attendance' | 'leave' | 'log'>('attendance')
   const [filterBlock, setFilterBlock] = useState('Tất cả')
-  const [updatingTime] = useState('08 giây trước')
+  const [updatingTime] = useState('vừa cập nhật')
+  const [notice, setNotice] = useState('')
+  const [leaveRequests, setLeaveRequests] = useState(LEAVE_REQUESTS)
 
   const totalPresent = CLASS_ATTENDANCE.reduce((s, c) => s + c.present, 0)
   const totalAbsent = CLASS_ATTENDANCE.reduce((s, c) => s + c.absent + c.excused, 0)
@@ -59,6 +61,7 @@ export default function DiemDanh() {
 
   return (
     <div className="p-6 space-y-5">
+      {notice && <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"><span>{notice}</span><button onClick={() => setNotice('')}><X size={15} /></button></div>}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Điểm danh hôm nay</h1>
@@ -69,7 +72,7 @@ export default function DiemDanh() {
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
             Cập nhật {updatingTime}
           </div>
-          <button className="flex items-center gap-1.5 text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+          <button onClick={() => setNotice('Đã làm mới dữ liệu điểm danh.')} className="flex items-center gap-1.5 text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
             <RefreshCw size={14} /> Làm mới
           </button>
         </div>
@@ -82,7 +85,7 @@ export default function DiemDanh() {
           { label: 'Vắng', value: totalAbsent, color: 'rose', pct: Math.round(totalAbsent/totalStudents*100) },
           { label: 'Đi muộn', value: totalLate, color: 'amber', pct: null },
           { label: 'Đã điểm danh', value: `${doneDanh}/14`, color: 'indigo', pct: null },
-          { label: 'Chờ duyệt đơn', value: LEAVE_REQUESTS.filter(r => r.status === 'pending').length, color: 'purple', pct: null },
+          { label: 'Chờ duyệt đơn', value: leaveRequests.filter(r => r.status === 'pending').length, color: 'purple', pct: null },
         ].map(stat => (
           <div key={stat.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
             <p className={`text-2xl font-bold ${
@@ -101,7 +104,7 @@ export default function DiemDanh() {
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
         {[
           { id: 'attendance' as const, label: 'Tình trạng lớp' },
-          { id: 'leave' as const, label: `Đơn xin nghỉ (${LEAVE_REQUESTS.filter(r => r.status === 'pending').length} chờ duyệt)` },
+          { id: 'leave' as const, label: `Đơn xin nghỉ (${leaveRequests.filter(r => r.status === 'pending').length} chờ duyệt)` },
           { id: 'log' as const, label: 'Nhật ký hoạt động' },
         ].map(tab => (
           <button
@@ -262,10 +265,10 @@ export default function DiemDanh() {
       {activeTab === 'leave' && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-700">Đơn xin nghỉ · {LEAVE_REQUESTS.filter(r => r.status === 'pending').length} chờ duyệt</p>
+            <p className="text-sm font-semibold text-gray-700">Đơn xin nghỉ · {leaveRequests.filter(r => r.status === 'pending').length} chờ duyệt</p>
           </div>
           <div className="divide-y divide-gray-50 max-h-[520px] overflow-y-auto">
-            {LEAVE_REQUESTS.map(req => (
+            {leaveRequests.map(req => (
               <div key={req.id} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -280,10 +283,10 @@ export default function DiemDanh() {
                 <div className="shrink-0 flex items-center gap-2">
                   {req.status === 'pending' ? (
                     <>
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-medium hover:bg-green-600 transition-colors">
+                      <button onClick={() => { setLeaveRequests(p => p.map(x => x.id === req.id ? { ...x, status: 'approved' } : x)); setNotice(`Đã duyệt đơn nghỉ của ${req.student}.`) }} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-medium hover:bg-green-600 transition-colors">
                         <Check size={13} /> Duyệt
                       </button>
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
+                      <button onClick={() => { setLeaveRequests(p => p.map(x => x.id === req.id ? { ...x, status: 'rejected' } : x)); setNotice(`Đã từ chối đơn nghỉ của ${req.student}.`) }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors">
                         <X size={13} /> Từ chối
                       </button>
                     </>

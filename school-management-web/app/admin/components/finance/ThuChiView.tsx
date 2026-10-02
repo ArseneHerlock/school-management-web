@@ -1,247 +1,46 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Download, Search, Filter, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { TRANSACTIONS, MONTHLY_REVENUE } from '../../data'
+import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import { ArrowDownLeft, ArrowUpRight, Banknote, CheckCircle2, ChevronRight, Download, FileSpreadsheet, Filter, Plus, RefreshCcw, Search, Settings2, WalletCards, X } from 'lucide-react'
+import { TRANSACTIONS } from '../../data'
+import Modal from '../shared/Modal'
 
-const STATUS_COLORS: Record<string, string> = {
-  'Đã thanh toán': 'bg-green-100 text-green-700',
-  'Chờ thanh toán': 'bg-amber-100 text-amber-700',
-  'Quá hạn': 'bg-rose-100 text-rose-700',
+const FEE_PLANS=[{id:'HP01',name:'Học phí chính khóa',cycle:'Theo tháng',amount:'2.500.000–3.000.000',status:'Đang áp dụng',students:286},{id:'HP02',name:'Tiền ăn',cycle:'Theo tháng',amount:'800.000',status:'Đang áp dụng',students:286},{id:'HP03',name:'Phí hoạt động',cycle:'Theo học kỳ',amount:'500.000',status:'Đang áp dụng',students:240}]
+const EXPENSES=[{id:'CP001',category:'Thực phẩm',vendor:'Công ty ABC',amount:12000000,date:'15/09/2026',status:'Đã duyệt'},{id:'CP002',category:'Điện nước',vendor:'EVN',amount:3500000,date:'17/09/2026',status:'Chờ duyệt'},{id:'CP003',category:'Đồ dùng học tập',vendor:'Nhà sách Hoa Mai',amount:2100000,date:'12/09/2026',status:'Đã duyệt'},{id:'CP004',category:'Bảo trì',vendor:'Kỹ thuật Minh Long',amount:4800000,date:'08/09/2026',status:'Chờ duyệt'}]
+const PAYMENTS=[{id:'TT001',family:'Nguyễn Văn Hùng',student:'Nguyễn Minh Anh',item:'Học phí tháng 09',amount:2500000,date:'05/09/2026',method:'Chuyển khoản'},{id:'TT002',family:'Trần Thị Mai',student:'Trần Gia Hân',item:'Học phí tháng 09',amount:2500000,date:'06/09/2026',method:'QR Banking'},{id:'TT003',family:'Lê Văn Bình',student:'Lê Hoàng Nam',item:'Học phí tháng 09',amount:2700000,date:'02/09/2026',method:'Tiền mặt'}]
+
+export default function ThuChi(){
+ const [tab,setTab]=useState<'overview'|'collections'|'payments'|'expenses'|'debt'|'budget'|'reconcile'>('overview'); const [status,setStatus]=useState('Tất cả'); const [search,setSearch]=useState(''); const [modal,setModal]=useState(false); const [notice,setNotice]=useState('')
+ const collections=TRANSACTIONS.filter(t=>t.type==='thu'); const totalCollected=collections.filter(t=>t.status==='Đã thanh toán').reduce((s,t)=>s+t.amount,0); const debt=collections.filter(t=>t.status!=='Đã thanh toán').reduce((s,t)=>s+t.amount,0)
+ const filteredPayments=PAYMENTS.filter(p=>!search||`${p.family} ${p.student} ${p.item}`.toLowerCase().includes(search.toLowerCase()))
+ const filteredExpenses=EXPENSES.filter(p=>(status==='Tất cả'||p.status===status)&&(!search||`${p.category} ${p.vendor}`.toLowerCase().includes(search.toLowerCase())))
+ const tabs=[['overview','Tổng quan'],['collections','Khoản thu'],['payments','Thanh toán'],['expenses','Khoản chi'],['debt','Công nợ'],['budget','Ngân sách'],['reconcile','Đối soát']] as const
+ return <div className="space-y-5 p-6">
+  <header><p className="text-xs font-bold uppercase tracking-[.16em] text-rose-500">Quản trị tài chính</p><h1 className="mt-1 text-2xl font-bold text-slate-900">Thu – Chi & tài chính</h1><p className="mt-1 text-sm text-slate-500">Quản lý dòng tiền, khoản thu, công nợ, chi phí, ngân sách và đối soát. Hóa đơn/biên nhận phát sinh từ giao dịch thanh toán, không phải Admin ngồi tạo thủ công.</p></header>
+  {notice&&<div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"><span>{notice}</span><button onClick={()=>setNotice('')}><X size={15}/></button></div>}
+  <div className="grid grid-cols-2 gap-3 xl:grid-cols-4"><Kpi label="Đã thu tháng này" value={money(totalCollected)} icon={ArrowDownLeft} tone="green" sub="Từ các giao dịch đã xác nhận"/><Kpi label="Công nợ phải thu" value={money(debt)} icon={WalletCards} tone="amber" sub="Chờ thanh toán + quá hạn"/><Kpi label="Chi đã duyệt" value="20,4 tr" icon={ArrowUpRight} sub="Trong tháng hiện tại"/><Kpi label="Cần đối soát" value="7 giao dịch" icon={RefreshCcw} tone="rose" sub="Thanh toán chưa khớp"/></div>
+  <div className="flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">{tabs.map(([id,label])=><button key={id} onClick={()=>setTab(id)} className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${tab===id?'bg-white text-slate-900 shadow-sm':'text-slate-500'}`}>{label}</button>)}</div>
+
+  {tab==='overview'&&<div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]"><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><h2 className="font-bold">Dòng tiền</h2><p className="mt-1 text-xs text-slate-400">Theo dõi thu – chi theo tháng, không chỉ nhìn biểu đồ.</p></div><button onClick={()=>setTab('reconcile')} className="text-xs font-semibold text-rose-600">Đối soát →</button></div><div className="mt-6 flex h-44 items-end gap-3">{[68,74,63,82,77,91].map((v,i)=><div key={i} className="flex flex-1 flex-col items-center gap-2"><span className="text-[10px] font-bold text-slate-500">{v}tr</span><div className="w-full max-w-12 rounded-t-lg bg-rose-100" style={{height:`${v*1.25}px`}}><div className="h-full rounded-t-lg bg-rose-400"/></div><span className="text-[10px] text-slate-400">T{i+4}</span></div>)}</div></section><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-bold">Việc tài chính cần xử lý</h2><div className="mt-4 space-y-2"><Task label="Công nợ quá hạn" value="12 gia đình" onClick={()=>setTab('debt')}/><Task label="Khoản chi chờ duyệt" value="2 khoản" onClick={()=>setTab('expenses')}/><Task label="Giao dịch cần đối soát" value="7 giao dịch" onClick={()=>setTab('reconcile')}/><Task label="Ngân sách sắp vượt" value="Thực phẩm · 92%" onClick={()=>setTab('budget')}/></div></section></div>}
+
+  {tab==='collections'&&<Panel title="Khoản thu" desc="Cấu hình các khoản tiền nhà trường thu từ phụ huynh theo tháng, học kỳ hoặc từng đợt."><div className="flex flex-wrap gap-2"><button onClick={()=>setModal(true)} className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"><Settings2 size={14}/> Thêm khoản thu</button><button onClick={()=>setNotice('Đã xuất danh sách các khoản thu đang áp dụng.')} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold"><Download size={14}/> Xuất danh sách</button></div><div className="mt-4 grid gap-3 md:grid-cols-3">{FEE_PLANS.map(p=><div key={p.id} className="rounded-xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold">{p.name}</p><p className="mt-1 text-xs text-slate-400">{p.cycle}</p></div><span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700">{p.status}</span></div><p className="mt-4 text-lg font-bold">{p.amount} đ</p><p className="mt-1 text-xs text-slate-500">Đang áp dụng cho {p.students} trẻ</p><div className="mt-4 flex gap-2"><button onClick={()=>setNotice(`Đã mở cấu hình ${p.name}.`)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold">Chỉnh sửa</button><button onClick={()=>setNotice(`Đã mở danh sách phải thu của ${p.name}.`)} className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white">Xem phải thu</button></div></div>)}</div></Panel>}
+
+  {tab==='payments'&&<Panel title="Thanh toán" desc="Theo dõi các giao dịch phụ huynh đã thanh toán và trạng thái ghi nhận tiền. Đây là dữ liệu giao dịch, tách biệt với cấu hình khoản thu."><div className="flex flex-wrap gap-2"><input value={search} onChange={e=>setSearch(e.target.value)} className="h-10 min-w-64 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10" placeholder="Tìm người nộp, trẻ, khoản thu..."/><button onClick={()=>setNotice('Đã xuất danh sách giao dịch thanh toán tháng 09.')} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold"><Download size={14}/> Xuất giao dịch</button></div><div className="mt-4 overflow-hidden rounded-xl border border-slate-100"><table className="w-full"><thead className="bg-slate-50"><tr>{['Người nộp','Trẻ','Khoản thu','Số tiền','Ngày thanh toán','Phương thức',''].map(h=><th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{filteredPayments.map(p=><tr key={p.id} className="hover:bg-slate-50"><td className="px-4 py-3 text-sm font-semibold">{p.family}</td><td className="px-4 text-xs">{p.student}</td><td className="px-4 text-xs">{p.item}</td><td className="px-4 text-sm font-bold">{money(p.amount)}</td><td className="px-4 text-xs text-slate-500">{p.date}</td><td className="px-4"><span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700">{p.method}</span></td><td className="px-4"><button onClick={()=>setNotice(`Đã mở chi tiết giao dịch ${p.id}.`)} className="text-xs font-semibold text-rose-600">Chi tiết <ChevronRight size={13} className="inline"/></button></td></tr>)}</tbody></table></div></Panel>}
+
+  {tab==='expenses'&&<Panel title="Quản lý khoản chi" desc="Tạo yêu cầu chi, phê duyệt, theo dõi nhà cung cấp và đối chiếu với ngân sách."><div className="flex flex-wrap items-center gap-2"><select value={status} onChange={e=>setStatus(e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10 w-auto"><option>Tất cả</option><option>Đã duyệt</option><option>Chờ duyệt</option></select><button onClick={()=>setModal(true)} className="ml-auto inline-flex items-center gap-2 rounded-xl bg-rose-500 px-3 py-2 text-xs font-semibold text-white"><Plus size={14}/> Tạo yêu cầu chi</button></div><div className="mt-4 overflow-hidden rounded-xl border border-slate-100"><table className="w-full"><thead className="bg-slate-50"><tr>{['Khoản chi','Nhà cung cấp','Số tiền','Ngày','Trạng thái',''].map(h=><th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{filteredExpenses.map(p=><tr key={p.id} className="hover:bg-slate-50"><td className="px-4 py-3 text-sm font-semibold">{p.category}</td><td className="px-4 text-xs">{p.vendor}</td><td className="px-4 text-sm font-bold">{money(p.amount)}</td><td className="px-4 text-xs text-slate-500">{p.date}</td><td className="px-4"><span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${p.status==='Đã duyệt'?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700'}`}>{p.status}</span></td><td className="px-4"><button onClick={()=>setNotice(p.status==='Chờ duyệt'?'Đã mở quy trình phê duyệt khoản chi.':'Đã mở chi tiết khoản chi.')} className="text-xs font-semibold text-rose-600">Xử lý <ChevronRight size={13} className="inline"/></button></td></tr>)}</tbody></table></div></Panel>}
+
+  {tab==='debt'&&<Panel title="Công nợ học phí" desc="Nhìn theo gia đình/lớp, ưu tiên các khoản quá hạn; không cần tải 1.000+ hóa đơn lên một trang."><div className="grid gap-3 md:grid-cols-3"><Debt label="Quá hạn" value="12" amount="18,6 triệu" tone="rose"/><Debt label="Sắp đến hạn" value="24" amount="36,2 triệu" tone="amber"/><Debt label="Đã thanh toán" value="274" amount="812 triệu" tone="green"/></div><div className="mt-5 rounded-xl border border-slate-100 p-4"><div className="flex items-center justify-between"><h3 className="text-sm font-bold">Top khoản cần xử lý</h3><button onClick={()=>setNotice('Đã xuất danh sách công nợ.')} className="text-xs font-semibold text-rose-600">Xuất danh sách</button></div><div className="mt-3 space-y-2">{collections.filter(x=>x.status!=='Đã thanh toán').map(x=><div key={x.id} className="flex items-center gap-3 rounded-lg bg-slate-50 p-3"><div className="min-w-0 flex-1"><p className="text-xs font-semibold">{x.studentName}</p><p className="text-[10px] text-slate-400">{x.category} · hạn {x.dueDate}</p></div><b className="text-sm">{money(x.amount)}</b><span className="rounded-full bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-600">{x.status}</span></div>)}</div></div></Panel>}
+
+  {tab==='budget'&&<Panel title="Ngân sách" desc="Thiết lập hạn mức và theo dõi chi thực tế so với kế hoạch theo tháng/kỳ."><div className="space-y-4">{[['Nhân sự',78,180],['Thực phẩm',92,120],['Học liệu',64,60],['Vận hành',51,80]].map(([name,pct,amount])=><div key={String(name)}><div className="flex justify-between text-xs"><span className="font-semibold">{name}</span><span>{pct}% · {amount} triệu</span></div><div className="mt-2 h-2 rounded-full bg-slate-100"><div className={`h-full rounded-full ${Number(pct)>90?'bg-amber-400':'bg-rose-400'}`} style={{width:`${pct}%`}}/></div></div>)}</div><button onClick={()=>setNotice('Đã mở cấu hình ngân sách theo khoản mục.')} className="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold"><Settings2 size={14}/> Cấu hình ngân sách</button></Panel>}
+
+  {tab==='reconcile'&&<Panel title="Đối soát thanh toán" desc="Khớp giao dịch từ cổng thanh toán/tài khoản với khoản phải thu; đánh dấu sai lệch để xử lý."><div className="grid gap-3 sm:grid-cols-3"><Kpi icon={CheckCircle2} label="Khớp tự động" value="98%" sub="Giao dịch đã đối soát" tone="green"/><Kpi icon={RefreshCcw} label="Chờ khớp" value="7" sub="Cần kiểm tra thủ công" tone="amber"/><Kpi icon={FileSpreadsheet} label="Sai lệch" value="2" sub="Khác số tiền/mã tham chiếu" tone="rose"/></div><button onClick={()=>setNotice('Đã chạy lại đối soát cho giao dịch mới.')} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"><RefreshCcw size={14}/> Chạy đối soát</button></Panel>}
+
+  <Modal open={modal} onClose={()=>setModal(false)} title={tab==='expenses'?'Tạo yêu cầu chi':'Thêm khoản thu'} description={tab==='expenses'?'Tạo yêu cầu để cấp có thẩm quyền phê duyệt.':'Thiết lập khoản thu để hệ thống tạo nghĩa vụ phải thu cho đúng đối tượng và kỳ thu.'} footer={<><button onClick={()=>setModal(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold">Hủy</button><button onClick={()=>{setModal(false);setNotice(tab==='expenses'?'Đã tạo yêu cầu chi ở trạng thái Chờ duyệt.':'Đã lưu cấu hình khoản thu.')}} className="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white">Lưu</button></>}><div className="grid gap-3 sm:grid-cols-2"><label><span className="mb-1.5 block text-xs font-semibold text-slate-600">{tab==='expenses'?'Khoản chi':'Tên khoản thu'}</span><input className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10" placeholder={tab==='expenses'?'Ví dụ: Mua đồ dùng lớp Mầm 1':'Ví dụ: Học phí tháng 10'}/></label><label><span className="mb-1.5 block text-xs font-semibold text-slate-600">Số tiền</span><input className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10" placeholder="0"/></label><label className="sm:col-span-2"><span className="mb-1.5 block text-xs font-semibold text-slate-600">Ghi chú / điều kiện</span><textarea className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10 min-h-24" placeholder="Mô tả ngắn để người duyệt dễ kiểm tra..."/></label></div></Modal>
+ </div>
 }
-
-const INCOME_CATEGORIES = [
-  { name: 'Học phí', amount: 243000000, pct: 76 },
-  { name: 'Tiền ăn', amount: 52000000, pct: 16 },
-  { name: 'Học phí ngoài giờ', amount: 15000000, pct: 5 },
-  { name: 'Khác', amount: 10000000, pct: 3 },
-]
-
-export default function ThuChi() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'invoices' | 'expenses'>('overview')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('Tất cả')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-
-  const thu = TRANSACTIONS.filter(t => t.type === 'thu')
-  const chi = TRANSACTIONS.filter(t => t.type === 'chi')
-  const overdueCount = thu.filter(t => t.status === 'Quá hạn').length
-  const totalThu = 320000000
-  const totalChi = 198000000
-
-  const filteredInvoices = thu.filter(t =>
-    (statusFilter === 'Tất cả' || t.status === statusFilter) &&
-    (t.studentName?.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()))
-  )
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Thu chi & Hóa đơn</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Tháng 11 năm 2024</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-            <Download size={15} /> Xuất báo cáo
-          </button>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600 transition-colors"
-          >
-            <Plus size={15} /> Tạo hóa đơn
-          </button>
-        </div>
-      </div>
-
-      {/* Alert for overdue */}
-      {overdueCount > 0 && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle size={18} className="text-rose-500 shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-rose-800">{overdueCount} hóa đơn quá hạn cần thu ngay</p>
-            <p className="text-xs text-rose-600 mt-0.5">Tổng số tiền quá hạn: 10.700.000 đ</p>
-          </div>
-          <button className="text-xs text-rose-600 font-semibold underline hover:no-underline shrink-0">Xem ngay</button>
-        </div>
-      )}
-
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-gray-500">Tổng thu tháng 11</p>
-            <TrendingUp size={14} className="text-green-500" />
-          </div>
-          <p className="text-2xl font-bold text-gray-900">320 triệu</p>
-          <p className="text-xs text-green-600 mt-0.5 flex items-center gap-0.5"><TrendingUp size={11} /> +5% so với T10</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-gray-500">Tổng chi tháng 11</p>
-            <TrendingDown size={14} className="text-green-500" />
-          </div>
-          <p className="text-2xl font-bold text-gray-900">198 triệu</p>
-          <p className="text-xs text-green-600 mt-0.5 flex items-center gap-0.5"><TrendingDown size={11} /> -6% so với T10</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <p className="text-xs text-gray-500 mb-1">Lợi nhuận tháng</p>
-          <p className="text-2xl font-bold text-green-600">122 triệu</p>
-          <p className="text-xs text-gray-400 mt-0.5">Tỷ suất 38.1%</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <p className="text-xs text-gray-500 mb-1">Công nợ chưa thu</p>
-          <p className="text-2xl font-bold text-rose-600">18.5 triệu</p>
-          <p className="text-xs text-rose-500 mt-0.5">{overdueCount} HĐ quá hạn</p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
-        {[
-          { id: 'overview' as const, label: 'Tổng quan' },
-          { id: 'invoices' as const, label: 'Hóa đơn thu' },
-          { id: 'expenses' as const, label: 'Chi phí' },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Overview */}
-      {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <h3 className="font-semibold text-gray-800 mb-4">Thu chi 6 tháng gần đây (triệu đồng)</h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={MONTHLY_REVENUE} barGap={4}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #f3f4f6', fontSize: '12px' }} formatter={(v: any) => [`${v} triệu`, '']} />
-                <Legend formatter={(v) => v === 'thu' ? 'Thu' : 'Chi'} />
-                <Bar dataKey="thu" fill="#fda4af" radius={[4, 4, 0, 0]} name="Thu" />
-                <Bar dataKey="chi" fill="#e5e7eb" radius={[4, 4, 0, 0]} name="Chi" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <h3 className="font-semibold text-gray-800 mb-4">Cơ cấu thu tháng 11</h3>
-            <div className="space-y-3">
-              {INCOME_CATEGORIES.map(cat => (
-                <div key={cat.name}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-700">{cat.name}</span>
-                    <div className="text-right">
-                      <span className="text-sm font-semibold text-gray-900">{(cat.amount / 1000000).toFixed(0)} triệu</span>
-                      <span className="text-xs text-gray-400 ml-1">({cat.pct}%)</span>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div className="bg-rose-400 h-2 rounded-full" style={{ width: `${cat.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Invoices */}
-      {activeTab === 'invoices' && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm học sinh, khoản thu..."
-                className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500/20" />
-            </div>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none text-gray-700">
-              <option>Tất cả</option>
-              <option>Đã thanh toán</option>
-              <option>Chờ thanh toán</option>
-              <option>Quá hạn</option>
-            </select>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden max-h-[520px] overflow-auto">
-            <table className="w-full">
-              <thead className="sticky top-0 z-10 bg-white">
-                <tr className="border-b border-gray-100">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Mã HĐ</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Học sinh</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Khoản thu</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Số tiền</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Hạn thanh toán</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Trạng thái</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 max-h-[520px] overflow-y-auto">
-                {filteredInvoices.map(t => (
-                  <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-3.5 text-sm font-mono text-gray-500">{t.id}</td>
-                    <td className="px-4 py-3.5 text-sm font-medium text-gray-900">{t.studentName || '—'}</td>
-                    <td className="px-4 py-3.5 text-sm text-gray-700">{t.category}</td>
-                    <td className="px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                      {t.amount.toLocaleString('vi-VN')} đ
-                    </td>
-                    <td className="px-4 py-3.5 text-sm text-gray-500">{t.dueDate || '—'}</td>
-                    <td className="px-4 py-3.5">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[t.status]}`}>
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <button className="text-xs text-rose-500 font-medium hover:underline">Chi tiết</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Expenses */}
-      {activeTab === 'expenses' && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden max-h-[520px] overflow-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 z-10 bg-white">
-              <tr className="border-b border-gray-100">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Mã</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Hạng mục</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Số tiền</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Ngày</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 max-h-[520px] overflow-y-auto">
-              {chi.map(t => (
-                <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3.5 text-sm font-mono text-gray-500">{t.id}</td>
-                  <td className="px-4 py-3.5 text-sm font-medium text-gray-900">{t.category}</td>
-                  <td className="px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                    {t.amount.toLocaleString('vi-VN')} đ
-                  </td>
-                  <td className="px-4 py-3.5 text-sm text-gray-500">{t.date}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[t.status]}`}>{t.status}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
-}
+function money(n:number){return `${new Intl.NumberFormat('vi-VN').format(n)} đ`}
+function Kpi({label,value,sub,icon:Icon,tone}:{label:string;value:string;sub:string;icon:any;tone?:'green'|'amber'|'rose'}){const c=tone==='green'?'text-emerald-600':tone==='amber'?'text-amber-600':tone==='rose'?'text-rose-600':'text-slate-900';return <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex justify-between"><span className="text-xs text-slate-400">{label}</span><Icon size={17} className={c}/></div><p className={`mt-2 text-xl font-bold ${c}`}>{value}</p><p className="mt-1 text-[10px] text-slate-400">{sub}</p></div>}
+function Task({label,value,onClick}:{label:string;value:string;onClick:()=>void}){return <button onClick={onClick} className="flex w-full items-center justify-between rounded-xl bg-slate-50 p-3 text-left hover:bg-slate-100"><span><b className="block text-xs">{label}</b><span className="text-[10px] text-slate-400">{value}</span></span><ChevronRight size={15} className="text-slate-400"/></button>}
+function Debt({label,value,amount,tone}:{label:string;value:string;amount:string;tone:string}){return <div className="rounded-xl border border-slate-100 p-4"><p className="text-xs text-slate-400">{label}</p><p className={`mt-1 text-2xl font-bold ${tone==='rose'?'text-rose-600':tone==='amber'?'text-amber-600':'text-emerald-600'}`}>{value}</p><p className="mt-1 text-xs text-slate-500">{amount}</p></div>}
+function Panel({title,desc,children}:{title:string;desc:string;children:ReactNode}){return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-bold">{title}</h2><p className="mt-1 text-xs text-slate-400">{desc}</p><div className="mt-4">{children}</div></section>}

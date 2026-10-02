@@ -1,344 +1,109 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, X, AlertCircle, Clock } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import { AlertTriangle, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Copy, Eye, Filter, MapPin, Plus, Save, Send, Settings2, Users, X } from 'lucide-react'
+import Modal from '../shared/Modal'
+import { CLASSES } from '../../data'
 
-const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
-const HOURS = [7, 8, 9, 10, 11, 11.5, 12, 14, 15, 16]
-const HOUR_LABELS: Record<number, string> = {
-  7: '07:00', 8: '08:00', 9: '09:00', 10: '10:00', 11: '11:00',
-  11.5: '11:30', 12: '12:00', 14: '14:00', 15: '15:00', 16: '16:00'
+const DAYS = ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7']
+const PERIODS = [
+  { id:1, label:'07:30', end:'08:00' }, { id:2, label:'08:00', end:'08:45' }, { id:3, label:'08:45', end:'09:30' },
+  { id:4, label:'09:30', end:'10:15' }, { id:5, label:'10:15', end:'11:00' }, { id:6, label:'11:00', end:'11:45' },
+  { id:7, label:'13:30', end:'14:15' }, { id:8, label:'14:15', end:'15:00' }, { id:9, label:'15:00', end:'15:45' }, { id:10, label:'15:45', end:'16:30' },
+]
+const TYPES = ['Hoạt động học','Ăn','Ngủ','Ngoài trời','Vui chơi','Sinh hoạt','Sự kiện']
+const COLORS: Record<string,string> = {
+  'Hoạt động học':'border-blue-200 bg-blue-50 text-blue-700', 'Ăn':'border-amber-200 bg-amber-50 text-amber-700', 'Ngủ':'border-violet-200 bg-violet-50 text-violet-700',
+  'Ngoài trời':'border-emerald-200 bg-emerald-50 text-emerald-700', 'Vui chơi':'border-pink-200 bg-pink-50 text-pink-700', 'Sinh hoạt':'border-slate-200 bg-slate-50 text-slate-700', 'Sự kiện':'border-rose-200 bg-rose-50 text-rose-700'
 }
-
-const EVENT_TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  'Học tập': { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700' },
-  'Ăn': { bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' },
-  'Ngủ': { bg: 'bg-indigo-50', border: 'border-indigo-300', text: 'text-indigo-700' },
-  'Vui chơi': { bg: 'bg-pink-50', border: 'border-pink-300', text: 'text-pink-700' },
-  'Hoạt động ngoài trời': { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-700' },
-  'Sinh hoạt': { bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-purple-700' },
-  'Sự kiện': { bg: 'bg-rose-50', border: 'border-rose-300', text: 'text-rose-700' },
-  'conflict': { bg: 'bg-rose-50', border: 'border-rose-400', text: 'text-rose-700' },
-}
-
-const SCHEDULE = [
-  { id: 1, title: 'Đón trẻ', class: 'Toàn trường', day: 0, startHour: 7, duration: 0.5, type: 'Sinh hoạt' },
-  { id: 2, title: 'Hoạt động học tập', class: 'Mầm 1', day: 0, startHour: 7.5, duration: 1, type: 'Học tập' },
-  { id: 3, title: 'Bữa ăn sáng', class: 'Khối Mầm', day: 0, startHour: 8.5, duration: 0.5, type: 'Ăn' },
-  { id: 4, title: 'Hoạt động ngoài trời', class: 'Chồi 1', day: 0, startHour: 9, duration: 1, type: 'Hoạt động ngoài trời', conflict: true, conflictMsg: 'Sân trường có 5 lớp cùng sử dụng lúc 09:00. Sức chứa có thể vượt giới hạn.' },
-  { id: 5, title: 'Hoạt động ngoài trời', class: 'Chồi 2', day: 0, startHour: 9, duration: 1, type: 'Hoạt động ngoài trời', conflict: true, conflictMsg: 'Sân trường có 5 lớp cùng sử dụng lúc 09:00.' },
-  { id: 6, title: 'Bữa trưa', class: 'Toàn trường', day: 0, startHour: 11, duration: 0.5, type: 'Ăn' },
-  { id: 7, title: 'Giờ ngủ trưa', class: 'Toàn trường', day: 0, startHour: 11.5, duration: 2, type: 'Ngủ' },
-  { id: 8, title: 'Hoạt động chiều', class: 'Khối Lá', day: 0, startHour: 14, duration: 1.5, type: 'Học tập' },
-  { id: 9, title: 'Vui chơi tự do', class: 'Toàn trường', day: 0, startHour: 15.5, duration: 0.5, type: 'Vui chơi' },
-  { id: 10, title: 'Hoạt động học tập', class: 'Lá 1', day: 1, startHour: 7.5, duration: 2, type: 'Học tập' },
-  { id: 11, title: 'Tiếng Anh', class: 'Khối Lá', day: 1, startHour: 9, duration: 1, type: 'Học tập' },
-  { id: 12, title: 'Hội thi bé khéo tay', class: 'Toàn trường', day: 4, startHour: 8, duration: 3, type: 'Sự kiện' },
+type Slot = { id:number; className:string; teacher:string; room:string; day:number; period:number; title:string; type:string; status:'Đã xuất bản'|'Nháp'|'Xung đột' }
+const INITIAL: Slot[] = [
+  {id:1,className:'Mầm 1',teacher:'Nguyễn Thị Lan',room:'Phòng 101',day:0,period:2,title:'Hoạt động nhận biết màu sắc',type:'Hoạt động học',status:'Đã xuất bản'},
+  {id:2,className:'Mầm 1',teacher:'Nguyễn Thị Lan',room:'Sân A',day:0,period:4,title:'Vui chơi ngoài trời',type:'Ngoài trời',status:'Đã xuất bản'},
+  {id:3,className:'Mầm 1',teacher:'Phạm Thị Thu',room:'Phòng ăn',day:0,period:6,title:'Bữa trưa',type:'Ăn',status:'Đã xuất bản'},
+  {id:4,className:'Mầm 1',teacher:'Nguyễn Thị Lan',room:'Phòng 101',day:0,period:7,title:'Ngủ trưa',type:'Ngủ',status:'Đã xuất bản'},
+  {id:5,className:'Mầm 1',teacher:'Nguyễn Thị Lan',room:'Phòng 101',day:1,period:2,title:'Phát triển ngôn ngữ',type:'Hoạt động học',status:'Đã xuất bản'},
+  {id:6,className:'Mầm 1',teacher:'Nguyễn Thị Lan',room:'Sân A',day:2,period:4,title:'Vận động',type:'Ngoài trời',status:'Đã xuất bản'},
+  {id:10,className:'Chồi 1',teacher:'Lê Thị Hoa',room:'Sân A',day:2,period:4,title:'Chơi vận động',type:'Ngoài trời',status:'Đã xuất bản'},
+  {id:7,className:'Mầm 2',teacher:'Trần Ngọc Anh',room:'Phòng 102',day:0,period:2,title:'Khám phá thế giới',type:'Hoạt động học',status:'Đã xuất bản'},
+  {id:8,className:'Chồi 1',teacher:'Lê Thị Hoa',room:'Phòng 201',day:1,period:3,title:'Làm quen chữ cái',type:'Hoạt động học',status:'Đã xuất bản'},
+  {id:9,className:'Lá 1',teacher:'Hoàng Thị Linh',room:'Phòng 301',day:2,period:3,title:'Toán tư duy',type:'Hoạt động học',status:'Nháp'},
 ]
 
-export default function LichHoc() {
-  const [view, setView] = useState<'week' | 'day'>('week')
-  const [filterClass, setFilterClass] = useState('Tất cả')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createStep, setCreateStep] = useState(0)
-  const [conflictFound, setConflictFound] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<typeof SCHEDULE[0] | null>(null)
+const blockOf=(className:string)=>CLASSES.find(c=>c.name===className)?.block || ''
 
-  const hourToPixels = (h: number) => {
-    const base = 7
-    return (h - base) * 60
+export default function LichHoc(){
+  const [slots,setSlots]=useState(INITIAL)
+  const [selectedClass,setSelectedClass]=useState('Mầm 1')
+  const [week,setWeek]=useState(38)
+  const [view,setView]=useState<'week'|'day'>('week')
+  const [selected,setSelected]=useState<Slot|null>(null)
+  const [modal,setModal]=useState(false)
+  const [notice,setNotice]=useState('')
+  const [form,setForm]=useState({day:'0',period:'2',duration:'45',title:'',type:'Hoạt động học',teacher:'',room:''})
+
+  const classInfo=CLASSES.find(c=>c.name===selectedClass)
+  const visible=useMemo(()=>slots.filter(s=>s.className===selectedClass),[slots,selectedClass])
+  const periodStart=(periodId:number)=>{const p=PERIODS.find(x=>x.id===periodId); if(!p) return 0; const [h,m]=p.label.split(':').map(Number); return h*60+m}
+  const overlaps=(aStart:number,aDuration:number,bStart:number,bDuration:number)=>aStart < bStart+bDuration && bStart < aStart+aDuration
+  const conflictsFor=(candidate:any, source=slots)=>source.filter(s=>s.id!==candidate.id&&s.day===candidate.day&&overlaps(periodStart(candidate.period),candidate.duration,periodStart(s.period),45)&&((candidate.teacher&&s.teacher&&candidate.teacher===s.teacher)||(candidate.room&&s.room&&candidate.room===s.room)||(candidate.className===s.className)))
+  const allConflictPairs=useMemo(()=>{const pairs:{a:any;b:any;reason:string}[]=[];slots.forEach(a=>{conflictsFor(a).forEach(b=>{if(a.id>=b.id)return;const reasons:string[]=[];if(a.className===b.className)reasons.push('cùng lớp');if(a.teacher&&a.teacher===b.teacher)reasons.push('cùng giáo viên');if(a.room&&a.room===b.room)reasons.push('cùng phòng/khu vực');pairs.push({a,b,reason:reasons.join(' · ')})})});return pairs},[slots])
+  const visibleConflicts=allConflictPairs.filter(x=>x.a.className===selectedClass||x.b.className===selectedClass)
+  const conflicts=visibleConflicts.length
+  const draftCount=slots.filter(s=>s.status==='Nháp' && s.className===selectedClass).length
+  const filled=Math.round((visible.length/Math.max(1,PERIODS.length*DAYS.length))*100)
+  const getConflicts=(day:number,period:number,duration:number,teacher:string,room:string)=>conflictsFor({id:-1,className:selectedClass,day,period,duration,teacher,room})
+  const create=()=>{
+    const day=Number(form.day), period=Number(form.period), duration=Number(form.duration), teacher=form.teacher||classInfo?.teacher||'', room=form.room||classInfo?.room||''
+    if(!form.title.trim()) return setNotice('Cần nhập tên hoạt động.')
+    const found=getConflicts(day,period,duration,teacher,room)
+    if(found.length){setNotice(`Không thể lưu: ${found.map(x=>`${x.className} — ${x.title} (${DAYS[x.day]} ${PERIODS.find(p=>p.id===x.period)?.label})`).join('; ')}. Lịch bị trùng ${found.map(x=>{const r=[];if(x.className===selectedClass)r.push('lớp');if(x.teacher===teacher)r.push('giáo viên');if(x.room===room)r.push('phòng/khu vực');return r.join(', ')}).join(' và ')}.`);return}
+    const next={id:Date.now(),className:selectedClass,teacher,room,day,period,title:form.title,type:form.type,status:'Nháp' as const}
+    setSlots(p=>[...p,next]); setSelected(next); setModal(false); setNotice('Đã tạo lịch nháp. Hệ thống đã kiểm tra trùng lớp, giáo viên và phòng/khu vực.')
   }
+  const publish=()=>{if(visibleConflicts.length){setNotice(`Chưa thể xuất bản: ${visibleConflicts.length} xung đột của ${selectedClass} cần được xử lý.`);return}setSlots(p=>p.map(s=>s.className===selectedClass?{...s,status:'Đã xuất bản' as const}:s));setNotice(`Đã xuất bản lịch tuần ${week} của ${selectedClass}.`)}
+  const copyNextWeek=()=>setNotice(`Đã tạo bản nháp tuần ${week+1} từ lịch hiện tại của ${selectedClass}.`)
+  const remove=()=>{if(!selected)return;setSlots(p=>p.filter(s=>s.id!==selected.id));setSelected(null);setNotice('Đã xóa hoạt động khỏi lịch.')}
 
-  const conflicts = SCHEDULE.filter(e => e.conflict)
+  return <div className="space-y-5 p-6">
+    <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <div><p className="text-xs font-bold uppercase tracking-[.16em] text-rose-500">Điều phối vận hành</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Lịch học & hoạt động</h1><p className="mt-1 text-sm text-slate-500">Xếp lịch theo từng lớp nhưng luôn kiểm tra xung đột trên toàn trường: trùng lớp, trùng giáo viên hoặc trùng phòng/khu vực.</p></div>
+      <div className="flex flex-wrap gap-2"><button onClick={copyNextWeek} className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"><Copy size={16}/> Sao chép tuần</button><button onClick={()=>{setForm({day:'0',period:'2',duration:'45',title:'',type:'Hoạt động học',teacher:classInfo?.teacher||'',room:classInfo?.room||''});setNotice('');setModal(true)}} className="inline-flex h-10 items-center gap-2 rounded-xl bg-rose-500 px-4 text-sm font-semibold text-white shadow-sm hover:bg-rose-600"><Plus size={16}/> Thêm hoạt động</button></div>
+    </header>
 
-  return (
-    <div className="p-6 space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Lịch học & Điều phối</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Tuần 12 · 18 - 23 tháng 11, 2024</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-            {(['week', 'day'] as const).map(v => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  view === v ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-                }`}
-              >
-                {v === 'week' ? 'Tuần' : 'Ngày'}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => { setShowCreateModal(true); setCreateStep(0); setConflictFound(false) }}
-            className="flex items-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600 transition-colors"
-          >
-            <Plus size={15} /> Tạo lịch
-          </button>
-        </div>
-      </div>
+    {notice && <div className="flex items-start justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"><span>{notice}</span><button onClick={()=>setNotice('')}><X size={15}/></button></div>}
 
-      {/* Conflict alert */}
-      {conflicts.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle size={18} className="text-amber-600 mt-0.5 shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-800">{conflicts.length} xung đột lịch phát hiện</p>
-            <p className="text-xs text-amber-700 mt-0.5">Sân trường có 5 lớp cùng sử dụng lúc 09:00 - 10:00 ngày Thứ 2. Sức chứa dự kiến vượt giới hạn.</p>
-          </div>
-          <button className="text-xs text-amber-700 font-medium underline hover:no-underline shrink-0">Giải quyết</button>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <button className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"><ChevronLeft size={16} /></button>
-          <span className="text-sm font-medium text-gray-700">18 - 23 tháng 11</span>
-          <button className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"><ChevronRight size={16} /></button>
-        </div>
-        <select
-          value={filterClass}
-          onChange={e => setFilterClass(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-gray-700"
-        >
-          <option>Tất cả</option>
-          <option>Mầm 1</option>
-          <option>Chồi 1</option>
-          <option>Lá 1</option>
-          <option>Toàn trường</option>
-        </select>
-
-        {/* Legend */}
-        <div className="flex items-center gap-3 ml-auto flex-wrap">
-          {Object.entries(EVENT_TYPE_COLORS).filter(([k]) => k !== 'conflict').map(([type, colors]) => (
-            <div key={type} className="flex items-center gap-1.5">
-              <div className={`w-3 h-3 rounded ${colors.bg} border ${colors.border}`} />
-              <span className="text-xs text-gray-500">{type}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Weekly Calendar */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-gray-100">
-          <div className="px-3 py-3 text-xs text-gray-400 font-medium">Giờ</div>
-          {DAYS.map((day, i) => (
-            <div key={i} className={`px-3 py-3 text-center text-sm font-semibold border-l border-gray-100 ${i === 0 ? 'text-rose-600 bg-rose-50' : 'text-gray-700'}`}>
-              {day}
-              <div className="text-xs font-normal text-gray-400 mt-0.5">{18 + i}/11</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="relative overflow-x-auto">
-          <div className="grid grid-cols-7 min-h-96" style={{ position: 'relative' }}>
-            {/* Time labels */}
-            <div className="border-r border-gray-100">
-              {HOURS.map(h => (
-                <div key={h} className="text-xs text-gray-400 px-3 py-1 border-b border-gray-50" style={{ height: '60px', display: 'flex', alignItems: 'flex-start', paddingTop: '4px' }}>
-                  {HOUR_LABELS[h]}
-                </div>
-              ))}
-            </div>
-
-            {/* Day columns */}
-            {DAYS.map((day, dayIndex) => {
-              const dayEvents = SCHEDULE.filter(e => e.day === dayIndex)
-              return (
-                <div key={dayIndex} className={`border-l border-gray-100 relative ${dayIndex === 0 ? 'bg-rose-50/30' : ''}`}>
-                  {/* Hour lines */}
-                  {HOURS.map(h => (
-                    <div key={h} className="border-b border-gray-50" style={{ height: '60px' }} />
-                  ))}
-                  {/* Events */}
-                  {dayEvents.map(event => {
-                    const colors = event.conflict ? EVENT_TYPE_COLORS['conflict'] : (EVENT_TYPE_COLORS[event.type] || EVENT_TYPE_COLORS['Sinh hoạt'])
-                    const topPx = (event.startHour - 7) * 60
-                    const heightPx = event.duration * 60 - 2
-                    return (
-                      <div
-                        key={event.id}
-                        onClick={() => setSelectedEvent(event === selectedEvent ? null : event)}
-                        className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 cursor-pointer hover:shadow-sm transition-shadow ${colors.bg} ${colors.border} ${event.conflict ? 'border-2' : ''}`}
-                        style={{ top: `${topPx}px`, height: `${heightPx}px`, zIndex: 10 }}
-                        title={event.title}
-                      >
-                        <p className={`text-xs font-semibold leading-tight truncate ${colors.text}`}>{event.title}</p>
-                        <p className="text-xs opacity-70 truncate">{event.class}</p>
-                        {event.conflict && (
-                          <div className="flex items-center gap-0.5 mt-0.5">
-                            <AlertTriangle size={10} className="text-rose-500" />
-                            <span className="text-xs text-rose-500 font-medium">Xung đột</span>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Selected event detail */}
-        {selectedEvent && (
-          <div className={`border-t p-4 flex items-start gap-4 ${selectedEvent.conflict ? 'bg-rose-50 border-rose-200' : 'bg-gray-50 border-gray-100'}`}>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                {selectedEvent.conflict ? (
-                  <AlertCircle size={16} className="text-rose-500" />
-                ) : (
-                  <CheckCircle size={16} className="text-green-500" />
-                )}
-                <p className="font-semibold text-gray-900">{selectedEvent.title}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${selectedEvent.conflict ? 'bg-rose-100 text-rose-600' : 'bg-green-100 text-green-600'}`}>
-                  {selectedEvent.conflict ? 'Xung đột' : 'Bình thường'}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                <span>Lớp: {selectedEvent.class}</span>
-                <span>Giờ: {HOUR_LABELS[selectedEvent.startHour]} - {HOUR_LABELS[selectedEvent.startHour + selectedEvent.duration] || `${selectedEvent.startHour + selectedEvent.duration}:00`}</span>
-                <span>Loại: {selectedEvent.type}</span>
-              </div>
-              {selectedEvent.conflict && selectedEvent.conflictMsg && (
-                <div className="mt-2 p-2.5 bg-white border border-rose-200 rounded-lg">
-                  <p className="text-xs text-rose-700 font-medium">{selectedEvent.conflictMsg}</p>
-                  <p className="text-xs text-rose-500 mt-1">Đề xuất: Chuyển sang khung 10:00 - 11:00 (còn trống cho 3 lớp)</p>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2 shrink-0">
-              {selectedEvent.conflict && (
-                <button className="text-xs px-3 py-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 font-medium transition-colors">
-                  Đổi lịch
-                </button>
-              )}
-              <button onClick={() => setSelectedEvent(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-white"><X size={14} /></button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Create schedule modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="font-bold text-gray-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Tạo lịch hoạt động mới</h3>
-              <button onClick={() => setShowCreateModal(false)} className="p-2 rounded-lg text-gray-400 hover:bg-gray-100"><X size={18} /></button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Lớp *</label>
-                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20">
-                    <option>Chọn lớp</option>
-                    <option>Mầm 1</option><option>Mầm 2</option>
-                    <option>Chồi 1</option><option>Chồi 2</option>
-                    <option>Lá 1</option><option>Lá 2</option>
-                    <option>Toàn trường</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Loại hoạt động *</label>
-                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20">
-                    <option>Học tập</option><option>Ăn</option><option>Ngủ</option>
-                    <option>Vui chơi</option><option>Hoạt động ngoài trời</option>
-                    <option>Sinh hoạt</option><option>Sự kiện</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Giáo viên *</label>
-                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20">
-                    <option>Cô Nguyễn Thị Lan</option>
-                    <option>Cô Trần Ngọc Anh</option>
-                    <option>Cô Lê Thị Hoa</option>
-                    <option>Cô Hoàng Thị Linh</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Phòng / Khu vực *</label>
-                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20">
-                    <option>Phòng 101</option><option>Phòng 201</option>
-                    <option>Phòng 301</option><option>Sân trường</option>
-                    <option>Hội trường</option><option>Phòng ăn</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Ngày *</label>
-                  <input type="date" defaultValue="2024-11-18" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Khung giờ *</label>
-                  <div className="flex gap-2">
-                    <select className="flex-1 border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none">
-                      <option>09:00</option><option>10:00</option><option>11:00</option>
-                    </select>
-                    <span className="self-center text-gray-400 text-xs">đến</span>
-                    <select className="flex-1 border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none">
-                      <option>10:00</option><option>11:00</option><option>12:00</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setConflictFound(true)}
-                className="w-full py-2.5 border-2 border-dashed border-gray-200 rounded-lg text-sm text-gray-500 hover:border-rose-300 hover:text-rose-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <CheckCircle size={15} /> Kiểm tra xung đột
-              </button>
-
-              {conflictFound && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle size={15} className="text-amber-600 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-amber-800">Phát hiện 2 vấn đề</p>
-                      <ul className="text-xs text-amber-700 mt-1 space-y-1">
-                        <li>· Khung giờ này có 5 lớp cùng sử dụng Sân trường. Sức chứa vượt giới hạn (tối đa 3 lớp cùng lúc).</li>
-                        <li>· Giáo viên Nguyễn Thị Lan đang được phân công tại Mầm 1 cùng khung giờ này.</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="bg-white border border-amber-200 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-gray-700 mb-1">Đề xuất khung giờ thay thế:</p>
-                    <div className="flex gap-2">
-                      {['10:30 - 11:30', '14:00 - 15:00'].map(slot => (
-                        <button key={slot} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg font-medium hover:bg-green-200 transition-colors">
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between px-6 pb-6">
-              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
-                Hủy
-              </button>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                disabled={conflictFound}
-                className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  conflictFound ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-rose-500 text-white hover:bg-rose-600'
-                }`}
-              >
-                {conflictFound ? 'Xử lý xung đột trước' : 'Lưu lịch'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Kpi label="Lớp đang quản lý" value={selectedClass} icon={Users}/><Kpi label="Hoạt động đã xếp" value={`${visible.length}/${DAYS.length*PERIODS.length}`} icon={CalendarDays}/><Kpi label="Lịch nháp" value={draftCount} icon={Save}/><Kpi label="Xung đột trong lớp" value={conflicts} icon={AlertTriangle} danger/>
     </div>
-  )
+
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-slate-100 p-4 xl:flex-row xl:items-center">
+        <div className="flex items-center gap-2"><button onClick={()=>setWeek(w=>Math.max(1,w-1))} className="rounded-xl border border-slate-200 p-2 hover:bg-slate-50"><ChevronLeft size={16}/></button><div className="min-w-[125px] text-center"><p className="text-sm font-bold">Tuần {week}</p><p className="text-[11px] text-slate-400">18–23/09/2026</p></div><button onClick={()=>setWeek(w=>w+1)} className="rounded-xl border border-slate-200 p-2 hover:bg-slate-50"><ChevronRight size={16}/></button></div>
+        <div className="h-7 w-px bg-slate-200 hidden xl:block"/>
+        <div className="flex min-w-0 flex-1 items-center gap-2"><Filter size={15} className="text-slate-400"/><select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)} className="h-10 min-w-[190px] rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:border-rose-300">{CLASSES.map(c=><option key={c.id}>{c.name}</option>)}</select><span className="hidden text-xs text-slate-400 md:inline">{blockOf(selectedClass)} · {classInfo?.teacher || 'Chưa phân công'}</span></div>
+        <div className="flex rounded-xl bg-slate-100 p-1"><button onClick={()=>setView('week')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${view==='week'?'bg-white shadow-sm text-slate-800':'text-slate-500'}`}>Tuần</button><button onClick={()=>setView('day')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${view==='day'?'bg-white shadow-sm text-slate-800':'text-slate-500'}`}>Ngày</button></div>
+      </div>
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-4 py-3"><div><p className="text-sm font-bold text-slate-800">{selectedClass}</p><p className="text-[11px] text-slate-400">{classInfo?.room} · {visible.filter(s=>s.status==='Đã xuất bản').length} hoạt động đã xuất bản</p></div><button onClick={publish} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"><Send size={14}/> Xuất bản lịch</button></div>
+      <div className="overflow-x-auto"><div className="min-w-[980px]">
+        <div className="grid grid-cols-[78px_repeat(6,1fr)] border-b border-slate-100"><div className="p-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Tiết</div>{DAYS.map((d,i)=><div key={d} className="border-l border-slate-100 p-3 text-center"><p className="text-xs font-bold text-slate-700">{view==='day' && i!==0?'':d}</p><p className="mt-0.5 text-[10px] text-slate-400">{18+i}/09</p></div>)}</div>
+        <div className="grid grid-cols-[78px_repeat(6,1fr)]"> <div>{PERIODS.map(p=><div key={p.id} className="h-[78px] border-b border-slate-50 px-2 pt-3"><p className="text-[11px] font-bold text-slate-600">{p.label}</p><p className="text-[10px] text-slate-400">{p.end}</p></div>)}</div>{DAYS.map((_,day)=><div key={day} className="border-l border-slate-100">{PERIODS.map(p=>{const slot=visible.find(s=>s.day===day&&s.period===p.id);return <div key={p.id} className="h-[78px] border-b border-slate-50 p-1">{slot?<button onClick={()=>setSelected(slot)} className={`h-full w-full rounded-xl border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${COLORS[slot.type]}`}><div className="flex items-start justify-between gap-1"><span className="line-clamp-2 text-[11px] font-bold">{slot.title}</span>{slot.status==='Nháp'&&<span className="rounded bg-white/80 px-1 py-0.5 text-[8px] font-bold">NHÁP</span>}</div><p className="mt-1 truncate text-[9px] opacity-70">{slot.teacher}</p><p className="truncate text-[9px] opacity-60">{slot.room}</p></button>:<button onClick={()=>{setForm({day:String(day),period:String(p.id),duration:'45',title:'',type:'Hoạt động học',teacher:classInfo?.teacher||'',room:classInfo?.room||''});setModal(true)}} className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-transparent text-slate-200 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-400"><Plus size={14}/></button>}</div>})}</div>)}</div>
+      </div></div>
+    </section>
+
+    <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><h2 className="font-bold">Kiểm tra lịch của lớp</h2><p className="mt-1 text-xs text-slate-400">Kiểm tra chéo toàn trường để tránh một giáo viên hoặc một phòng/khu vực bị xếp hai hoạt động cùng lúc.</p></div><AlertTriangle size={18} className="text-slate-400"/></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Check label="Xung đột lịch" value={conflicts===0?'Không có':`${conflicts} xung đột`} ok={conflicts===0}/><Check label="Mức độ sử dụng lịch" value={`${filled}%`} ok={filled>40}/></div>{visibleConflicts.length>0&&<div className="mt-4 space-y-2">{visibleConflicts.map((x,i)=><div key={i} className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><b>{DAYS[x.a.day]} · {PERIODS.find(p=>p.id===x.a.period)?.label}</b> — {x.a.className} “{x.a.title}” ↔ {x.b.className} “{x.b.title}” · <b>{x.reason}</b></div>)}</div>}</div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><Eye size={17} className="text-slate-400"/><h2 className="font-bold">Quy trình sử dụng</h2></div><ol className="mt-3 space-y-2 text-xs text-slate-500"><li><b className="text-slate-700">01.</b> Chọn lớp cần xếp lịch.</li><li><b className="text-slate-700">02.</b> Thêm hoạt động vào từng ô thời gian.</li><li><b className="text-slate-700">03.</b> Hệ thống kiểm tra trùng lớp, giáo viên và phòng/khu vực trên toàn trường.</li><li><b className="text-slate-700">04.</b> Xử lý hết xung đột rồi mới xuất bản lịch.</li></ol></div>
+    </section>
+
+    <Modal open={modal} onClose={()=>setModal(false)} title="Thêm hoạt động vào lịch" description={`Lớp ${selectedClass} · tuần ${week}`} footer={<><button onClick={()=>setModal(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold">Hủy</button><button onClick={create} className="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white"><Save size={15} className="mr-1 inline"/> Lưu nháp</button></>}>
+      {getConflicts(Number(form.day),Number(form.period),Number(form.duration),form.teacher||classInfo?.teacher||'',form.room||classInfo?.room||'').length>0&&<div className="mb-3 space-y-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700"><b>Phát hiện xung đột:</b>{getConflicts(Number(form.day),Number(form.period),Number(form.duration),form.teacher||classInfo?.teacher||'',form.room||classInfo?.room||'').map(x=><div key={x.id}>• {x.className} — {x.title} · {x.className===selectedClass?'trùng lớp ':''}{x.teacher===(form.teacher||classInfo?.teacher||'')?'trùng giáo viên ':''}{x.room===(form.room||classInfo?.room||'')?'trùng phòng/khu vực':''}</div>)}<span className="block pt-1 font-semibold">Không thể lưu cho đến khi đổi thời gian, giáo viên hoặc phòng/khu vực.</span></div>}<div className="grid gap-3 sm:grid-cols-2"><Field label="Ngày"><select value={form.day} onChange={e=>setForm({...form,day:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10">{DAYS.map((d,i)=><option key={d} value={i}>{d}</option>)}</select></Field><Field label="Tiết"><select value={form.period} onChange={e=>setForm({...form,period:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10">{PERIODS.map(p=><option key={p.id} value={p.id}>{p.label} – {p.end}</option>)}</select></Field><Field label="Tên hoạt động" full><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10" placeholder="Ví dụ: Làm quen với màu sắc"/></Field><Field label="Thời lượng"><select value={form.duration} onChange={e=>setForm({...form,duration:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10"><option value="45">45 phút</option><option value="60">60 phút</option><option value="90">90 phút</option></select></Field><Field label="Loại"><select value={form.type} onChange={e=>setForm({...form,type:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10">{TYPES.map(t=><option key={t}>{t}</option>)}</select></Field><Field label="Giáo viên"><input value={form.teacher} onChange={e=>setForm({...form,teacher:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10"/></Field><Field label="Phòng / khu vực"><input value={form.room} onChange={e=>setForm({...form,room:e.target.value})} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10"/></Field></div>
+    </Modal>
+    <Modal open={!!selected} onClose={()=>setSelected(null)} title={selected?.title||''} description="Thông tin và thao tác với hoạt động đã xếp.">{selected&&<div className="space-y-3"><div className="grid grid-cols-2 gap-3"><Info label="Lớp" value={selected.className}/><Info label="Thời gian" value={`${DAYS[selected.day]} · ${PERIODS.find(p=>p.id===selected.period)?.label}`}/><Info label="Giáo viên" value={selected.teacher}/><Info label="Phòng" value={selected.room}/></div><div className="flex justify-end gap-2 pt-2"><button onClick={remove} className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50">Xóa</button><button onClick={()=>{setSlots(p=>p.map(s=>s.id===selected.id?{...s,status:'Đã xuất bản' as const}:s));setSelected(null);setNotice('Đã xuất bản hoạt động.')}} className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">Xuất bản hoạt động</button></div></div>}</Modal>
+  </div>
 }
+function Kpi({label,value,icon:Icon,danger}:{label:string;value:string|number;icon:any;danger?:boolean}){return <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-medium text-slate-400">{label}</span><Icon size={17} className={danger?'text-rose-500':'text-slate-400'}/></div><p className={`mt-2 text-xl font-bold ${danger?'text-rose-600':'text-slate-900'}`}>{value}</p></div>}
+function Check({label,value,ok}:{label:string;value:string;ok:boolean}){return <div className="rounded-xl border border-slate-100 bg-slate-50 p-3"><p className="text-[11px] text-slate-400">{label}</p><p className={`mt-1 text-sm font-bold ${ok?'text-emerald-600':'text-rose-600'}`}>{ok?'✓ ':''}{value}</p></div>}
+function Field({label,children,full}:{label:string;children:ReactNode;full?:boolean}){return <label className={full?'sm:col-span-2':''}><span className="mb-1.5 block text-xs font-semibold text-slate-600">{label}</span>{children}</label>}
+function Info({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold text-slate-800">{value}</p></div>}
