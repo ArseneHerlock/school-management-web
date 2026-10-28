@@ -10,14 +10,19 @@ export interface ParentProfile {
   cccd: string;
   ngaySinh: string;
   gioiTinh: string;
+  avatar?: string;
+  taiKhoanId?: string;
 }
 
 export interface ChildInfo {
   id: string;
   hoTen: string;
   lop: string;
+  classId?: string;
   khoi: string;
   giaoVienChuNhiem: string;
+  giaoVienUserId?: string;
+  giaoVienStaffId?: string;
   sdtGiaoVien: string;
   avatar: string;
   ngaySinh: string;
@@ -25,21 +30,48 @@ export interface ChildInfo {
   maHocSinh: string;
 }
 
+export const EMPTY_PARENT: ParentProfile = {
+  id: '',
+  hoTen: '',
+  soDienThoai: '',
+  email: '',
+  diaChi: '',
+  moiQuanHe: '',
+  ngheNghiep: '',
+  noiLamViec: '',
+  cccd: '',
+  ngaySinh: '',
+  gioiTinh: '',
+};
+
+export const ACTIVE_CHILD: ChildInfo = {
+  id: '',
+  hoTen: '',
+  lop: '',
+  khoi: '',
+  giaoVienChuNhiem: '',
+  sdtGiaoVien: '',
+  avatar: '',
+  ngaySinh: '',
+  gioiTinh: '',
+  maHocSinh: '',
+};
+
 export interface AttendanceDay {
   dayOfWeek: string;
-  status: 'present' | 'leave' | 'ongoing' | 'absent';
+  status: "present" | "leave" | "ongoing" | "absent";
   label: string;
   symbol: string;
 }
 
 export interface AbsenceRequest {
   id: string;
-  reasonCategory: 'sick' | 'family' | 'travel' | 'other';
+  reasonCategory: "sick" | "family" | "travel" | "other";
   reasonTitle: string;
   fromDate: string;
   toDate: string;
   note: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
 
@@ -47,7 +79,7 @@ export interface MomentItem {
   id: string;
   title: string;
   imageUrl: string;
-  category: 'child' | 'class';
+  category: "child" | "class";
   categoryLabel: string;
   date: string;
   likes: number;
@@ -55,7 +87,7 @@ export interface MomentItem {
 }
 
 export interface NewsItem {
-  id: number;
+  id: string;
   title: string;
   category: string;
   date: string;
@@ -68,7 +100,7 @@ export interface NewsItem {
 
 export interface ChatMessage {
   id: string;
-  sender: 'teacher' | 'parent';
+  sender: "teacher" | "parent";
   senderName: string;
   text: string;
   time: string;
@@ -86,5 +118,5 @@ export interface TuitionPaymentHistory {
   date: string;
   method: string;
   amount: number;
-  status: 'paid' | 'pending';
+  status: "paid" | "pending";
 }

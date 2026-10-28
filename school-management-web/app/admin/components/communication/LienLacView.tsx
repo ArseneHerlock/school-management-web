@@ -1,21 +1,682 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
-import { Bell, Check, CheckCheck, Filter, MessageCircle, Paperclip, Search, Send, Users, X } from 'lucide-react'
-import { MESSAGES, NOTIFICATIONS, CHAT_MESSAGES } from '../../data'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ArrowLeft,
+  ChevronRight,
+  Filter,
+  Loader2,
+  MessageCircle,
+  RefreshCw,
+  Search,
+  Send,
+  Users,
+  Wifi,
+  WifiOff,
+  X,
+} from 'lucide-react'
+import { currentUser } from '@/services/client'
+import { createHubConnection } from '@/services/hubs'
+import { getParents } from '@/services/parents'
+import { getStaff } from '@/services/staff'
+import { getClasses } from '@/services/classes'
+import { getGrades } from '@/services/grades'
+import { getStudentParentLinks } from '@/services/students'
+import {
+  getMyConversations,
+  getOrCreateConversation,
+  getConversationMessages,
+  sendConversationMessage,
+} from '@/services/communication'
 
-const ROLE_OPTIONS=['Tất cả','Phụ huynh','Giáo viên','Ban giám hiệu']
-const CLASS_OPTIONS=['Tất cả lớp','Mầm 1','Mầm 2','Chồi 1','Chồi 2','Lá 1','Lá 2']
-export default function LienLac(){
- const [tab,setTab]=useState<'messages'|'notifications'>('messages'); const [search,setSearch]=useState(''); const [role,setRole]=useState('Tất cả'); const [classFilter,setClassFilter]=useState('Tất cả lớp'); const [unreadOnly,setUnreadOnly]=useState(false); const [selected,setSelected]=useState(MESSAGES[0]); const [messages,setMessages]=useState(CHAT_MESSAGES); const [input,setInput]=useState(''); const [notifications,setNotifications]=useState(NOTIFICATIONS); const fileRef=useRef<HTMLInputElement>(null)
- const filtered=useMemo(()=>MESSAGES.filter(m=>(role==='Tất cả'||m.role.includes(role))&&(search===''||m.from.toLowerCase().includes(search.toLowerCase())||m.preview.toLowerCase().includes(search.toLowerCase()))&&(classFilter==='Tất cả lớp'||m.preview.includes(classFilter))&&(!unreadOnly||m.unread>0)),[search,role,classFilter,unreadOnly])
- const unread=notifications.filter(n=>!n.read).length
- const send=()=>{if(!input.trim())return;setMessages(p=>[...p,{id:`m-${Date.now()}`,sender:'Admin',content:input.trim(),time:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),isMe:true}]);setInput('')}
- const markAll=()=>setNotifications(p=>p.map(n=>({...n,read:true})))
- return <div className="space-y-5 p-6"><div><p className="mb-1 text-xs font-bold uppercase tracking-[.15em] text-rose-500">Trung tâm giao tiếp</p><h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Liên lạc</h1><p className="mt-1.5 text-sm text-slate-500">Quản lý hội thoại 1–1 và thông báo. Có bộ lọc theo đối tượng, lớp và trạng thái chưa đọc.</p></div>
- <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-200/80 bg-white p-2 shadow-sm"><button onClick={()=>setTab('messages')} className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab==='messages'?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`}><MessageCircle size={14} className="mr-2 inline"/>Tin nhắn</button><button onClick={()=>setTab('notifications')} className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab==='notifications'?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`}><Bell size={14} className="mr-2 inline"/>Thông báo {unread>0&&<span className="ml-1 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] text-rose-600">{unread}</span>}</button></div>
- {tab==='messages'?<div className="grid h-[calc(100vh-300px)] min-h-[560px] grid-cols-[320px_1fr] gap-4"><section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"><div className="space-y-2 border-b border-slate-100 p-3"><div className="relative"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Tìm tên hoặc nội dung..." className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none focus:bg-white"/></div><div className="flex gap-2"><select value={role} onChange={e=>setRole(e.target.value)} className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 px-2 text-xs"><option>Tất cả</option><option>Phụ huynh</option><option>Giáo viên</option><option>Ban giám hiệu</option></select><select value={classFilter} onChange={e=>setClassFilter(e.target.value)} className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 px-2 text-xs">{CLASS_OPTIONS.map(c=><option key={c}>{c}</option>)}</select></div><button onClick={()=>setUnreadOnly(v=>!v)} className={`flex items-center gap-2 text-xs font-semibold ${unreadOnly?'text-rose-600':'text-slate-500'}`}><Filter size={13}/>Chỉ chưa đọc {unreadOnly?'✓':''}</button></div><div className="min-h-0 flex-1 overflow-y-auto divide-y divide-slate-100">{filtered.map(m=><button key={m.id} onClick={()=>setSelected(m)} className={`flex w-full items-start gap-3 p-4 text-left hover:bg-slate-50 ${selected.id===m.id?'bg-rose-50/70':''}`}><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${selected.id===m.id?'bg-rose-100 text-rose-700':'bg-slate-100 text-slate-600'}`}>{m.avatar}</div><div className="min-w-0 flex-1"><div className="flex gap-2"><p className="truncate text-sm font-bold text-slate-800">{m.from}</p><span className="ml-auto text-[10px] text-slate-400">{m.time}</span></div><p className="text-[11px] text-slate-400">{m.role}</p><p className="mt-1 truncate text-xs text-slate-500">{m.preview}</p></div>{m.unread>0&&<span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{m.unread}</span>}</button>)}{filtered.length===0&&<div className="p-8 text-center text-xs text-slate-400">Không có cuộc trò chuyện phù hợp.</div>}</div></section>
- <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"><div className="flex items-center gap-3 border-b border-slate-100 p-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-xs font-bold text-rose-600">{selected.avatar}</div><div><p className="text-sm font-bold text-slate-800">{selected.from}</p><p className="text-xs text-slate-400">{selected.role}</p></div><span className="ml-auto rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">Hội thoại 1–1</span></div><div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-4">{messages.map(m=><div key={m.id} className={`flex ${m.isMe?'justify-end':'justify-start'}`}><div className={`max-w-[70%] ${m.isMe?'items-end':'items-start'} flex flex-col`}><div className={`rounded-2xl px-4 py-2.5 text-sm ${m.isMe?'rounded-br-sm bg-rose-500 text-white':'rounded-bl-sm bg-white text-slate-700 shadow-sm'}`}>{m.content}</div><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">{m.time}{m.isMe&&<CheckCheck size={11}/>}</span></div></div>)}</div><div className="border-t border-slate-100 p-3"><input ref={fileRef} type="file" className="hidden" onChange={e=>e.target.files?.[0]&&setInput(v=>v||`[Tệp đính kèm] ${e.target.files?.[0]?.name}`)}/><div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1.5"><button onClick={()=>fileRef.current?.click()} className="rounded-lg p-2 text-slate-400 hover:bg-white"><Paperclip size={16}/></button><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} placeholder="Nhập tin nhắn..." className="flex-1 bg-transparent px-2 text-sm outline-none"/><button onClick={send} className="rounded-lg bg-rose-500 p-2 text-white hover:bg-rose-600"><Send size={15}/></button></div></div></section></div>:
- <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-100 p-5"><div><h2 className="font-bold text-slate-900">Thông báo</h2><p className="mt-1 text-xs text-slate-400">{unread} thông báo chưa đọc</p></div><button onClick={markAll} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"><CheckCheck size={14}/>Đánh dấu tất cả đã đọc</button></div><div className="max-h-[560px] overflow-y-auto divide-y divide-slate-100">{notifications.map(n=><div key={n.id} className={`flex items-start gap-4 p-4 ${!n.read?'bg-blue-50/30':''}`}><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><Bell size={15}/></div><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="text-sm font-semibold text-slate-800">{n.title}</p>{!n.read&&<span className="h-2 w-2 rounded-full bg-rose-500"/>}</div><p className="mt-1 text-xs text-slate-500">{n.sub}</p><p className="mt-1 text-[10px] text-slate-400">{n.time}</p></div>{!n.read&&<button onClick={()=>setNotifications(p=>p.map(x=>x.id===n.id?{...x,read:true}:x))} className="rounded-lg p-2 text-slate-400 hover:bg-white" title="Đánh dấu đã đọc"><Check size={15}/></button>}<button onClick={()=>setNotifications(p=>p.filter(x=>x.id!==n.id))} className="rounded-lg p-2 text-slate-300 hover:bg-slate-100 hover:text-slate-600" title="Xóa thông báo"><X size={15}/></button></div>)}</div></section>}
- </div>
+type RawRecord = Record<string, any>
+
+interface ContactPerson {
+  accountId: string
+  name: string
+  role: 'PHU_HUYNH' | 'GIAO_VIEN'
+  classIds: string[]
+  gradeIds: string[]
+  classNames: string[]
+  conversation?: RawRecord
+}
+
+/**
+ * Chuẩn hóa dữ liệu mảng an toàn
+ */
+function extractArrayData(responseValue: unknown): RawRecord[] {
+  if (Array.isArray(responseValue)) {
+    return responseValue as RawRecord[]
+  }
+  if (responseValue && typeof responseValue === 'object') {
+    const objectMap = responseValue as { items?: unknown }
+    if (Array.isArray(objectMap.items)) {
+      return objectMap.items as RawRecord[]
+    }
+  }
+  return []
+}
+
+/**
+ * Lấy ID cuộc trò chuyện từ đối tượng conversation
+ */
+function getConversationId(conversationObj: RawRecord | null | undefined): string {
+  if (!conversationObj) {
+    return ''
+  }
+  return String(
+    conversationObj.messageConversationId ||
+      conversationObj.MessageConversationId ||
+      conversationObj.id ||
+      conversationObj.Id ||
+      ''
+  )
+}
+
+/**
+ * Lấy nội dung văn bản của tin nhắn
+ */
+function getMessageText(messageObj: RawRecord): string {
+  return String(
+    messageObj.messageContent ??
+      messageObj.MessageContent ??
+      messageObj.content ??
+      messageObj.Content ??
+      ''
+  )
+}
+
+/**
+ * Lấy ID người gửi tin nhắn
+ */
+function getSenderUserId(messageObj: RawRecord): string {
+  return String(messageObj.senderUserId ?? messageObj.SenderUserId ?? '')
+}
+
+/**
+ * Lấy 2 chữ cái viết tắt của tên người liên hệ để làm avatar
+ */
+function getInitials(fullName: string): string {
+  const words = fullName.trim().split(/\s+/)
+  if (words.length === 0) {
+    return 'ND'
+  }
+  const initialsChars = words
+    .slice(-2)
+    .map(function (word) {
+      return word[0]
+    })
+    .join('')
+    .toUpperCase()
+
+  return initialsChars || 'ND'
+}
+
+export default function LienLacView() {
+  // Danh sách danh bạ và cuộc trò chuyện được chọn
+  const [contactsList, setContactsList] = useState<ContactPerson[]>([])
+  const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null)
+  const [messagesList, setMessagesList] = useState<RawRecord[]>([])
+
+  // Danh mục lớp và khối
+  const [classesList, setClassesList] = useState<RawRecord[]>([])
+  const [gradesList, setGradesList] = useState<RawRecord[]>([])
+
+  // Các trường tìm kiếm và bộ lọc
+  const [searchKeyword, setSearchKeyword] = useState<string>('')
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('ALL')
+  const [selectedClassId, setSelectedClassId] = useState<string>('ALL')
+  const [selectedGradeId, setSelectedGradeId] = useState<string>('ALL')
+
+  // Trạng thái nhập tin nhắn và tải
+  const [inputMessageText, setInputMessageText] = useState<string>('')
+  const [isLoadingContacts, setIsLoadingContacts] = useState<boolean>(true)
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false)
+  const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [isConnectedToHub, setIsConnectedToHub] = useState<boolean>(false)
+
+  const selectedContactRef = useRef<ContactPerson | null>(null)
+  const currentUserId = String(currentUser()?.id || '')
+
+  useEffect(() => {
+    selectedContactRef.current = selectedContact
+  }, [selectedContact])
+
+  /**
+   * Tải toàn bộ danh bạ phụ huynh, giáo viên, lớp, khối và danh sách cuộc hội thoại
+   */
+  async function loadContactsDirectory(): Promise<void> {
+    setIsLoadingContacts(true)
+    try {
+      const [
+        parentsResponse,
+        staffResponse,
+        classesResponse,
+        gradesResponse,
+        conversationsResponse,
+        allLinksResponse,
+      ] = await Promise.all([
+        getParents(),
+        getStaff(),
+        getClasses(),
+        getGrades(),
+        getMyConversations(),
+        getStudentParentLinks(),
+      ])
+
+      const parentsData = extractArrayData(parentsResponse)
+      const staffData = extractArrayData(staffResponse)
+      const classesData = extractArrayData(classesResponse)
+      const gradesData = extractArrayData(gradesResponse)
+      const conversationsData = extractArrayData(conversationsResponse)
+      const linksData = extractArrayData(allLinksResponse)
+
+      setClassesList(classesData)
+      setGradesList(gradesData)
+
+      // Bản đồ liên kết học sinh - phụ huynh
+      const parentChildrenMap: Record<string, any[]> = {}
+      linksData.forEach(function (linkItem) {
+        const parentId = String(linkItem.parentId)
+        if (!parentChildrenMap[parentId]) {
+          parentChildrenMap[parentId] = []
+        }
+        parentChildrenMap[parentId].push(linkItem)
+      })
+
+      // Chuyển đổi dữ liệu phụ huynh thành danh bạ liên lạc
+      const parentContacts = parentsData.map(function (parentItem) {
+        const accountId = String(parentItem.taiKhoanId || parentItem.TaiKhoanId || '')
+        const parentId = String(parentItem.id || parentItem.Id || '')
+        const children = parentChildrenMap[parentId] || []
+        const linkedClassIds = children
+          .map(function (child) {
+            return String(child.lopId || child.LopId || '')
+          })
+          .filter(Boolean)
+
+        const ownClasses = classesData.filter(function (classItem) {
+          return linkedClassIds.includes(String(classItem.id || classItem.Id))
+        })
+
+        const matchedConversation = conversationsData.find(function (conversationItem) {
+          const userA = String(conversationItem.userAId || conversationItem.UserAId)
+          const userB = String(conversationItem.userBId || conversationItem.UserBId)
+          return userA === accountId || userB === accountId
+        })
+
+        return {
+          accountId: accountId,
+          name: String(parentItem.hoTen || parentItem.HoTen || 'Phụ huynh'),
+          role: 'PHU_HUYNH' as const,
+          classIds: linkedClassIds,
+          gradeIds: ownClasses.map(function (item) {
+            return String(item.khoiId || item.KhoiId || '')
+          }),
+          classNames: ownClasses.map(function (item) {
+            return String(item.tenLop || item.TenLop || '')
+          }),
+          conversation: matchedConversation,
+        }
+      })
+
+      // Chuyển đổi dữ liệu nhân sự/giáo viên thành danh bạ liên lạc
+      const teacherContacts = staffData.map(function (staffItem) {
+        const staffId = String(staffItem.staffId || staffItem.StaffId || '')
+        const accountId = String(staffItem.userId || staffItem.UserId || '')
+
+        const assignedClasses = classesData.filter(function (classItem) {
+          return (
+            String(classItem.giaoVienChuNhiemId || classItem.GiaoVienChuNhiemId) === staffId
+          )
+        })
+
+        const matchedConversation = conversationsData.find(function (conversationItem) {
+          const userA = String(conversationItem.userAId || conversationItem.UserAId)
+          const userB = String(conversationItem.userBId || conversationItem.UserBId)
+          return userA === accountId || userB === accountId
+        })
+
+        return {
+          accountId: accountId,
+          name: String(staffItem.fullName || staffItem.FullName || 'Giáo viên'),
+          role: 'GIAO_VIEN' as const,
+          classIds: assignedClasses.map(function (item) {
+            return String(item.id || item.Id)
+          }),
+          gradeIds: assignedClasses.map(function (item) {
+            return String(item.khoiId || item.KhoiId || '')
+          }),
+          classNames: assignedClasses.map(function (item) {
+            return String(item.tenLop || item.TenLop || '')
+          }),
+          conversation: matchedConversation,
+        }
+      })
+
+      // Loại bỏ chính mình và những người chưa có tài khoản đăng nhập
+      const combinedContacts = [...parentContacts, ...teacherContacts].filter(function (contact) {
+        return contact.accountId && contact.accountId !== currentUserId
+      })
+
+      setContactsList(combinedContacts)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không tải được danh bạ liên lạc'
+      setErrorMessage(message)
+    } finally {
+      setIsLoadingContacts(false)
+    }
+  }
+
+  // Kết nối SignalR Hub cho tin nhắn thời gian thực
+  useEffect(() => {
+    loadContactsDirectory()
+
+    const signalRHub = createHubConnection('chat')
+
+    function handleReceiveRealtimeMessage(payload: RawRecord, maybeMessage?: RawRecord) {
+      const incomingMessage = maybeMessage || payload
+      const currentConversationId = getConversationId(
+        selectedContactRef.current?.conversation
+      )
+      if (getConversationId(incomingMessage) === currentConversationId) {
+        setMessagesList(function (previousMessages) {
+          return [...previousMessages, incomingMessage]
+        })
+      }
+    }
+
+    signalRHub.on('ReceiveMessage', handleReceiveRealtimeMessage)
+    signalRHub.on('MessageReceived', handleReceiveRealtimeMessage)
+
+    let isDisposed = false
+    signalRHub
+      .start()
+      .then(function () {
+        if (!isDisposed) {
+          setIsConnectedToHub(true)
+        }
+      })
+      .catch(function () {
+        setIsConnectedToHub(false)
+      })
+
+    return function cleanup() {
+      isDisposed = true
+      signalRHub.off('ReceiveMessage', handleReceiveRealtimeMessage)
+      signalRHub.off('MessageReceived', handleReceiveRealtimeMessage)
+      setIsConnectedToHub(false)
+      if (signalRHub.state === 'Connected') {
+        signalRHub.stop()
+      }
+    }
+  }, [])
+
+  /**
+   * Lọc danh sách liên lạc theo từ khóa, vai trò, lớp và khối
+   */
+  const filteredContacts = useMemo(() => {
+    const keyword = searchKeyword.toLowerCase().trim()
+
+    return contactsList.filter(function (contactItem) {
+      const isKeywordMatch =
+        !keyword ||
+        `${contactItem.name} ${contactItem.classNames.join(' ')}`
+          .toLowerCase()
+          .includes(keyword)
+
+      const isRoleMatch =
+        selectedRoleFilter === 'ALL' || contactItem.role === selectedRoleFilter
+
+      const isClassMatch =
+        selectedClassId === 'ALL' || contactItem.classIds.includes(selectedClassId)
+
+      const isGradeMatch =
+        selectedGradeId === 'ALL' || contactItem.gradeIds.includes(selectedGradeId)
+
+      return isKeywordMatch && isRoleMatch && isClassMatch && isGradeMatch
+    })
+  }, [contactsList, searchKeyword, selectedRoleFilter, selectedClassId, selectedGradeId])
+
+  /**
+   * Mở cuộc hội thoại với một người liên hệ
+   */
+  async function handleOpenConversation(contactItem: ContactPerson): Promise<void> {
+    try {
+      let activeConversation = contactItem.conversation
+
+      // Nếu chưa có hội thoại, tự động tạo mới qua Backend CommunicationService
+      if (!activeConversation) {
+        activeConversation = await getOrCreateConversation(contactItem.accountId)
+
+        setContactsList(function (previousList) {
+          return previousList.map(function (item) {
+            if (item.accountId === contactItem.accountId) {
+              return { ...item, conversation: activeConversation }
+            }
+            return item
+          })
+        })
+      }
+
+      const updatedContact: ContactPerson = {
+        ...contactItem,
+        conversation: activeConversation,
+      }
+
+      setSelectedContact(updatedContact)
+      selectedContactRef.current = updatedContact
+
+      // Tải lịch sử tin nhắn của cuộc hội thoại
+      setIsLoadingMessages(true)
+      const conversationId = getConversationId(activeConversation)
+      const rawMessages = await getConversationMessages(conversationId)
+      setMessagesList(extractArrayData(rawMessages))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không mở được hội thoại'
+      setErrorMessage(message)
+    } finally {
+      setIsLoadingMessages(false)
+    }
+  }
+
+  /**
+   * Gửi tin nhắn mới trong cuộc trò chuyện
+   */
+  async function handleSendMessage(): Promise<void> {
+    const content = inputMessageText.trim()
+    const conversationId = getConversationId(selectedContact?.conversation)
+
+    if (!content || !conversationId || isSendingMessage) {
+      return
+    }
+
+    setIsSendingMessage(true)
+    try {
+      await sendConversationMessage({
+        messageConversationId: conversationId,
+        messageContent: content,
+        messageType: 0,
+      })
+
+      setInputMessageText('')
+
+      // Tải lại tin nhắn mới nhất
+      const updatedMessages = await getConversationMessages(conversationId)
+      setMessagesList(extractArrayData(updatedMessages))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không gửi được tin nhắn'
+      setErrorMessage(message)
+    } finally {
+      setIsSendingMessage(false)
+    }
+  }
+
+  return (
+    <section className="flex h-[calc(100vh-120px)] flex-col gap-4 overflow-hidden lg:h-[calc(100vh-136px)]">
+      {/* Tiêu đề */}
+      <header className="flex shrink-0 items-center justify-between">
+        <div>
+          <p className="admin-eyebrow">LIÊN LẠC</p>
+          <h1 className="admin-title">Danh bạ liên lạc</h1>
+          <p className="admin-subtitle">Lọc danh bạ trước khi mở khung chat.</p>
+        </div>
+        <button
+          onClick={loadContactsDirectory}
+          className="admin-btn admin-btn-secondary"
+        >
+          <RefreshCw size={16} /> Làm mới
+        </button>
+      </header>
+
+      {/* Thông báo lỗi */}
+      {errorMessage && (
+        <div className="admin-alert shrink-0">
+          {errorMessage}
+          <button onClick={() => setErrorMessage('')}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {!selectedContact ? (
+        <>
+          {/* Bộ lọc danh bạ */}
+          <div className="admin-card shrink-0 space-y-3 p-4">
+            <div className="flex items-center gap-2 text-sm font-black text-slate-700">
+              <Filter size={17} className="text-emerald-600" /> Bộ lọc liên lạc
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="relative">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  className="admin-input pl-10"
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                  placeholder="Tìm tên người liên lạc..."
+                />
+              </div>
+
+              <select
+                className="admin-input"
+                value={selectedClassId}
+                onChange={(event) => setSelectedClassId(event.target.value)}
+              >
+                <option value="ALL">Tất cả lớp</option>
+                {classesList.map(function (classItem) {
+                  const classId = classItem.id || classItem.Id
+                  const className = classItem.tenLop || classItem.TenLop
+                  return (
+                    <option key={classId} value={classId}>
+                      {className}
+                    </option>
+                  )
+                })}
+              </select>
+
+              <select
+                className="admin-input"
+                value={selectedGradeId}
+                onChange={(event) => setSelectedGradeId(event.target.value)}
+              >
+                <option value="ALL">Tất cả khối</option>
+                {gradesList.map(function (gradeItem) {
+                  const gradeId = gradeItem.id || gradeItem.Id
+                  const gradeName = gradeItem.tenKhoi || gradeItem.TenKhoi
+                  return (
+                    <option key={gradeId} value={gradeId}>
+                      {gradeName}
+                    </option>
+                  )
+                })}
+              </select>
+
+              <select
+                className="admin-input"
+                value={selectedRoleFilter}
+                onChange={(event) => setSelectedRoleFilter(event.target.value)}
+              >
+                <option value="ALL">Tất cả vai trò</option>
+                <option value="PHU_HUYNH">Phụ huynh</option>
+                <option value="GIAO_VIEN">Giáo viên</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <Users size={15} />
+              Hiển thị {filteredContacts.length} người
+            </div>
+          </div>
+
+          {/* Lưới danh bạ liên lạc */}
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {isLoadingContacts ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="animate-spin text-emerald-500" />
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredContacts.map(function (person) {
+                  return (
+                    <button
+                      key={`${person.role}-${person.accountId}`}
+                      onClick={() => handleOpenConversation(person)}
+                      className="group admin-card p-5 text-left transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 font-black text-emerald-700">
+                          {getInitials(person.name)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="truncate font-black text-slate-800">
+                            {person.name}
+                          </h2>
+                          <p className="mt-1 text-xs font-bold text-emerald-600">
+                            {person.role === 'PHU_HUYNH' ? 'Phụ huynh' : 'Giáo viên'}
+                          </p>
+                        </div>
+                        <ChevronRight
+                          size={18}
+                          className="text-slate-300 group-hover:text-emerald-600"
+                        />
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-1.5">
+                        {person.classNames.length > 0 ? (
+                          person.classNames.map(function (className) {
+                            return (
+                              <span key={className} className="admin-chip">
+                                {className}
+                              </span>
+                            )
+                          })
+                        ) : (
+                          <span className="text-xs text-slate-400">
+                            Chưa có lớp liên kết
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="mt-3 truncate text-xs text-slate-400">
+                        {person.conversation ? 'Đã có hội thoại' : 'Chưa mở hội thoại'}
+                      </p>
+                    </button>
+                  )
+                })}
+
+                {filteredContacts.length === 0 && (
+                  <div className="admin-card p-12 text-center text-sm text-slate-400 col-span-full">
+                    Không tìm thấy người phù hợp.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Giao diện khung Chat */
+        <div className="admin-card flex min-h-0 flex-1 flex-col overflow-hidden">
+          <header className="flex shrink-0 items-center gap-3 border-b border-emerald-100 bg-white p-4">
+            <button
+              onClick={() => setSelectedContact(null)}
+              className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 font-black text-emerald-700">
+              {getInitials(selectedContact.name)}
+            </div>
+            <div>
+              <h2 className="font-black text-slate-800">{selectedContact.name}</h2>
+              <p className="text-xs text-emerald-600">
+                {selectedContact.role === 'PHU_HUYNH' ? 'Phụ huynh' : 'Giáo viên'}
+                {selectedContact.classNames.length > 0 &&
+                  ` · ${selectedContact.classNames.join(', ')}`}
+              </p>
+            </div>
+            <span className="ml-auto flex items-center gap-1 text-xs text-slate-400">
+              {isConnectedToHub ? (
+                <>
+                  <Wifi size={14} className="text-emerald-500" />
+                  Đang kết nối
+                </>
+              ) : (
+                <>
+                  <WifiOff size={14} />
+                  Ngoại tuyến
+                </>
+              )}
+            </span>
+          </header>
+
+          <div className="flex min-h-0 flex-1 flex-col bg-slate-50">
+            {/* Lịch sử tin nhắn */}
+            <div className="min-h-0 flex-1 overflow-y-auto p-5">
+              {isLoadingMessages ? (
+                <Loader2 className="mx-auto my-16 animate-spin text-emerald-500" />
+              ) : messagesList.length > 0 ? (
+                <div className="space-y-2">
+                  {messagesList.map(function (messageItem, index) {
+                    const messageId =
+                      messageItem.messageId ||
+                      messageItem.MessageId ||
+                      messageItem.id ||
+                      index
+                    const isMyMessage = getSenderUserId(messageItem) === currentUserId
+
+                    return (
+                      <div
+                        key={messageId}
+                        className={`max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                          isMyMessage
+                            ? 'ml-auto bg-emerald-600 text-white'
+                            : 'bg-white text-slate-700 shadow-sm'
+                        }`}
+                      >
+                        {getMessageText(messageItem)}
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="py-20 text-center text-sm text-slate-400">
+                  <MessageCircle className="mx-auto mb-2 text-slate-300" />
+                  Chưa có tin nhắn trong hội thoại này
+                </div>
+              )}
+            </div>
+
+            {/* Thanh soạn thảo và gửi tin nhắn */}
+            <div className="flex shrink-0 gap-2 border-t border-slate-200 bg-white p-3">
+              <textarea
+                rows={1}
+                className="min-w-0 flex-1 resize-none rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-emerald-400"
+                value={inputMessageText}
+                onChange={(event) => setInputMessageText(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                placeholder="Nhập tin nhắn..."
+              />
+              <button
+                disabled={!inputMessageText.trim() || isSendingMessage}
+                onClick={handleSendMessage}
+                className="rounded-xl bg-emerald-600 px-4 text-white disabled:opacity-40"
+              >
+                <Send size={17} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
 }

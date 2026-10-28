@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import Lop from "../pages/Lop";
+
+export default function Page() {
+  return <Lop />;
+}

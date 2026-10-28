@@ -1,0 +1,22 @@
+export * from "./types";
+export * from "./client";
+export * from "./auth";
+export * from "./students";
+export * from "./parents";
+export * from "./staff";
+export * from "./classes";
+export * from "./grades";
+export * from "./attendance";
+export * from "./schedule";
+export * from "./billing";
+export * from "./news";
+export * from "./health";
+export * from "./leave";
+export * from "./development";
+export * from "./learning";
+export * from "./media";
+export * from "./enrollment";
+export * from "./communication";
+export * from "./hubs";
+
+export { api as default, api } from "./client";

@@ -1,13 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { ParentProfile } from '../types';
+import React, { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { Camera, Lock, LogOut, User, Check, AlertCircle, Loader2, X } from 'lucide-react'
+import { ParentProfile } from '../types'
+import { ParentProfileForm } from './ParentProfileForm'
+import { currentUser, logout, uploadMedia, changeUserPassword, saveParentProfile } from '@/services'
 
 interface ParentProfileModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  parent: ParentProfile;
-  onSave: (updated: ParentProfile) => void;
+  isOpen: boolean
+  onClose: () => void
+  parent: ParentProfile
+  onSave: (updated: ParentProfile) => void
 }
 
 export default function ParentProfileModal({
@@ -16,24 +20,120 @@ export default function ParentProfileModal({
   parent,
   onSave,
 }: ParentProfileModalProps) {
-  const [formData, setFormData] = useState<ParentProfile>(parent);
-  const [isEditing, setIsEditing] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'account'>('profile')
+  const [formData, setFormData] = useState<ParentProfile>(parent)
+  const [isEditing, setIsEditing] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
-  if (!isOpen) return null;
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    setFormData(parent)
+  }, [parent])
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-    setIsEditing(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-  };
+  if (!isOpen) return null
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingAvatar(true)
+    setErrorMsg('')
+    try {
+      let avatarUrl = ''
+      try {
+        const uploadRes = await uploadMedia(file)
+        avatarUrl = uploadRes?.url || uploadRes?.fileUrl || ''
+      } catch {
+        avatarUrl = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(file)
+        })
+      }
+
+      const user = currentUser()
+      await saveParentProfile({ id: formData.id, taiKhoanId: user?.id, avatar: avatarUrl })
+
+      const updated = { ...formData, avatar: avatarUrl }
+      setFormData(updated)
+      onSave(updated)
+      setSaveSuccess('Đã cập nhật ảnh đại diện thành công vào CSDL!')
+      setTimeout(() => setSaveSuccess(''), 4000)
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi tải ảnh đại diện')
+    } finally {
+      setUploadingAvatar(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorMsg('')
+    try {
+      const user = currentUser()
+      await saveParentProfile({ ...formData, taiKhoanId: user?.id })
+
+      onSave(formData)
+      setIsEditing(false)
+      setSaveSuccess('Đã lưu thông tin phụ huynh thành công vào CSDL!')
+      setTimeout(() => setSaveSuccess(''), 4000)
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi khi lưu thông tin')
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorMsg('')
+    if (newPassword.length < 6) {
+      setErrorMsg('Mật khẩu mới phải có ít nhất 6 ký tự.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('Mật khẩu mới và xác nhận mật khẩu không khớp.')
+      return
+    }
+
+    setChangingPassword(true)
+    try {
+      const user = currentUser()
+      if (!user?.id) throw new Error('Không xác định được tài khoản')
+
+      await changeUserPassword(user.id, currentPassword, newPassword)
+
+      setSaveSuccess('Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => setSaveSuccess(''), 4000)
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Không thể đổi mật khẩu. Vui lòng kiểm tra lại mật khẩu hiện tại.')
+    } finally {
+      setChangingPassword(false)
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.replace('/login')
+  }
 
   return (
     <div
@@ -41,23 +141,54 @@ export default function ParentProfileModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl relative border border-slate-200 flex flex-col"
+        className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-hidden shadow-2xl relative border border-slate-200 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header with Avatar and Basic Info */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-sky-50 to-indigo-50">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-black text-lg flex items-center justify-center shadow-xs">
-              {formData.hoTen.split(' ').slice(-1)[0]?.slice(0, 2).toUpperCase() || 'PH'}
+            <div className="relative group">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md overflow-hidden border-2 border-white">
+                {formData.avatar ? (
+                  <img src={formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  formData.hoTen
+                    .split(' ')
+                    .slice(-1)[0]
+                    ?.slice(0, 2)
+                    .toUpperCase() || 'PH'
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center shadow hover:bg-sky-600 transition cursor-pointer"
+                title="Thay đổi ảnh đại diện (Lưu CSDL)"
+              >
+                {uploadingAvatar ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarSelect}
+              />
             </div>
+
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-extrabold text-slate-800">{formData.hoTen}</h3>
+                <h3 className="text-lg font-extrabold text-slate-800">
+                  {formData.hoTen || 'Phụ huynh'}
+                </h3>
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200">
-                  {formData.moiQuanHe}
+                  {formData.moiQuanHe || 'Phụ huynh'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Hồ sơ thông tin liên lạc phụ huynh học sinh</p>
+              <p className="text-xs text-slate-500 font-medium">
+                Cập nhật thông tin hồ sơ & bảo mật tài khoản
+              </p>
             </div>
           </div>
 
@@ -65,241 +196,215 @@ export default function ParentProfileModal({
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
 
-        {/* Content Body */}
+        {/* Tab Navigation */}
+        <div className="flex border-b border-slate-100 bg-slate-50/70 px-5 gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => { setActiveTab('profile'); setErrorMsg(''); }}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all cursor-pointer ${
+              activeTab === 'profile'
+                ? 'bg-white text-sky-600 border-t border-x border-slate-200 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <User size={14} />
+            Hồ sơ cá nhân
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab('password'); setErrorMsg(''); }}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all cursor-pointer ${
+              activeTab === 'password'
+                ? 'bg-white text-sky-600 border-t border-x border-slate-200 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Lock size={14} />
+            Đổi mật khẩu
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab('account'); setErrorMsg(''); }}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all cursor-pointer ${
+              activeTab === 'account'
+                ? 'bg-white text-rose-600 border-t border-x border-slate-200 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <LogOut size={14} />
+            Tài khoản & Đăng xuất
+          </button>
+        </div>
+
+        {/* Modal Body */}
         <div className="flex-1 p-5 overflow-y-auto parent-scroll space-y-4">
           {saveSuccess && (
             <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Đã cập nhật thông tin phụ huynh thành công vào hệ thống!
+              <Check size={16} className="text-emerald-600 shrink-0" />
+              {saveSuccess}
             </div>
           )}
 
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              {isEditing ? 'Chỉnh sửa thông tin phụ huynh' : 'Thông tin cá nhân & Liên lạc'}
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-xs font-bold text-sky-600 hover:text-sky-700 hover:underline cursor-pointer"
-            >
-              {isEditing ? 'Hủy chỉnh sửa' : '✏️ Thay đổi thông tin'}
-            </button>
-          </div>
-
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Họ và tên */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Họ và tên phụ huynh *</label>
-                <input
-                  type="text"
-                  name="hoTen"
-                  disabled={!isEditing}
-                  value={formData.hoTen}
-                  onChange={handleChange}
-                  required
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                />
-              </div>
-
-              {/* Mối quan hệ */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Mối quan hệ với bé *</label>
-                <select
-                  name="moiQuanHe"
-                  disabled={!isEditing}
-                  value={formData.moiQuanHe}
-                  onChange={handleChange}
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                >
-                  <option value="Mẹ">Mẹ</option>
-                  <option value="Cha">Cha</option>
-                  <option value="Người giám hộ">Người giám hộ</option>
-                  <option value="Ông/Bà">Ông / Bà</option>
-                </select>
-              </div>
-
-              {/* Số điện thoại */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Số điện thoại liên lạc *</label>
-                <input
-                  type="tel"
-                  name="soDienThoai"
-                  disabled={!isEditing}
-                  value={formData.soDienThoai}
-                  onChange={handleChange}
-                  required
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Địa chỉ Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  disabled={!isEditing}
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                />
-              </div>
-
-              {/* Số CCCD / CMND */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Số CCCD / CMND</label>
-                <input
-                  type="text"
-                  name="cccd"
-                  disabled={!isEditing}
-                  value={formData.cccd}
-                  onChange={handleChange}
-                  placeholder="079195001234"
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                />
-              </div>
-
-              {/* Ngày sinh */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Ngày sinh</label>
-                <input
-                  type="date"
-                  name="ngaySinh"
-                  disabled={!isEditing}
-                  value={formData.ngaySinh}
-                  onChange={handleChange}
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                />
-              </div>
-
-              {/* Giới tính */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Giới tính</label>
-                <select
-                  name="gioiTinh"
-                  disabled={!isEditing}
-                  value={formData.gioiTinh}
-                  onChange={handleChange}
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                >
-                  <option value="Nữ">Nữ</option>
-                  <option value="Nam">Nam</option>
-                </select>
-              </div>
-
-              {/* Nghề nghiệp */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Nghề nghiệp</label>
-                <input
-                  type="text"
-                  name="ngheNghiep"
-                  disabled={!isEditing}
-                  value={formData.ngheNghiep}
-                  onChange={handleChange}
-                  placeholder="Kế toán, Kỹ sư, Bác sĩ..."
-                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                    isEditing
-                      ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-800'
-                  }`}
-                />
-              </div>
+          {errorMsg && (
+            <div className="p-3 bg-rose-50 border border-rose-300 text-rose-800 rounded-xl text-xs font-bold flex items-center gap-2">
+              <AlertCircle size={16} className="text-rose-600 shrink-0" />
+              {errorMsg}
             </div>
+          )}
 
-            {/* Nơi làm việc */}
-            <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1">Nơi làm việc / Cơ quan công tác</label>
-              <input
-                type="text"
-                name="noiLamViec"
-                disabled={!isEditing}
-                value={formData.noiLamViec}
-                onChange={handleChange}
-                placeholder="Tên công ty / doanh nghiệp / cơ quan"
-                className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                  isEditing
-                    ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                    : 'bg-slate-50 border border-slate-200 text-slate-800'
-                }`}
-              />
-            </div>
-
-            {/* Địa chỉ nhà */}
-            <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1">Địa chỉ nhà / Nơi cư trú thường trú *</label>
-              <input
-                type="text"
-                name="diaChi"
-                disabled={!isEditing}
-                value={formData.diaChi}
-                onChange={handleChange}
-                required
-                placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"
-                className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 outline-hidden transition-all ${
-                  isEditing
-                    ? 'bg-white border border-sky-300 focus:ring-1 focus:ring-sky-500'
-                    : 'bg-slate-50 border border-slate-200 text-slate-800'
-                }`}
-              />
-            </div>
-
-            {isEditing && (
-              <div className="flex justify-end gap-2 pt-2">
+          {activeTab === 'profile' && (
+            <>
+              <div className="flex items-center justify-between pb-1">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  {isEditing ? 'Chỉnh sửa thông tin phụ huynh' : 'Thông tin cá nhân & Liên lạc'}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="text-xs font-bold text-sky-600 hover:text-sky-700 hover:underline cursor-pointer"
                 >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-xs transition-colors cursor-pointer"
-                >
-                  Lưu thay đổi
+                  {isEditing ? 'Hủy chỉnh sửa' : 'Thay đổi thông tin'}
                 </button>
               </div>
-            )}
-          </form>
+
+              <ParentProfileForm
+                formData={formData}
+                isEditing={isEditing}
+                onChange={handleChange}
+                onSubmit={handleSaveProfile}
+                onCancel={() => setIsEditing(false)}
+              />
+            </>
+          )}
+
+          {activeTab === 'password' && (
+            <form onSubmit={handleChangePassword} className="space-y-4 max-w-md mx-auto py-2">
+              <div className="text-center pb-2">
+                <div className="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                  <Lock size={22} />
+                </div>
+                <h4 className="font-extrabold text-slate-800 text-sm">Đổi mật khẩu tài khoản</h4>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Mật khẩu mới cần tối thiểu 6 ký tự để đảm bảo an toàn
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1">
+                  Mật khẩu hiện tại *
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  placeholder="Nhập mật khẩu hiện tại"
+                  className="w-full text-xs font-semibold rounded-xl px-3 py-2.5 border border-slate-200 outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1">
+                  Mật khẩu mới *
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  placeholder="Tối thiểu 6 ký tự"
+                  className="w-full text-xs font-semibold rounded-xl px-3 py-2.5 border border-slate-200 outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1">
+                  Xác nhận mật khẩu mới *
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Nhập lại mật khẩu mới"
+                  className="w-full text-xs font-semibold rounded-xl px-3 py-2.5 border border-slate-200 outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-md transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {changingPassword ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Đang cập nhật mật khẩu...
+                    </>
+                  ) : (
+                    'Lưu mật khẩu mới'
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {activeTab === 'account' && (
+            <div className="space-y-4 max-w-md mx-auto py-4 text-center">
+              <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+                <LogOut size={26} />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-slate-800 text-base">Thiết lập & Đăng xuất</h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Bạn có muốn đăng xuất khỏi cổng Sổ liên lạc điện tử của trường?
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200 text-left text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Tên đăng nhập:</span>
+                  <span className="font-bold text-slate-700">{currentUser()?.username || 'phuhuynh'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Phụ huynh:</span>
+                  <span className="font-bold text-slate-700">{formData.hoTen}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Trạng thái:</span>
+                  <span className="font-bold text-emerald-600">Đang hoạt động</span>
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Ở lại phiên làm việc
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 transition cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <LogOut size={14} />
+                  Đăng xuất ngay
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
-          <span>Khóa hồ sơ bảo mật thông tin theo tiêu chuẩn GDPR & Luật Bảo vệ dữ liệu cá nhân</span>
+          <span>Dữ liệu được lưu trữ trực tiếp vào CSDL hệ thống trường học</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
@@ -309,5 +414,5 @@ export default function ParentProfileModal({
         </div>
       </div>
     </div>
-  );
+  )
 }

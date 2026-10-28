@@ -1,515 +1,771 @@
 'use client';
-import { useState, useMemo } from 'react';
-import { CHILDREN } from '../data/mockData';
-import Avatar from '../components/Avatar';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ArrowLeft,
+  CheckCheck,
+  ChevronRight,
+  Loader2,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  Send,
+  UserRound,
+  Wifi,
+  WifiOff,
+  X,
+  Phone,
+  Smile,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
+import { api, currentUser, createHubConnection } from '@/services';
+import { CHILDREN, loadLiveTeacherChildren } from '../data';
 
-type ContactType = 'father' | 'mother' | 'guardian';
-
-type ParentContact = {
-  type: ContactType;
+interface ParentContact {
+  accountId: string;
   name: string;
-  phone: string;
-};
+  phoneNumber?: string;
+  children: string[];
+}
 
-type ParentInfo = {
-  childId: number;
-  contacts: ParentContact[];
-  primaryContact: ContactType;
-};
+type RawRecord = Record<string, any>;
 
-type ChatMsg = { text: string; from: 'me' | 'parent'; time: string };
+/**
+ * Trích xuất danh sách mảng an toàn từ response API
+ */
+function extractArray(value: any): RawRecord[] {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.items)) return value.items;
+  return [];
+}
 
-const CONTACT_META: Record<ContactType, { label: string; icon: string; color: string; bg: string; border: string }> = {
-  father:   { label: 'Bố',            icon: '👨', color: 'text-blue-700',  bg: 'bg-blue-50',   border: 'border-blue-300'  },
-  mother:   { label: 'Mẹ',            icon: '👩', color: 'text-pink-700',  bg: 'bg-pink-50',   border: 'border-pink-300'  },
-  guardian: { label: 'G.hộ',          icon: '👤', color: 'text-slate-700', bg: 'bg-slate-100', border: 'border-slate-300' },
-};
+/**
+ * Lấy ID cuộc trò chuyện từ bản ghi
+ */
+function getConversationId(item?: RawRecord | null): string {
+  return String(
+    item?.messageConversationId ||
+      item?.MessageConversationId ||
+      item?.id ||
+      item?.Id ||
+      ''
+  ).trim();
+}
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+/**
+ * Lấy ID của tin nhắn
+ */
+function getMessageId(item: RawRecord): string {
+  return String(
+    item?.messageId ||
+      item?.MessageId ||
+      item?.id ||
+      item?.Id ||
+      ''
+  ).trim();
+}
 
-const PARENT_DATA: ParentInfo[] = [
-  { childId: 1,  primaryContact: 'mother', contacts: [{ type:'mother', name:'Nguyễn Thị Hoa',  phone:'0901234567' }, { type:'father', name:'Nguyễn Văn Bình', phone:'0901234590' }]},
-  { childId: 2,  primaryContact: 'father', contacts: [{ type:'father', name:'Trần Văn Nam',    phone:'0902345678' }, { type:'mother', name:'Trần Thị Lan',    phone:'0902345699' }]},
-  { childId: 3,  primaryContact: 'mother', contacts: [{ type:'mother', name:'Ngô Thị Hạnh',   phone:'0903456789' }, { type:'father', name:'Lê Văn Hùng',    phone:'0903456700' }]},
-  { childId: 4,  primaryContact: 'guardian', contacts: [{ type:'mother', name:'Phạm Thị Liên', phone:'0904567890' }, { type:'guardian', name:'Phạm Văn Tú',  phone:'0904567800' }]},
-  { childId: 5,  primaryContact: 'mother', contacts: [{ type:'mother', name:'Bùi Thị Yến',    phone:'0905678901' }, { type:'father', name:'Vũ Văn Tuấn',    phone:'0905678900' }]},
-  { childId: 6,  primaryContact: 'father', contacts: [{ type:'father', name:'Hoàng Văn Minh', phone:'0906789012' }, { type:'mother', name:'Hoàng Thị Nga',  phone:'0906789000' }]},
-  { childId: 7,  primaryContact: 'mother', contacts: [{ type:'mother', name:'Trần Thị Thu',   phone:'0907890123' }, { type:'father', name:'Đặng Văn Bình',  phone:'0907890100' }]},
-  { childId: 8,  primaryContact: 'father', contacts: [{ type:'father', name:'Bùi Văn Quân',   phone:'0908901234' }, { type:'mother', name:'Bùi Thị Lan',    phone:'0908901200' }]},
-  { childId: 9,  primaryContact: 'mother', contacts: [{ type:'mother', name:'Nguyễn Thị Mai', phone:'0909012345' }, { type:'father', name:'Ngô Văn Phúc',   phone:'0909012300' }]},
-  { childId: 10, primaryContact: 'mother', contacts: [{ type:'mother', name:'Đinh Thị Kim',   phone:'0910123456' }, { type:'father', name:'Đinh Văn Long',  phone:'0910123400' }]},
-  { childId: 11, primaryContact: 'guardian', contacts: [{ type:'guardian', name:'Lý Thị Bảo', phone:'0911234567' }, { type:'mother', name:'Lý Thị Ngân',   phone:'0911234500' }]},
-  { childId: 12, primaryContact: 'father', contacts: [{ type:'father', name:'Trương Văn Hào', phone:'0912345678' }, { type:'mother', name:'Trương Thị Yến', phone:'0912345600' }]},
-  { childId: 13, primaryContact: 'mother', contacts: [{ type:'mother', name:'Võ Thị Tuyết',  phone:'0913456789' }, { type:'father', name:'Võ Văn Tài',     phone:'0913456700' }]},
-  { childId: 14, primaryContact: 'father', contacts: [{ type:'father', name:'Dương Văn Phú',  phone:'0914567890' }, { type:'mother', name:'Dương Thị Thu',  phone:'0914567800' }]},
-  { childId: 15, primaryContact: 'mother', contacts: [{ type:'mother', name:'Lê Thị Hồng',   phone:'0915678901' }, { type:'father', name:'Mai Văn Hải',    phone:'0915678900' }]},
-  { childId: 16, primaryContact: 'mother', contacts: [{ type:'mother', name:'Phan Thị Loan',  phone:'0916789012' }, { type:'father', name:'Phan Văn Dũng',  phone:'0916789000' }]},
-  { childId: 17, primaryContact: 'father', contacts: [{ type:'father', name:'Tô Văn Khải',   phone:'0917890123' }, { type:'mother', name:'Tô Thị Hương',  phone:'0917890100' }]},
-  { childId: 18, primaryContact: 'guardian', contacts: [{ type:'guardian', name:'Châu Văn Sơn', phone:'0918901234' }, { type:'mother', name:'Châu Thị Bảo', phone:'0918901200' }]},
-  { childId: 19, primaryContact: 'mother', contacts: [{ type:'mother', name:'Nguyễn Thị Nhung', phone:'0919012345' }, { type:'father', name:'Lưu Văn Sơn',  phone:'0919012300' }]},
-  { childId: 20, primaryContact: 'father', contacts: [{ type:'father', name:'Tạ Văn Bình',   phone:'0920123456' }, { type:'mother', name:'Tạ Thị Hương',  phone:'0920123400' }]},
-  { childId: 21, primaryContact: 'mother', contacts: [{ type:'mother', name:'Lưu Thị Yến',   phone:'0921234567' }, { type:'father', name:'Cao Văn Minh',   phone:'0921234500' }]},
-  { childId: 22, primaryContact: 'mother', contacts: [{ type:'mother', name:'Lâm Thị Trang',  phone:'0922345678' }, { type:'father', name:'Lâm Văn Quốc',   phone:'0922345600' }]},
-];
+/**
+ * Lấy nội dung văn bản của tin nhắn
+ */
+function getMessageContent(item: RawRecord): string {
+  return String(
+    item?.messageContent ??
+      item?.MessageContent ??
+      item?.content ??
+      item?.Content ??
+      ''
+  );
+}
 
-const INIT_CHATS: Record<string, ChatMsg[]> = {
-  '2-father': [{ text: 'Cô ơi, hôm nay bé Long có chút sổ mũi, cô chú ý giúp con với ạ', from: 'parent', time: '08:15' }],
-  '5-mother': [{ text: 'Cô ơi hôm nay bé Linh mang theo thuốc xịt hen, cô để ở ba lô bé giúp em', from: 'parent', time: '07:50' }],
-  '1-mother': [{ text: 'Cảm ơn cô đã chăm sóc bé Anh chu đáo ạ 🙏', from: 'parent', time: 'Hôm qua' }],
-  '10-mother':[{ text: 'Cô ơi bé Bảo về có kể hôm nay được khen, vui lắm ạ ❤️', from: 'parent', time: 'Hôm qua' }],
-};
+/**
+ * Lấy ID của người gửi tin nhắn
+ */
+function getSenderId(item: RawRecord): string {
+  return String(
+    item?.senderUserId ??
+      item?.SenderUserId ??
+      item?.senderId ??
+      item?.SenderId ??
+      ''
+  )
+    .toLowerCase()
+    .trim();
+}
 
-// ─── Component ────────────────────────────────────────────────────────────────
+/**
+ * Lấy danh sách ID người tham gia cuộc trò chuyện
+ */
+function getParticipantIds(item: RawRecord): string[] {
+  return [
+    String(item?.userAId || item?.UserAId || '').toLowerCase().trim(),
+    String(item?.userBId || item?.UserBId || '').toLowerCase().trim(),
+  ];
+}
 
-export default function MessagesPage() {
-  const [view, setView]           = useState<'list' | 'chat' | 'group'>('list');
-  const [activeChildId, setActiveChildId]       = useState<number | null>(null);
-  const [activeContact, setActiveContact]       = useState<ContactType | null>(null);
-  const [input, setInput]         = useState('');
-  const [readKeys, setReadKeys]   = useState<Set<string>>(new Set(['1-mother','10-mother']));
-  const [chats, setChats]         = useState<Record<string, ChatMsg[]>>(INIT_CHATS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [groupSearchQuery, setGroupSearchQuery] = useState('');
-  const [parentData, setParentData]   = useState<ParentInfo[]>(PARENT_DATA);
+/**
+ * Tạo chữ cái viết tắt đại diện cho tên
+ */
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[parts.length - 2][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0]?.slice(0, 2).toUpperCase() || 'PH';
+}
 
-  // Group send
-  const [selectedGroup, setSelectedGroup] = useState<Set<number>>(new Set());
-  const [groupMsg, setGroupMsg]     = useState('');
-  const [groupSent, setGroupSent]   = useState(false);
-  // Broadcast
-  const [broadcast, setBroadcast]   = useState('');
-  const [broadcastSent, setBroadcastSent] = useState(false);
+/**
+ * Loại bỏ các tin nhắn trùng lặp theo ID hoặc nội dung + thời gian
+ */
+function deduplicateMessages(messageList: RawRecord[]): RawRecord[] {
+  const seenKeys = new Set<string>();
+  const uniqueList: RawRecord[] = [];
 
-  // ── Helpers ──
-  const chatKey = (childId: number, type: ContactType) => `${childId}-${type}`;
+  for (const message of messageList) {
+    const id = getMessageId(message);
+    const content = getMessageContent(message);
+    const sender = getSenderId(message);
+    const timeKey = String(
+      message.messageSentAt || message.MessageSentAt || message.createdAt || ''
+    ).slice(0, 16);
 
-  const getInfo    = (childId: number) => parentData.find(p => p.childId === childId)!;
-  const getContact = (childId: number, type: ContactType) =>
-    getInfo(childId).contacts.find(c => c.type === type)!;
+    const uniqueKey = id ? id : `${sender}:${content}:${timeKey}`;
+    if (seenKeys.has(uniqueKey)) {
+      continue;
+    }
+    seenKeys.add(uniqueKey);
+    uniqueList.push(message);
+  }
 
-  const setPrimary = (childId: number, type: ContactType) =>
-    setParentData(p => p.map(info => info.childId === childId ? { ...info, primaryContact: type } : info));
+  return uniqueList;
+}
 
-  // Check if any contact of a child has an unread message
-  const hasUnread = (childId: number) => {
-    const info = getInfo(childId);
-    return info.contacts.some(c => {
-      const k = chatKey(childId, c.type);
-      return chats[k]?.length && !readKeys.has(k);
-    });
+export default function TeacherMessagesPage() {
+  const [parentContacts, setParentContacts] = useState<ParentContact[]>([]);
+  const [conversations, setConversations] = useState<RawRecord[]>([]);
+  const [selectedParent, setSelectedParent] = useState<ParentContact | null>(null);
+  const [activeConversation, setActiveConversation] = useState<RawRecord | null>(null);
+  const [messages, setMessages] = useState<RawRecord[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [draftMessage, setDraftMessage] = useState<string>('');
+  const [loadingContacts, setLoadingContacts] = useState<boolean>(true);
+  const [loadingMessages, setLoadingMessages] = useState<boolean>(false);
+  const [sending, setSending] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  const currentTeacherId = String(currentUser()?.id || '').toLowerCase().trim();
+  const conversationRef = useRef<RawRecord | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    conversationRef.current = activeConversation;
+  }, [activeConversation]);
+
+  // Tự động cuộn xuống tin nhắn mới nhất
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Check if a specific contact has unread messages
-  const contactHasUnread = (childId: number, type: ContactType) => {
-    const k = chatKey(childId, type);
-    return chats[k]?.length && !readKeys.has(k);
-  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
-  // Last message across all contacts of a child
-  const lastMsgForChild = (childId: number) => {
-    const info = getInfo(childId);
-    let last: (ChatMsg & { contactType: ContactType }) | null = null;
-    info.contacts.forEach(c => {
-      const msgs = chats[chatKey(childId, c.type)] || [];
-      const m = msgs.at(-1);
-      if (m && (!last || m.time > last.time)) last = { ...m, contactType: c.type };
-    });
-    return last as (ChatMsg & { contactType: ContactType }) | null;
-  };
+  /**
+   * Tải danh sách phụ huynh của các học sinh trong lớp được phân công
+   */
+  const loadParentContacts = useCallback(async () => {
+    setLoadingContacts(true);
+    setErrorMessage('');
 
-  // Figure out which contact to open for a child:
-  // 1. If any contact has an unread message, pick the most recent one.
-  // 2. Otherwise, pick the primary contact.
-  const openChatForChild = (childId: number) => {
-    const info = getInfo(childId);
-    let targetContact = info.primaryContact;
-    let mostRecentUnread: string | null = null;
-    
-    info.contacts.forEach(c => {
-      if (contactHasUnread(childId, c.type)) {
-        const m = chats[chatKey(childId, c.type)].at(-1);
-        if (m && (!mostRecentUnread || m.time > mostRecentUnread)) {
-          mostRecentUnread = m.time;
-          targetContact = c.type;
+    try {
+      await loadLiveTeacherChildren();
+      const validChildren = CHILDREN.filter((child) => child.apiId).map((child) => ({
+        id: String(child.apiId),
+        name: child.name,
+      }));
+      const childNameMap = new Map(validChildren.map((child) => [child.id.toLowerCase(), child.name]));
+
+      // Tải liên kết học sinh - phụ huynh và thông tin phụ huynh
+      const [linksResponse, parentsResponse] = await Promise.allSettled([
+        api.get<any[]>('students', '/api/students/all-links'),
+        api.get<any[]>('parents', '/api/parents'),
+      ]);
+
+      const allLinks =
+        linksResponse.status === 'fulfilled' && Array.isArray(linksResponse.value)
+          ? linksResponse.value
+          : [];
+      const allParents =
+        parentsResponse.status === 'fulfilled' && Array.isArray(parentsResponse.value)
+          ? parentsResponse.value
+          : [];
+
+      const parentById = new Map(
+        allParents.map((parent: any) => [String(parent.id || parent.Id).toLowerCase(), parent])
+      );
+
+      const contactMap = new Map<string, ParentContact>();
+
+      for (const link of allLinks) {
+        const studentId = String(link.studentId || '').toLowerCase();
+        if (childNameMap.has(studentId)) {
+          const childName = childNameMap.get(studentId)!;
+          const parentInfo = parentById.get(String(link.parentId || '').toLowerCase());
+          const accountId = String(
+            parentInfo?.taiKhoanId || parentInfo?.TaiKhoanId || ''
+          )
+            .toLowerCase()
+            .trim();
+
+          if (!accountId) continue;
+
+          const existingContact = contactMap.get(accountId) || {
+            accountId,
+            name: String(parentInfo?.hoTen || parentInfo?.HoTen || 'Phụ huynh'),
+            phoneNumber: String(parentInfo?.soDienThoai || parentInfo?.SoDienThoai || ''),
+            children: [],
+          };
+
+          if (!existingContact.children.includes(childName)) {
+            existingContact.children.push(childName);
+          }
+          contactMap.set(accountId, existingContact);
         }
       }
-    });
 
-    const k = chatKey(childId, targetContact);
-    setActiveChildId(childId);
-    setActiveContact(targetContact);
-    setReadKeys(p => new Set([...p, k]));
-    setView('chat');
-  };
+      setParentContacts(Array.from(contactMap.values()));
 
-  const sendMsg = () => {
-    if (!input.trim() || activeChildId === null || activeContact === null) return;
-    const k = chatKey(activeChildId, activeContact);
-    const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    setChats(p => ({ ...p, [k]: [...(p[k] || []), { text: input, from: 'me', time: now }] }));
-    setInput('');
-  };
-
-  const switchContact = (type: ContactType) => {
-    if (!activeChildId) return;
-    const k = chatKey(activeChildId, type);
-    setActiveContact(type);
-    setReadKeys(p => new Set([...p, k]));
-  };
-
-  // ── Search & Filter ──
-  const searchFilter = (q: string) => {
-    const query = q.toLowerCase().trim();
-    if (!query) return CHILDREN;
-    return CHILDREN.filter(c => {
-      const info = getInfo(c.id);
-      return (
-        c.name.toLowerCase().includes(query) ||
-        c.nickname.toLowerCase().includes(query) ||
-        info.contacts.some(p => p.name.toLowerCase().includes(query) || p.phone.includes(query))
+      // Tải danh sách các cuộc hội thoại hiện có của giáo viên
+      const myConversations = await api.get<any>('communication', '/api/Conversations/mine');
+      setConversations(extractArray(myConversations));
+    } catch (cause) {
+      setErrorMessage(
+        cause instanceof Error ? cause.message : 'Không thể tải danh sách phụ huynh của lớp'
       );
-    });
+    } finally {
+      setLoadingContacts(false);
+    }
+  }, []);
+
+  /**
+   * Kết nối SignalR Real-time Chat Hub
+   */
+  useEffect(() => {
+    void loadParentContacts();
+
+    const chatHub = createHubConnection('chat');
+    let isDisposed = false;
+
+    const handleReceiveMessage = (firstArg: RawRecord, secondArg?: RawRecord) => {
+      if (firstArg?.type === 'MUTATION') {
+        const activeId = getConversationId(conversationRef.current);
+        if (activeId) {
+          void api
+            .get<any>('communication', `/api/Messages/conversation/${activeId}`)
+            .then((data) => {
+              if (!isDisposed) {
+                setMessages(deduplicateMessages(extractArray(data)));
+              }
+            })
+            .catch(() => {});
+        }
+        return;
+      }
+      const incomingMessage = secondArg || firstArg;
+      const conversationIdFromEvent = secondArg
+        ? String(firstArg || '')
+        : getConversationId(incomingMessage);
+
+      if (
+        !incomingMessage ||
+        conversationIdFromEvent !== getConversationId(conversationRef.current)
+      ) {
+        return;
+      }
+
+      setMessages((prevMessages) => deduplicateMessages([...prevMessages, incomingMessage]));
+    };
+
+    chatHub.on('ReceiveMessage', handleReceiveMessage);
+    chatHub.on('MessageReceived', handleReceiveMessage);
+
+    void chatHub
+      .start()
+      .then(() => {
+        if (!isDisposed) setIsConnected(true);
+      })
+      .catch(() => {
+        if (!isDisposed) setIsConnected(false);
+      });
+
+    return () => {
+      isDisposed = true;
+      setIsConnected(false);
+      chatHub.off('ReceiveMessage', handleReceiveMessage);
+      chatHub.off('MessageReceived', handleReceiveMessage);
+      if (chatHub.state === 'Connected') {
+        void chatHub.stop();
+      }
+    };
+  }, [loadParentContacts]);
+
+  /**
+   * Mở hoặc tạo mới cuộc hội thoại với một phụ huynh
+   */
+  const handleSelectParent = async (parent: ParentContact) => {
+    setErrorMessage('');
+    setSelectedParent(parent);
+    setLoadingMessages(true);
+
+    try {
+      let targetConversation = conversations.find((item) =>
+        getParticipantIds(item).includes(parent.accountId)
+      );
+
+      if (!targetConversation) {
+        targetConversation = await api.post<RawRecord>('communication', '/api/Conversations', {
+          userBId: parent.accountId,
+        });
+        if (targetConversation) {
+          setConversations((prev) => [...prev, targetConversation!]);
+        }
+      }
+
+      setActiveConversation(targetConversation);
+      conversationRef.current = targetConversation;
+
+      const conversationId = getConversationId(targetConversation);
+      const fetchedMessages = await api.get<any>(
+        'communication',
+        `/api/Messages/conversation/${conversationId}`
+      );
+      setMessages(deduplicateMessages(extractArray(fetchedMessages)));
+    } catch (cause) {
+      setErrorMessage(
+        cause instanceof Error ? cause.message : 'Không thể mở cuộc trò chuyện với phụ huynh này'
+      );
+    } finally {
+      setLoadingMessages(false);
+    }
   };
 
-  const filteredListChildren = useMemo(() => searchFilter(searchQuery), [searchQuery, parentData]); // eslint-disable-line react-hooks/exhaustive-deps
-  const sortedList = [...filteredListChildren].sort((a, b) => {
-    if (hasUnread(a.id) !== hasUnread(b.id)) return hasUnread(a.id) ? -1 : 1;
-    return a.nickname.localeCompare(b.nickname);
+  /**
+   * Gửi tin nhắn mới đến phụ huynh
+   */
+  const handleSendMessage = async () => {
+    const content = draftMessage.trim();
+    const conversationId = getConversationId(activeConversation);
+
+    if (!content || !conversationId || sending) return;
+
+    setSending(true);
+    try {
+      const createdMessage = await api.post<RawRecord>('communication', '/api/Messages', {
+        messageConversationId: conversationId,
+        messageContent: content,
+        messageType: 0,
+      });
+
+      if (createdMessage) {
+        setMessages((prev) => deduplicateMessages([...prev, createdMessage]));
+      }
+      setDraftMessage('');
+    } catch (cause) {
+      setErrorMessage(
+        cause instanceof Error ? cause.message : 'Không thể gửi tin nhắn. Vui lòng thử lại.'
+      );
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // Lọc danh sách phụ huynh theo từ khóa tìm kiếm
+  const filteredParents = parentContacts.filter((parent) => {
+    if (!searchKeyword.trim()) return true;
+    const term = searchKeyword.toLowerCase();
+    const matchName = parent.name.toLowerCase().includes(term);
+    const matchChild = parent.children.some((child) => child.toLowerCase().includes(term));
+    return matchName || matchChild;
   });
 
-  const filteredGroupChildren = useMemo(() => searchFilter(groupSearchQuery), [groupSearchQuery, parentData]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Group ──
-  const toggleGroup = (id: number) =>
-    setSelectedGroup(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
-
-  const sendGroupMsg = () => {
-    if (!groupMsg.trim() || selectedGroup.size === 0) return;
-    const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    setChats(p => {
-      const updated = { ...p };
-      selectedGroup.forEach(id => {
-        const info = getInfo(id);
-        const k = chatKey(id, info.primaryContact);
-        updated[k] = [...(updated[k] || []), { text: groupMsg, from: 'me', time: now }];
-      });
-      return updated;
-    });
-    setGroupSent(true);
-    setGroupMsg('');
-    setSelectedGroup(new Set());
-    setTimeout(() => { setGroupSent(false); setView('list'); }, 2000);
-  };
-
-  const handleBroadcast = () => {
-    if (!broadcast.trim()) return;
-    const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    setChats(p => {
-      const updated = { ...p };
-      CHILDREN.forEach(c => {
-        const info = getInfo(c.id);
-        const k = chatKey(c.id, info.primaryContact);
-        updated[k] = [...(updated[k] || []), { text: broadcast, from: 'me', time: now }];
-      });
-      return updated;
-    });
-    setBroadcastSent(true);
-    setBroadcast('');
-    setTimeout(() => setBroadcastSent(false), 3000);
-  };
-
-  const activeChild = CHILDREN.find(c => c.id === activeChildId);
-
-  // ════════════════════════════════════════════════════════
-  // VIEW: CHAT
-  // ════════════════════════════════════════════════════════
-  if (view === 'chat' && activeChildId !== null && activeContact !== null && activeChild) {
-    const info    = getInfo(activeChildId);
-    const contact = getContact(activeChildId, activeContact);
-    const meta    = CONTACT_META[activeContact];
-    const k       = chatKey(activeChildId, activeContact);
-
-    return (
-      <div className="max-w-2xl mx-auto h-[calc(100vh-120px)] flex flex-col -m-4 sm:-m-6 overflow-hidden bg-slate-50">
-        {/* Header (Child Info) */}
-        <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-4 pb-2 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setView('list')} className="text-white text-2xl w-8 flex-shrink-0">←</button>
-            <Avatar initials={activeChild.avatar} id={activeChild.id} size="sm" />
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-lg leading-tight">{activeChild.name}</p>
+  return (
+    <div className="flex h-[calc(100vh-130px)] min-h-[500px] flex-col rounded-2xl md:rounded-3xl border border-orange-100 bg-white shadow-sm overflow-hidden">
+      {/* Header chính của mô-đun */}
+      <header className="flex shrink-0 items-center justify-between border-b border-orange-100/80 bg-white px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-sm">
+            <MessageSquare size={22} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black tracking-widest text-orange-600 uppercase bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/60">
+                Kênh liên lạc gia đình - nhà trường
+              </span>
             </div>
+            <h1 className="text-xl font-black text-slate-800 mt-0.5">Tin nhắn phụ huynh</h1>
           </div>
         </div>
 
-        {/* Header (Tabs for contacts) */}
-        <div className="bg-orange-500 px-4 pt-1 pb-0 shadow-sm flex gap-1 overflow-x-auto flex-shrink-0">
-          {info.contacts.map(c => {
-            const m = CONTACT_META[c.type];
-            const isActive = c.type === activeContact;
-            const isPrimary = c.type === info.primaryContact;
-            const hasMsg = !!(chats[chatKey(activeChildId, c.type)]?.length);
-            const isUnreadTab = hasMsg && !readKeys.has(chatKey(activeChildId, c.type));
-
-            return (
-              <button key={c.type} onClick={() => switchContact(c.type)}
-                className={`relative px-4 py-2.5 rounded-t-xl text-sm font-bold flex items-center gap-1.5 transition-all
-                  ${isActive ? 'bg-slate-50 text-orange-600' : 'bg-transparent text-white/80 hover:text-white hover:bg-white/10'}`}>
-                <span>{m.icon}</span>
-                <span>{m.label} <span className="opacity-75 font-normal text-xs">({c.name.split(' ').at(-1)})</span></span>
-                {isPrimary && <span className={isActive ? 'text-orange-400' : 'text-orange-200'}>★</span>}
-                {isUnreadTab && !isActive && <span className="absolute top-2 right-2 w-2 h-2 bg-red-400 border border-orange-500 rounded-full" />}
-              </button>
-            );
-          })}
-        </div>
-        
-        {/* Active Contact Subheader */}
-        <div className="bg-white border-b border-orange-100 px-4 py-2 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
-          <div className="text-sm">
-            <span className="font-semibold text-slate-700">{contact.name}</span>
-            <span className="text-slate-400 mx-2">•</span>
-            <span className="text-slate-500 font-mono text-xs">{contact.phone}</span>
-          </div>
-          <div className="flex gap-2">
-            <a href={`tel:${contact.phone}`}
-               className="bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors">
-              📞 Gọi
-            </a>
-            {activeContact !== info.primaryContact && (
-              <button onClick={() => setPrimary(activeChildId, activeContact)}
-                className="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-100 transition-colors">
-                ☆ Đặt làm chính
-              </button>
+        <div className="flex items-center gap-3">
+          {/* Huy hiệu trạng thái kết nối SignalR */}
+          <div
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
+              isConnected
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-slate-100 text-slate-500 border border-slate-200'
+            }`}
+          >
+            {isConnected ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Kết nối trực tiếp</span>
+              </>
+            ) : (
+              <>
+                <WifiOff size={13} />
+                <span>Ngoại tuyến</span>
+              </>
             )}
           </div>
-        </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-          {!(chats[k]?.length) && (
-            <div className="text-center py-10 text-slate-400 flex flex-col items-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-3xl mb-3">
-                {meta.icon}
-              </div>
-              <p className="text-sm font-semibold">Chưa có tin nhắn</p>
-              <p className="text-xs mt-1 text-slate-400">Bắt đầu trò chuyện với {meta.label} của bé {activeChild.nickname}</p>
-            </div>
-          )}
-          {(chats[k] || []).map((msg, i) => (
-            <div key={i} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs lg:max-w-sm px-4 py-2.5 rounded-2xl text-sm ${
-                msg.from === 'me'
-                  ? 'bg-orange-400 text-white rounded-br-sm shadow-sm'
-                  : 'bg-white border border-slate-200 text-slate-700 rounded-bl-sm shadow-sm'
-              }`}>
-                <p>{msg.text}</p>
-                <p className={`text-[10px] mt-1 text-right ${msg.from === 'me' ? 'text-orange-100' : 'text-slate-400'}`}>{msg.time}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div className="p-4 bg-white border-t border-slate-200 flex gap-2 flex-shrink-0">
-          <input value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && sendMsg()}
-            className="flex-1 border border-slate-200 bg-slate-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-400 focus:bg-white transition-colors"
-            placeholder={`Nhắn cho ${meta.label.toLowerCase()} bé...`} />
-          <button onClick={sendMsg} disabled={!input.trim()}
-            className="bg-orange-400 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-orange-500 transition-colors disabled:opacity-50 shadow-sm">
-            Gửi
+          <button
+            onClick={() => void loadParentContacts()}
+            disabled={loadingContacts}
+            title="Tải lại danh sách"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-orange-200 bg-white text-orange-600 hover:bg-orange-50 transition cursor-pointer"
+          >
+            <RefreshCw size={16} className={loadingContacts ? 'animate-spin' : ''} />
           </button>
         </div>
-      </div>
-    );
-  }
+      </header>
 
-  // ════════════════════════════════════════════════════════
-  // VIEW: GROUP SELECT
-  // ════════════════════════════════════════════════════════
-  if (view === 'group') {
-    return (
-      <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => { setView('list'); setSelectedGroup(new Set()); setGroupMsg(''); setGroupSearchQuery(''); }}
-            className="text-slate-500 hover:text-orange-600 font-semibold text-sm">← Quay lại</button>
-          <h2 className="flex-1 font-black text-slate-800">Gửi tin nhóm</h2>
-          {selectedGroup.size > 0 && (
-            <span className="bg-orange-400 text-white text-xs font-bold px-2.5 py-1 rounded-full">{selectedGroup.size} đã chọn</span>
-          )}
+      {/* Thông báo lỗi nếu có */}
+      {errorMessage && (
+        <div className="flex shrink-0 items-center justify-between bg-rose-50 px-6 py-2.5 text-xs font-bold text-rose-700 border-b border-rose-200">
+          <span>{errorMessage}</span>
+          <button
+            onClick={() => setErrorMessage('')}
+            className="text-rose-500 hover:text-rose-800 cursor-pointer"
+          >
+            <X size={15} />
+          </button>
         </div>
-        
-        {/* Search for group */}
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
-          <input value={groupSearchQuery} onChange={e => setGroupSearchQuery(e.target.value)}
-            className="w-full border border-orange-200 rounded-xl pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-orange-400 bg-white"
-            placeholder="Tìm theo tên bé, tên phụ huynh để chọn..." />
-          {groupSearchQuery && (
-            <button onClick={() => setGroupSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
-          )}
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {[
-            { label:'Chọn tất cả (đang hiển thị)', fn: () => setSelectedGroup(new Set(filteredGroupChildren.map(c => c.id))), cls:'bg-orange-50 border-orange-200 text-orange-700' },
-            { label:'👦 Bé trai',   fn: () => setSelectedGroup(new Set(filteredGroupChildren.filter(c => c.gender === 'M').map(c => c.id))), cls:'bg-blue-50 border-blue-200 text-blue-700' },
-            { label:'👧 Bé gái',   fn: () => setSelectedGroup(new Set(filteredGroupChildren.filter(c => c.gender === 'F').map(c => c.id))), cls:'bg-pink-50 border-pink-200 text-pink-700' },
-            { label:'Bỏ chọn',     fn: () => setSelectedGroup(new Set()), cls:'bg-slate-50 border-slate-200 text-slate-600' },
-          ].map(b => (
-            <button key={b.label} onClick={b.fn}
-              className={`text-xs border px-3 py-1.5 rounded-full font-semibold hover:opacity-80 transition-opacity ${b.cls}`}>
-              {b.label}
-            </button>
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
-          {filteredGroupChildren.length === 0 && (
-             <div className="col-span-3 sm:col-span-4 text-center py-4 text-slate-400 text-sm">Không tìm thấy kết quả</div>
-          )}
-          {filteredGroupChildren.map(c => {
-            const sel = selectedGroup.has(c.id);
-            const info = getInfo(c.id);
-            const primary = info.contacts.find(ct => ct.type === info.primaryContact)!;
-            const m = CONTACT_META[primary.type];
-            return (
-              <button key={c.id} onClick={() => toggleGroup(c.id)}
-                className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all ${sel ? 'bg-orange-50 border-orange-400' : 'bg-white border-slate-200 hover:border-orange-200'}`}>
-                <div className="relative">
-                  <Avatar initials={c.avatar} id={c.id} size="sm" />
-                  {sel && <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-400 rounded-full text-white text-xs flex items-center justify-center font-bold">✓</span>}
-                </div>
-                <span className="text-xs font-bold truncate w-full text-center">{c.nickname}</span>
-                <div className="flex items-center gap-1 text-[10px] text-slate-500 w-full justify-center">
-                  <span>{m.icon}</span><span className="truncate">{primary.name.split(' ').at(-1)}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        {groupSent ? (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
-            <p className="text-green-700 font-bold">✅ Đã gửi đến {selectedGroup.size} phụ huynh!</p>
-          </div>
-        ) : (
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex flex-col gap-3">
-            <p className="text-sm font-bold text-orange-800">
-              ✉️ Soạn tin gửi {selectedGroup.size > 0 ? `${selectedGroup.size} bé đã chọn` : 'nhóm'}
-            </p>
-            <p className="text-xs text-slate-500 -mt-2">Tin sẽ được gửi đến liên lạc chính (★) của mỗi bé được chọn</p>
-            <textarea value={groupMsg} onChange={e => setGroupMsg(e.target.value)} rows={3}
-              className="w-full border border-orange-200 bg-white rounded-xl p-3 text-sm focus:outline-none focus:border-orange-400 resize-none"
-              placeholder="Nội dung tin nhắn gửi nhóm..." />
-            <button onClick={sendGroupMsg} disabled={!groupMsg.trim() || selectedGroup.size === 0}
-              className="w-full bg-orange-400 hover:bg-orange-500 text-white py-3 rounded-xl font-bold transition-colors disabled:opacity-40">
-              📤 Gửi đến {selectedGroup.size} phụ huynh
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ════════════════════════════════════════════════════════
-  // VIEW: LIST
-  // ════════════════════════════════════════════════════════
-  return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <h2 className="font-black text-slate-800 text-lg">💬 Liên lạc phụ huynh</h2>
-          <p className="text-sm text-slate-400">{CHILDREN.length} gia đình · {CHILDREN.filter(c => hasUnread(c.id)).length > 0 ? `${CHILDREN.filter(c => hasUnread(c.id)).length} chưa đọc` : 'Đã đọc hết'}</p>
-        </div>
-        <button onClick={() => setView('group')}
-          className="flex items-center gap-1.5 bg-orange-50 border border-orange-300 text-orange-700 px-3 py-2 rounded-xl text-sm font-bold hover:bg-orange-100 transition-colors shadow-sm">
-          👥 Gửi nhóm
-        </button>
-      </div>
-
-      {/* Search */}
-      <div className="relative shadow-sm rounded-xl">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
-        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-          className="w-full border border-orange-200 rounded-xl pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-orange-400 bg-white"
-          placeholder="Tìm theo tên bé, tên phụ huynh, số điện thoại..." />
-        {searchQuery && (
-          <button onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
-        )}
-      </div>
-      {searchQuery && (
-        <p className="text-xs text-slate-500 -mt-2">Tìm thấy <strong>{filteredListChildren.length}</strong> kết quả</p>
       )}
 
-      {/* List */}
-      <div className="flex flex-col gap-2">
-        {sortedList.length === 0 && (
-          <div className="text-center py-10 text-slate-400">
-            <p className="text-3xl mb-2">🔍</p>
-            <p className="font-semibold">Không tìm thấy kết quả</p>
+      {/* Thân giao diện 2 cột: Danh sách phụ huynh (Trái) & Khung chat (Phải) */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Cột trái: Danh bạ phụ huynh */}
+        <aside
+          className={`min-h-0 flex-col border-r border-orange-100 bg-slate-50/50 md:w-80 lg:w-96 shrink-0 ${
+            selectedParent ? 'hidden md:flex' : 'flex w-full'
+          }`}
+        >
+          {/* Ô tìm kiếm */}
+          <div className="p-4 border-b border-orange-100/80 bg-white">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                <UserRound size={15} className="text-orange-500" />
+                Danh sách phụ huynh trong lớp
+              </span>
+              <span className="text-[11px] font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">
+                {parentContacts.length} phụ huynh
+              </span>
+            </div>
+
+            <div className="relative">
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Tìm theo tên bố mẹ hoặc tên bé..."
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-orange-400 focus:bg-white transition"
+              />
+              {searchKeyword && (
+                <button
+                  onClick={() => setSearchKeyword('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
-        )}
 
-        {sortedList.map(c => {
-          const info    = getInfo(c.id);
-          const unread  = hasUnread(c.id);
-          const lastMsg = lastMsgForChild(c.id);
-          
-          let lastMsgSenderName = '';
-          if (lastMsg && lastMsg.from === 'parent') {
-             const mContact = info.contacts.find(ct => ct.type === lastMsg.contactType);
-             if (mContact) {
-               lastMsgSenderName = `${CONTACT_META[mContact.type].icon} ${mContact.name.split(' ').at(-1)}: `;
-             }
-          }
-
-          return (
-            <button key={c.id} onClick={() => openChatForChild(c.id)}
-              className={`flex items-center gap-4 bg-white border rounded-2xl p-4 transition-all text-left hover:shadow-sm ${
-                unread ? 'border-orange-400 bg-orange-50/20' : 'border-slate-100 hover:border-orange-200'
-              }`}>
-              {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                <Avatar initials={c.avatar} id={c.id} size="md" />
-                {unread && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white" />}
+          {/* Danh sách cuộn */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {loadingContacts ? (
+              <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                <Loader2 className="animate-spin text-orange-500 mb-2" size={26} />
+                <p className="text-xs font-bold text-slate-600">Đang đồng bộ phụ huynh...</p>
               </div>
+            ) : filteredParents.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-xs text-slate-400">
+                {searchKeyword
+                  ? 'Không tìm thấy phụ huynh nào khớp với từ khóa.'
+                  : 'Chưa có dữ liệu phụ huynh nào trong lớp được phân công.'}
+              </div>
+            ) : (
+              filteredParents.map((parent) => {
+                const isSelected = selectedParent?.accountId === parent.accountId;
+                const hasExistingChat = conversations.some((conv) =>
+                  getParticipantIds(conv).includes(parent.accountId)
+                );
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-slate-800">{c.name}</span>
-                  {lastMsg && <span className="text-xs text-slate-400 ml-auto flex-shrink-0">{lastMsg.time}</span>}
+                return (
+                  <button
+                    key={parent.accountId}
+                    onClick={() => void handleSelectParent(parent)}
+                    className={`w-full text-left rounded-2xl p-3 border transition-all cursor-pointer flex items-center gap-3 ${
+                      isSelected
+                        ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20'
+                        : 'bg-white border-slate-200/80 hover:border-orange-300 hover:bg-orange-50/30'
+                    }`}
+                  >
+                    {/* Avatar phụ huynh */}
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xs font-black transition-all ${
+                        isSelected
+                          ? 'bg-white text-orange-600'
+                          : 'bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-xs'
+                      }`}
+                    >
+                      {getInitials(parent.name)}
+                    </div>
+
+                    {/* Chi tiết phụ huynh */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <p
+                          className={`font-black text-sm truncate ${
+                            isSelected ? 'text-white' : 'text-slate-800'
+                          }`}
+                        >
+                          {parent.name}
+                        </p>
+                      </div>
+
+                      <p
+                        className={`text-xs truncate font-bold mt-0.5 ${
+                          isSelected ? 'text-orange-100' : 'text-orange-600'
+                        }`}
+                      >
+                        Bé: {parent.children.join(', ')}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-1">
+                        <span
+                          className={`inline-block text-[10px] font-semibold ${
+                            isSelected
+                              ? 'text-orange-200'
+                              : hasExistingChat
+                              ? 'text-slate-500'
+                              : 'text-slate-400 italic'
+                          }`}
+                        >
+                          {hasExistingChat ? 'Đã có lịch sử trò chuyện' : 'Chưa có tin nhắn'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <ChevronRight
+                      size={16}
+                      className={`shrink-0 ${
+                        isSelected ? 'text-white' : 'text-slate-300'
+                      }`}
+                    />
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
+
+        {/* Cột phải: Khu vực trò chuyện */}
+        <main
+          className={`min-h-0 min-w-0 flex-col bg-white flex-1 ${
+            selectedParent ? 'flex w-full' : 'hidden md:flex'
+          }`}
+        >
+          {selectedParent && activeConversation ? (
+            <>
+              {/* Header cuộc trò chuyện */}
+              <div className="flex shrink-0 items-center justify-between border-b border-orange-100 bg-white px-4 sm:px-6 py-3">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <button
+                    onClick={() => {
+                      setSelectedParent(null);
+                      setActiveConversation(null);
+                    }}
+                    className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 cursor-pointer md:hidden shrink-0"
+                    title="Quay lại danh sách phụ huynh"
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+
+                  <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-sm font-black text-white shadow-xs">
+                    {getInitials(selectedParent.name)}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-sm sm:text-base font-black text-slate-800 truncate">
+                      {selectedParent.name}
+                    </h2>
+                    <p className="text-[11px] sm:text-xs text-orange-600 font-bold truncate">
+                      Phụ huynh của bé: {selectedParent.children.join(', ')}
+                    </p>
+                  </div>
                 </div>
-                
-                <p className={`text-sm truncate ${unread ? 'text-slate-800 font-semibold' : 'text-slate-500'}`}>
-                  {lastMsg
-                    ? (lastMsg.from === 'me' ? `Bạn: ${lastMsg.text}` : `${lastMsgSenderName}${lastMsg.text}`)
-                    : <span className="italic text-slate-400">Chưa có tin nhắn</span>}
-                </p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
 
-      {/* Broadcast */}
-      <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mt-2">
-        <p className="font-bold text-orange-800 mb-1">📢 Thông báo nhanh toàn lớp</p>
-        <p className="text-xs text-slate-500 mb-3">Gửi đến liên lạc chính của tất cả {CHILDREN.length} gia đình</p>
-        <textarea value={broadcast} onChange={e => setBroadcast(e.target.value)} rows={2}
-          className="w-full border border-orange-200 rounded-xl p-3 text-sm bg-white focus:outline-none focus:border-orange-400 resize-none"
-          placeholder="Nhập thông báo gửi toàn bộ phụ huynh lớp..." />
-        {broadcastSent && <p className="text-xs text-green-600 font-semibold mt-1">✅ Đã gửi thông báo đến {CHILDREN.length} phụ huynh!</p>}
-        <button onClick={handleBroadcast} disabled={!broadcast.trim()}
-          className="mt-2 w-full bg-orange-400 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-orange-500 transition-colors disabled:opacity-50 shadow-sm">
-          📤 Gửi đến tất cả
-        </button>
+                <div className="flex items-center gap-2">
+                  {selectedParent.phoneNumber && (
+                    <a
+                      href={`tel:${selectedParent.phoneNumber}`}
+                      className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition"
+                      title="Gọi điện cho phụ huynh"
+                    >
+                      <Phone size={13} />
+                      <span className="hidden sm:inline">{selectedParent.phoneNumber}</span>
+                    </a>
+                  )}
+
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                    <ShieldCheck size={13} />
+                    <span>Học sinh trong lớp</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Luồng tin nhắn */}
+              <div className="flex-1 overflow-y-auto bg-slate-50/60 p-6 space-y-4">
+                {loadingMessages ? (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                    <Loader2 className="animate-spin text-orange-500 mb-2" size={30} />
+                    <p className="text-xs font-bold text-slate-600">Đang tải lịch sử tin nhắn...</p>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center text-slate-400">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-orange-100 text-orange-500 mb-3">
+                      <MessageSquare size={32} />
+                    </div>
+                    <p className="text-base font-black text-slate-700">Chưa có tin nhắn nào</p>
+                    <p className="mt-1 text-xs text-slate-500 max-w-sm">
+                      Hãy gửi lời chào đầu tiên để trao đổi về tình hình học tập và sinh hoạt của bé với phụ huynh.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-center my-2">
+                      <span className="text-[11px] font-bold text-slate-400 bg-white/80 border border-slate-200/60 rounded-full px-3 py-1">
+                        Hội thoại được lưu trữ và bảo mật
+                      </span>
+                    </div>
+
+                    {messages.map((message, index) => {
+                      const sender = getSenderId(message);
+                      const isTeacherMessage = Boolean(
+                        currentTeacherId && sender && sender === currentTeacherId
+                      );
+                      const content = getMessageContent(message);
+                      const timeString = String(
+                        message.messageSentAt || message.MessageSentAt || message.createdAt || ''
+                      ).slice(11, 16);
+
+                      return (
+                        <div
+                          key={getMessageId(message) || index}
+                          className={`flex items-end gap-2 ${
+                            isTeacherMessage ? 'justify-end' : 'justify-start'
+                          }`}
+                        >
+                          {!isTeacherMessage && (
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[11px] font-black text-orange-700">
+                              {getInitials(selectedParent.name)}
+                            </div>
+                          )}
+
+                          <div
+                            className={`max-w-[75%] rounded-3xl px-4 py-3 text-sm shadow-xs ${
+                              isTeacherMessage
+                                ? 'rounded-br-xs bg-orange-500 text-white font-medium'
+                                : 'rounded-bl-xs bg-white text-slate-800 border border-slate-200/70'
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap break-words leading-relaxed">
+                              {content}
+                            </p>
+
+                            <div
+                              className={`mt-1.5 flex items-center gap-1 text-[10px] ${
+                                isTeacherMessage
+                                  ? 'justify-end text-orange-100'
+                                  : 'text-slate-400'
+                              }`}
+                            >
+                              <span>{timeString || 'Vừa xong'}</span>
+                              {isTeacherMessage && <CheckCheck size={13} className="text-orange-200" />}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
+
+              {/* Hộp soạn thảo tin nhắn */}
+              <div className="shrink-0 border-t border-orange-100 bg-white p-4">
+                <div className="flex items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-2 focus-within:border-orange-400 focus-within:bg-white transition">
+                  <textarea
+                    rows={2}
+                    value={draftMessage}
+                    onChange={(e) => setDraftMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        void handleSendMessage();
+                      }
+                    }}
+                    placeholder={`Nhắn tin trao đổi với phụ huynh bé ${selectedParent.children.join(', ')}... (Nhấn Enter để gửi)`}
+                    className="w-full resize-none bg-transparent px-2 py-1 text-sm text-slate-800 placeholder:text-slate-400 outline-none"
+                  />
+
+                  <button
+                    disabled={!draftMessage.trim() || sending}
+                    onClick={() => void handleSendMessage()}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm shadow-orange-500/30 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                    title="Gửi tin nhắn"
+                  >
+                    {sending ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Send size={17} />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Trạng thái chưa chọn cuộc trò chuyện nào */
+            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-slate-400">
+              <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 text-orange-400 mb-4 border border-orange-100">
+                <MessageSquare size={40} />
+              </div>
+              <h3 className="text-lg font-black text-slate-700">Chọn phụ huynh để bắt đầu trò chuyện</h3>
+              <p className="mt-1.5 max-w-sm text-xs text-slate-500 leading-relaxed">
+                Chọn một phụ huynh trong danh sách lớp học ở cột bên trái để xem lịch sử trao đổi hoặc gửi thông báo trực tiếp.
+              </p>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

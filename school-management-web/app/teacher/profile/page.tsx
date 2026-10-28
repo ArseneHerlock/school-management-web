@@ -1,149 +1,222 @@
-'use client';
-import { useState } from 'react';
-import { CLASS_INFO, CHILDREN } from '../data/mockData';
+'use client'
 
-export default function ProfilePage() {
-  const teacher = CLASS_INFO.teachers.find(t => t.id === CLASS_INFO.currentTeacher)!;
-  const otherTeacher = CLASS_INFO.teachers.find(t => t.id !== CLASS_INFO.currentTeacher)!;
-  const [editMode, setEditMode] = useState(false);
-  const [phone, setPhone] = useState('0901234567');
-  const [email, setEmail] = useState('nguyen.thi.lan@kindercare.edu.vn');
-  const [saved, setSaved] = useState(false);
+import { useEffect, useState } from 'react'
+import {
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Briefcase,
+  ShieldCheck,
+  RefreshCw,
+  School,
+  IdCard,
+} from 'lucide-react'
+import { currentUser } from '@/services/client'
+import { getClasses } from '@/services/classes'
+import { getStaff } from '@/services/staff'
 
-  const handleSave = () => {
-    setEditMode(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
+interface StaffProfile {
+  staffId: string
+  fullName: string
+  staffCode?: string
+  phoneNumber: string
+  email: string
+  address?: string
+  positionId: string
+  hireDate: string
+  status: string
+}
+
+export default function TeacherProfilePage() {
+  const [profileData, setProfileData] = useState<StaffProfile | null>(null)
+  const [assignedClassName, setAssignedClassName] = useState<string>('Chưa phân công lớp')
+  const [assignedRoom, setAssignedRoom] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+
+  async function loadTeacherProfile(): Promise<void> {
+    setIsLoading(true)
+    setErrorMessage('')
+
+    try {
+      const activeUser = currentUser()
+      if (!activeUser) return
+
+      // Tải hồ sơ từ StaffService
+      const staffResponse = await getStaff()
+      const staffList = Array.isArray(staffResponse) ? staffResponse : []
+      const matchedStaff = staffList.find((item) => item.userId === activeUser.id)
+
+      if (matchedStaff) {
+        setProfileData({ ...matchedStaff, address: matchedStaff.address ?? undefined })
+
+        // Tìm lớp mà giáo viên làm chủ nhiệm
+        const classesResponse = await getClasses()
+        const assignedClass = classesResponse.find(
+          (classItem) => classItem.giaoVienChuNhiemId === matchedStaff.staffId
+        )
+
+        if (assignedClass) {
+          setAssignedClassName(assignedClass.tenLop)
+          setAssignedRoom(assignedClass.phongHoc || 'Phòng học chính')
+        }
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Không tải được hồ sơ giáo viên'
+      setErrorMessage(msg)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadTeacherProfile()
+  }, [])
+
+  const initials = (profileData?.fullName || 'GV')
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .slice(-2)
+    .toUpperCase()
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-5">
-      {/* Profile card */}
-      <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-orange-200">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10" />
-        <div className="flex items-center gap-4 relative z-10">
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-lg"
-            style={{ background: 'rgba(255,255,255,0.2)' }}
-          >
-            {teacher.avatar}
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Tiêu đề trang */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-xs font-black tracking-wider text-orange-600 uppercase">
+            Hồ sơ tài khoản
+          </span>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight mt-1">
+            Thông tin cá nhân giáo viên
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Hồ sơ nhân sự và phân công nhiệm vụ được đồng bộ trực tiếp từ StaffService.
+          </p>
+        </div>
+
+        <button
+          onClick={loadTeacherProfile}
+          disabled={isLoading}
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 hover:border-orange-300 transition"
+        >
+          <RefreshCw size={14} className={isLoading ? 'animate-spin text-orange-500' : ''} />
+          <span>Làm mới</span>
+        </button>
+      </div>
+
+      {/* Thông báo lỗi */}
+      {errorMessage && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-bold text-rose-800">
+          {errorMessage}
+        </div>
+      )}
+
+      {/* Thẻ Hero Profile */}
+      <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-tr from-orange-500 to-amber-500 text-2xl font-black text-white shadow-lg shadow-orange-500/25">
+          {initials}
+        </div>
+
+        <div className="flex-1 text-center sm:text-left space-y-2">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+            <h2 className="text-xl font-black text-slate-900">
+              {profileData?.fullName || 'Giáo viên mầm non'}
+            </h2>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200">
+              <ShieldCheck size={13} />
+              <span>{profileData?.status || 'Đang công tác'}</span>
+            </span>
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold">{teacher.name}</h2>
-            <p className="text-orange-100">{teacher.role}</p>
-            <div className="flex gap-2 mt-2">
-              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
-                {CLASS_INFO.name}
-              </span>
-              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
-                {CLASS_INFO.room}
-              </span>
-            </div>
+
+          <p className="text-xs font-semibold text-orange-600">
+            Mã nhân sự: <span className="font-mono">{profileData?.staffCode || 'Chưa cấp mã'}</span>
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs text-slate-500">
+            <span className="flex items-center gap-1 rounded-xl bg-orange-50 px-2.5 py-1 font-bold text-orange-800 border border-orange-100">
+              <School size={14} className="text-orange-600" />
+              {assignedClassName} {assignedRoom ? `• ${assignedRoom}` : ''}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar size={14} className="text-slate-400" />
+              Ngày vào làm: {profileData?.hireDate ? String(profileData.hireDate).slice(0, 10) : '2026-09-01'}
+            </span>
           </div>
-          <button
-            onClick={() => setEditMode(!editMode)}
-            className="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-xs font-bold transition-colors"
-          >
-            {editMode ? 'Huỷ' : '✏️ Sửa'}
-          </button>
         </div>
       </div>
 
-      {/* Contact info */}
-      <div className="bg-white border border-orange-100 rounded-2xl p-5 shadow-sm">
-        <h3 className="font-bold text-slate-800 mb-4">Thông tin liên hệ</h3>
-        <div className="flex flex-col gap-3">
-          {[
-            { icon: '📱', label: 'Số điện thoại', value: phone, setter: setPhone },
-            { icon: '📧', label: 'Email', value: email, setter: setEmail },
-          ].map(f => (
-            <div key={f.label} className="flex items-center gap-3">
-              <span className="text-xl w-7">{f.icon}</span>
-              <div className="flex-1">
-                <p className="text-xs text-slate-400 font-semibold">{f.label}</p>
-                {editMode ? (
-                  <input
-                    value={f.value}
-                    onChange={e => f.setter(e.target.value)}
-                    className="w-full border border-orange-200 rounded-lg px-3 py-1.5 text-sm mt-0.5 focus:outline-none focus:border-orange-400"
-                  />
-                ) : (
-                  <p className="text-sm font-semibold text-slate-700">{f.value}</p>
-                )}
-              </div>
+      {/* Lưới chi tiết thông tin */}
+      <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-4">
+        <h3 className="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">
+          Chi tiết hồ sơ nhân sự
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <User size={18} />
             </div>
-          ))}
-
-          {/* Static fields */}
-          {[
-            { icon: '🎓', label: 'Trình độ học vấn', value: 'Cử nhân Sư phạm Mầm non' },
-            { icon: '📅', label: 'Ngày vào làm', value: '15/08/2020' },
-            { icon: '⭐', label: 'Kinh nghiệm', value: '6 năm' },
-          ].map(f => (
-            <div key={f.label} className="flex items-center gap-3">
-              <span className="text-xl w-7">{f.icon}</span>
-              <div>
-                <p className="text-xs text-slate-400 font-semibold">{f.label}</p>
-                <p className="text-sm font-semibold text-slate-700">{f.value}</p>
-              </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400">Họ và tên</p>
+              <p className="text-xs font-black text-slate-800 mt-0.5">
+                {profileData?.fullName || '—'}
+              </p>
             </div>
-          ))}
-        </div>
-
-        {editMode && (
-          <button
-            onClick={handleSave}
-            className="mt-4 w-full bg-orange-400 text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition-colors"
-          >
-            Lưu thay đổi
-          </button>
-        )}
-
-        {saved && (
-          <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2 slide-in">
-            <span>✅</span>
-            <span className="text-green-700 font-semibold text-sm">Đã lưu thông tin!</span>
           </div>
-        )}
-      </div>
 
-      {/* Co-teacher */}
-      <div className="bg-white border border-orange-100 rounded-2xl p-5 shadow-sm">
-        <h3 className="font-bold text-slate-800 mb-3">👥 Giáo viên cùng lớp</h3>
-        <div className="flex items-center gap-3 bg-pink-50 border border-pink-100 rounded-xl p-3">
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-            style={{ background: otherTeacher.color }}
-          >
-            {otherTeacher.avatar}
-          </div>
-          <div className="flex-1">
-            <p className="font-bold text-slate-800">{otherTeacher.name}</p>
-            <p className="text-sm text-pink-600">{otherTeacher.role}</p>
-          </div>
-          <button className="text-xs bg-white border border-pink-200 text-pink-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-pink-50 transition-colors">
-            💬 Nhắn tin
-          </button>
-        </div>
-      </div>
-
-      {/* Class stats */}
-      <div className="bg-white border border-orange-100 rounded-2xl p-5 shadow-sm">
-        <h3 className="font-bold text-slate-800 mb-3">📊 Thống kê lớp</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: 'Tổng học sinh', value: CHILDREN.length, icon: '👶', color: 'text-orange-500' },
-            { label: 'Nữ', value: CHILDREN.filter(c => c.gender === 'F').length, icon: '👧', color: 'text-pink-500' },
-            { label: 'Nam', value: CHILDREN.filter(c => c.gender === 'M').length, icon: '👦', color: 'text-blue-500' },
-          ].map(s => (
-            <div key={s.label} className="text-center bg-orange-50 rounded-xl p-3">
-              <div className="text-2xl mb-1">{s.icon}</div>
-              <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-slate-500 font-semibold">{s.label}</div>
+          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+              <IdCard size={18} />
             </div>
-          ))}
+            <div>
+              <p className="text-[11px] font-bold text-slate-400">Mã định danh (Staff ID)</p>
+              <p className="text-xs font-mono font-bold text-slate-800 mt-0.5">
+                {profileData?.staffId || '—'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+              <Phone size={18} />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400">Số điện thoại liên hệ</p>
+              <p className="text-xs font-bold text-slate-800 mt-0.5">
+                {profileData?.phoneNumber || 'Chưa cập nhật'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+              <Mail size={18} />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400">Địa chỉ Email</p>
+              <p className="text-xs font-bold text-slate-800 mt-0.5">
+                {profileData?.email || 'Chưa cập nhật'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-50/70 p-3.5 border border-slate-100 sm:col-span-2">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+              <MapPin size={18} />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400">Địa chỉ cư trú</p>
+              <p className="text-xs font-bold text-slate-800 mt-0.5">
+                {profileData?.address || 'Chưa cập nhật địa chỉ'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

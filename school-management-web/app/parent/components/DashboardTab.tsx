@@ -1,252 +1,358 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { ChildInfo, ParentProfile } from '../types';
-import { WEEKLY_ATTENDANCE, TIMELINE_TODAY } from '../data/mockData';
+import { useEffect, useMemo, useState } from 'react'
+import {
+  CalendarDays,
+  Sparkles,
+  Loader2,
+  BellRing,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+} from 'lucide-react'
+import { getChildAttendanceHistory, getParentSchedules, getHealthRecords } from '@/services'
+import {
+  getChildAssessmentHistory,
+  getAssessments,
+  getCriteria,
+  getActivities,
+  CriterionItem,
+  ActivityItem,
+  AssessmentItem,
+} from '@/lib/development'
+import {
+  fetchParentNotifications,
+  AppNotification,
+  REALTIME_NOTIFICATION_EVENT,
+} from '@/services/notifications'
+import { ChildInfo, ParentProfile } from '../types'
+import { AttendanceStatCards } from './dashboard/AttendanceStatCards'
+import { DevelopmentProgressCard } from './dashboard/DevelopmentProgressCard'
+import { ChildHealthTeacherSummary } from './dashboard/ChildHealthTeacherSummary'
 
-interface DashboardTabProps {
-  child: ChildInfo;
-  parent: ParentProfile;
-  onNavigateTab: (tabId: string) => void;
-}
+export default function DashboardTab({
+  childrenData,
+  parent,
+  onNavigateTab,
+}: {
+  childrenData: ChildInfo[]
+  parent: ParentProfile
+  onNavigateTab: (tab: string) => void
+}) {
+  const [selectedChildId, setSelectedChildId] = useState<string>(childrenData[0]?.id || '')
+  const [loading, setLoading] = useState(false)
 
-export default function DashboardTab({ child, parent, onNavigateTab }: DashboardTabProps) {
+  const [attendanceRecords, setAttendanceRecords] = useState<any[]>([])
+  const [classSchedules, setClassSchedules] = useState<any[]>([])
+  const [childAssessments, setChildAssessments] = useState<AssessmentItem[]>([])
+  const [systemCriteria, setSystemCriteria] = useState<CriterionItem[]>([])
+  const [systemActivities, setSystemActivities] = useState<ActivityItem[]>([])
+  const [healthRecord, setHealthRecord] = useState<any>(null)
+  const [childAlerts, setChildAlerts] = useState<AppNotification[]>([])
+
+  const activeChild = useMemo(() => {
+    return childrenData.find((c) => c.id === selectedChildId) || childrenData[0]
+  }, [childrenData, selectedChildId])
+
+  useEffect(() => {
+    if (!activeChild?.id) return
+    setLoading(true)
+
+    const fetchChildDetails = async () => {
+      try {
+        const [attRes, schRes, hisRes, criRes, actRes, heaRes] = await Promise.allSettled([
+          getChildAttendanceHistory(activeChild.id),
+          getParentSchedules({
+            classId: activeChild.classId || '',
+            thang: new Date().getMonth() + 1,
+            nam: new Date().getFullYear(),
+          }),
+          getChildAssessmentHistory(activeChild.id),
+          getCriteria({ page: 1, pageSize: 500 }),
+          getActivities({ page: 1, pageSize: 200 }),
+          getHealthRecords(activeChild.id),
+        ])
+
+        if (attRes.status === 'fulfilled') {
+          const attendancePayload: any = attRes.value
+          const list = attendancePayload?.data || attendancePayload || []
+          setAttendanceRecords(Array.isArray(list) ? list : [])
+        }
+
+        if (schRes.status === 'fulfilled') {
+          setClassSchedules(Array.isArray(schRes.value) ? schRes.value : [])
+        }
+
+        if (hisRes.status === 'fulfilled') {
+          let assList = hisRes.value
+          if (assList.length === 0) {
+            try {
+              const fallback = await getAssessments({ childId: activeChild.id, page: 1, pageSize: 200 })
+              assList = fallback.items
+            } catch {}
+          }
+          setChildAssessments(assList)
+        }
+
+        if (criRes.status === 'fulfilled') setSystemCriteria(criRes.value.items)
+        if (actRes.status === 'fulfilled') setSystemActivities(actRes.value.items)
+        if (heaRes.status === 'fulfilled' && Array.isArray(heaRes.value) && heaRes.value.length > 0) {
+          setHealthRecord(heaRes.value[0])
+        }
+
+        const alerts = await fetchParentNotifications([activeChild]).catch(() => [])
+        setChildAlerts(alerts)
+      } catch {
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void fetchChildDetails()
+
+    const handleRealtimeRefresh = () => {
+      if (!activeChild?.id) return
+      fetchParentNotifications([activeChild])
+        .then((alerts) => setChildAlerts(alerts))
+        .catch(() => {})
+      getChildAttendanceHistory(activeChild.id)
+        .then((res) => {
+          const list = res || []
+          if (Array.isArray(list)) setAttendanceRecords(list)
+        })
+        .catch(() => {})
+    }
+
+    window.addEventListener(REALTIME_NOTIFICATION_EVENT, handleRealtimeRefresh)
+    return () => {
+      window.removeEventListener(REALTIME_NOTIFICATION_EVENT, handleRealtimeRefresh)
+    }
+  }, [activeChild?.id, activeChild?.classId])
+
+  const attendanceStats = useMemo(() => {
+    let present = 0
+    let late = 0
+    let absent = 0
+
+    attendanceRecords.forEach((r) => {
+      if (r.trangThai === 'Có mặt') {
+        present++
+        if (r.gioDen && r.gioDen > '08:30:00') late++
+      } else {
+        absent++
+      }
+    })
+
+    const totalScheduled = classSchedules.length > 0 ? classSchedules.length : attendanceRecords.length
+    const rate = totalScheduled > 0 ? Math.min(100, Math.round((present / totalScheduled) * 100)) : 100
+
+    return { present, late, absent, totalScheduled, rate }
+  }, [attendanceRecords, classSchedules])
+
+  const developmentStats = useMemo(() => {
+    const activityIds = new Set(
+      childAssessments.filter((a) => Boolean(a.activityId)).map((a) => a.activityId as string)
+    )
+    const activitiesCount = activityIds.size
+
+    const criteriaMap = new Map<string, boolean>()
+    childAssessments.forEach((a) => {
+      criteriaMap.set(a.developmentCriterionId, a.result)
+    })
+
+    let passCount = 0
+    let failCount = 0
+    criteriaMap.forEach((res) => {
+      if (res) passCount++
+      else failCount++
+    })
+
+    const totalCrit = systemCriteria.length
+    const unassessedCount = Math.max(0, totalCrit - (passCount + failCount))
+    const passRate = passCount + failCount > 0 ? Math.round((passCount / (passCount + failCount)) * 100) : 0
+
+    return { activitiesCount, passCount, failCount, unassessedCount, totalCrit, passRate }
+  }, [childAssessments, systemCriteria])
+
   return (
-    <section className="space-y-5">
-      {/* Hero Card */}
-      <div className="bg-gradient-to-r from-sky-600 via-sky-500 to-indigo-600 rounded-3xl p-6 sm:p-7 text-white shadow-xs relative overflow-hidden">
-        <div className="absolute right-0 -top-6 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-xl pointer-events-none"></div>
+    <section className="space-y-4 sm:space-y-6">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-700 p-4 sm:p-6 lg:p-8 text-white shadow-lg shadow-blue-500/15">
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-white/10 blur-3xl mix-blend-overlay"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-400/20 blur-3xl mix-blend-overlay"></div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 bg-white/20 border border-white/25 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold mb-2">
-              <span>👋 Chào buổi sáng, {parent.moiQuanHe} {parent.hoTen.split(' ').slice(-1)[0]}!</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Bé <span className="text-yellow-300">{child.hoTen}</span>
+            <p className="text-blue-200 font-bold tracking-wide uppercase text-[10px] sm:text-xs mb-1">
+              CỔNG THÔNG TIN PHỤ HUYNH
+            </p>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
+              Xin chào, {parent.hoTen || 'Phụ huynh'}!
             </h2>
-            <p className="text-sky-100 text-sm font-medium mt-1">
-              {child.lop} · {child.giaoVienChuNhiem} (GVCN)
+            <p className="text-blue-100 mt-1 sm:mt-2 text-xs sm:text-sm max-w-lg leading-relaxed">
+              Theo dõi toàn diện quá trình điểm danh chuyên cần, lịch học và các đánh giá phát triển của con tại trường mầm non.
             </p>
           </div>
 
-          <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-2 text-xs">
-            <span className="bg-emerald-400/25 border border-emerald-300/60 text-white px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-300"></span> Đã có mặt tại lớp
-            </span>
-            <span className="bg-white/15 px-3 py-1.5 rounded-xl font-medium text-sky-100">
-              ⏰ Điểm danh: 07:42 sáng
-            </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => onNavigateTab('attendance')}
+              className="flex items-center gap-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold transition shadow-xs cursor-pointer"
+            >
+              <CalendarDays size={15} />
+              <span>Xem Điểm danh</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('assessment')}
+              className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-50 transition shadow-xs cursor-pointer"
+            >
+              <Sparkles size={15} />
+              <span>Đánh giá của con</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* 4 Quick Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        {/* Stat 1 */}
-        <div className="card-frame p-4 flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Điểm chuyên cần</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5">94%</p>
-            <p className="text-[11px] font-bold text-emerald-600 mt-1 flex items-center gap-0.5">
-              ↑ +2% so với tháng trước
-            </p>
-          </div>
-        </div>
-
-        {/* Stat 2 */}
-        <div className="card-frame p-4 flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 border border-amber-200 flex items-center justify-center mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Đánh giá tuần</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5">4.8 / 5</p>
-            <p className="text-[11px] font-semibold text-slate-500 mt-1">Xuất sắc & chăm ngoan</p>
-          </div>
-        </div>
-
-        {/* Stat 3 */}
-        <div className="card-frame p-4 flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 border border-rose-200 flex items-center justify-center mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Ăn & Sức khỏe</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5">Rất tốt</p>
-            <p className="text-[11px] font-semibold text-emerald-600 mt-1">Ăn hết suất, ngủ đủ</p>
-          </div>
-        </div>
-
-        {/* Stat 4 */}
-        <div className="card-frame p-4 flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sĩ số lớp Chồi 2</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-800 mt-0.5">22 bé</p>
-            <p className="text-[11px] font-semibold text-slate-500 mt-1">Có mặt: 21 · Vắng: 1</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Weekly attendance card */}
-      <div className="card-frame p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-extrabold text-slate-800 text-sm">Điểm danh tuần này (Tuần 38)</h3>
-          <span className="text-xs font-semibold text-slate-500">Tháng 9/2026</span>
-        </div>
-        <div className="grid grid-cols-5 gap-2.5">
-          {WEEKLY_ATTENDANCE.map((item, idx) => {
-            const isToday = item.dayOfWeek === 'Hôm nay';
-            const isLeave = item.status === 'leave';
-            return (
-              <div
-                key={idx}
-                className={`flex flex-col items-center p-2.5 rounded-xl border ${
-                  isToday
-                    ? 'bg-sky-50 border-sky-300 ring-1 ring-sky-300'
-                    : isLeave
-                    ? 'bg-rose-50 border-rose-200'
-                    : 'bg-slate-50 border-slate-200'
+      {childrenData.length > 1 && (
+        <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-blue-100 shadow-xs overflow-x-auto">
+          <span className="text-xs font-bold text-slate-500 shrink-0 ml-1">Chọn bé theo dõi:</span>
+          <div className="flex gap-2">
+            {childrenData.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedChildId(c.id)}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-extrabold transition-all cursor-pointer ${
+                  c.id === activeChild?.id
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                    : 'bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-700'
                 }`}
               >
-                <span className={`text-xs font-bold mb-2 ${isToday ? 'text-sky-800' : isLeave ? 'text-rose-700' : 'text-slate-600'}`}>
-                  {item.dayOfWeek}
-                </span>
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm ${
-                    isToday
-                      ? 'bg-sky-500 text-white'
-                      : isLeave
-                      ? 'bg-rose-100 text-rose-800'
-                      : 'bg-emerald-100 text-emerald-800'
+                  className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] ${
+                    c.id === activeChild?.id ? 'bg-white text-blue-600' : 'bg-slate-200 text-slate-600'
                   }`}
                 >
-                  {item.symbol}
+                  {c.avatar}
                 </div>
-                <span className={`text-[10px] mt-1 font-semibold ${isToday ? 'text-sky-700 font-bold' : isLeave ? 'text-rose-700 font-bold' : 'text-slate-500'}`}>
-                  {item.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Khung thông báo vàng - Cân bằng viền 4.5/10 */}
-      <div className="notice-frame p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="p-1.5 bg-amber-500 text-white rounded-lg shadow-xs">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-            </svg>
-          </span>
-          <h3 className="font-extrabold text-slate-800 text-sm">Thông báo quan trọng từ nhà trường</h3>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div
-            onClick={() => onNavigateTab('tuition')}
-            className="notice-subcard cursor-pointer p-3.5 flex items-start gap-3"
-          >
-            <div className="text-2xl shrink-0">💳</div>
-            <div>
-              <p className="text-sm font-bold text-slate-800">Học phí tháng 10/2026</p>
-              <p className="text-xs text-slate-500 mt-0.5">Hạn nộp: 05/10/2026 · Tổng: 4.400.000đ</p>
-              <span className="inline-block mt-2 text-xs font-bold text-sky-600 hover:underline">
-                Thanh toán ngay →
-              </span>
-            </div>
-          </div>
-
-          <div
-            onClick={() => onNavigateTab('news')}
-            className="notice-subcard cursor-pointer p-3.5 flex items-start gap-3"
-          >
-            <div className="text-2xl shrink-0">🏮</div>
-            <div>
-              <p className="text-sm font-bold text-slate-800">Đêm hội Trăng Rằm 2026</p>
-              <p className="text-xs text-slate-500 mt-0.5">17:30 ngày 28/09/2026 tại sân trường</p>
-              <span className="inline-block mt-2 text-xs font-bold text-amber-700 hover:underline">
-                Xem chi tiết sự kiện →
-              </span>
-            </div>
+                <span>{c.hoTen}</span>
+                <span className="text-[10px] opacity-80">({c.lop})</span>
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Daily schedule timeline */}
-      <div className="card-frame p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-extrabold text-slate-800 text-sm">Lịch sinh hoạt hôm nay</h3>
-          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-            Đúng tiến độ
-          </span>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-xs border border-blue-50">
+          <Loader2 className="animate-spin text-blue-500 mb-3" size={36} />
+          <p className="text-slate-500 font-bold text-sm">Đang tổng hợp dữ liệu của bé {activeChild?.hoTen}...</p>
         </div>
-        <div className="space-y-2.5">
-          {TIMELINE_TODAY.map((item, idx) => {
-            const isDone = item.status === 'done';
-            const isCurrent = item.status === 'current';
-            return (
-              <div
-                key={idx}
-                className={`flex items-center gap-3 p-2.5 rounded-xl border ${
-                  isDone
-                    ? 'bg-slate-50/70 border-slate-200/80 opacity-60'
-                    : isCurrent
-                    ? 'bg-sky-50 border-sky-300 ring-1 ring-sky-200'
-                    : 'bg-white border-slate-200'
-                }`}
-              >
-                <div
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    isDone ? 'bg-slate-400' : isCurrent ? 'bg-sky-500 animate-ping' : 'bg-slate-300'
-                  }`}
-                />
-                <span
-                  className={`text-xs font-bold w-28 shrink-0 ${
-                    isCurrent ? 'text-sky-800 font-extrabold' : 'text-slate-500'
-                  }`}
-                >
-                  {item.time}
-                </span>
-                <span
-                  className={`text-sm font-medium ${
-                    isCurrent ? 'text-sky-900 font-bold' : 'text-slate-700'
-                  }`}
-                >
-                  {item.title}
-                </span>
-                <span
-                  className={`ml-auto text-xs px-2 py-0.5 rounded-md font-bold ${
-                    isDone
-                      ? 'text-emerald-700 bg-emerald-100/70'
-                      : isCurrent
-                      ? 'text-sky-700 bg-sky-200/80 font-extrabold'
-                      : 'text-slate-400 font-medium'
-                  }`}
-                >
-                  {item.statusLabel}
+      ) : (
+        <div className="space-y-6">
+          {/* Bảng Cảnh báo & Thông báo quan trọng theo thời gian thực của bé */}
+          {childAlerts.length > 0 && (
+            <div className="rounded-3xl border border-indigo-100 bg-white p-4 sm:p-5 shadow-xs">
+              <div className="mb-3.5 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-200">
+                    <BellRing size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-800">
+                      Cảnh báo & Thông báo mới của bé {activeChild?.hoTen}
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Cập nhật trực tiếp từ điểm danh, đánh giá hoạt động, sức khỏe và học phí
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-extrabold text-indigo-700">
+                  {childAlerts.length} thông báo
                 </span>
               </div>
-            );
-          })}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                {childAlerts.slice(0, 6).map((alertItem) => {
+                  const isDanger = alertItem.severity === 'danger'
+                  const isWarning = alertItem.severity === 'warning'
+                  const isSuccess = alertItem.severity === 'success'
+
+                  const boxClass = isDanger
+                    ? 'border-rose-200 bg-rose-50/70 hover:bg-rose-50'
+                    : isWarning
+                    ? 'border-amber-200 bg-amber-50/70 hover:bg-amber-50'
+                    : isSuccess
+                    ? 'border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50'
+                    : 'border-slate-200 bg-slate-50/70 hover:bg-slate-100/70'
+
+                  const badgeClass = isDanger
+                    ? 'bg-rose-600 text-white'
+                    : isWarning
+                    ? 'bg-amber-500 text-white'
+                    : isSuccess
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-blue-600 text-white'
+
+                  return (
+                    <div
+                      key={alertItem.id}
+                      onClick={() => {
+                        if (alertItem.targetTab) onNavigateTab(alertItem.targetTab)
+                      }}
+                      className={`group flex items-start justify-between gap-3 rounded-2xl border p-3.5 transition cursor-pointer ${boxClass}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          {alertItem.badgeText && (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase ${badgeClass}`}
+                            >
+                              {(isDanger || isWarning) && <AlertTriangle size={10} />}
+                              {isSuccess && <CheckCircle2 size={10} />}
+                              <span>{alertItem.badgeText}</span>
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-extrabold text-slate-800 line-clamp-1">
+                          {alertItem.title}
+                        </p>
+                        <p className="mt-1 text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+                          {alertItem.message}
+                        </p>
+                      </div>
+                      <ChevronRight
+                        size={16}
+                        className="mt-1 shrink-0 text-slate-400 group-hover:translate-x-0.5 group-hover:text-slate-700 transition"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <AttendanceStatCards
+            stats={attendanceStats}
+            childName={activeChild?.hoTen}
+            className={activeChild?.lop}
+            onNavigateDetail={() => onNavigateTab('attendance')}
+          />
+
+          <DevelopmentProgressCard
+            stats={developmentStats}
+            childName={activeChild?.hoTen}
+            onNavigateDetail={() => onNavigateTab('assessment')}
+          />
+
+          <ChildHealthTeacherSummary
+            healthRecord={healthRecord}
+            teacherName={activeChild?.giaoVienChuNhiem}
+            teacherPhone={activeChild?.sdtGiaoVien}
+            className={activeChild?.lop}
+            onNavigateHealth={() => onNavigateTab('health')}
+            onNavigateMessages={() => onNavigateTab('messages')}
+          />
         </div>
-      </div>
+      )}
     </section>
-  );
+  )
 }

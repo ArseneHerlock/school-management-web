@@ -1,165 +1,261 @@
-'use client';
+'use client'
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage, ChildInfo } from '../types';
-
-interface MessagesTabProps {
-  child: ChildInfo;
-  messages: ChatMessage[];
-  onSendMessage: (text: string) => void;
-  onOpenCall: () => void;
-}
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { MessageCircle, Phone, Wifi, WifiOff, X } from 'lucide-react'
+import { currentUser, createHubConnection } from '@/lib/api'
+import {
+  getMyConversations,
+  getOrCreateConversation,
+  getConversationMessages,
+  sendConversationMessage,
+} from '@/services/communication'
+import { ChildInfo } from '../types'
+import { Teacher, Raw, cid, dedupeMessages, users } from './messages/types'
+import { TeacherListSidebar } from './messages/TeacherListSidebar'
+import { ChatConversationView } from './messages/ChatConversationView'
 
 export default function MessagesTab({
-  child,
-  messages,
-  onSendMessage,
+  childrenData,
   onOpenCall,
-}: MessagesTabProps) {
-  const [inputText, setInputText] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+}: {
+  child: ChildInfo
+  childrenData: ChildInfo[]
+  onOpenCall: () => void
+}) {
+  const [conversations, setConversations] = useState<Raw[]>([])
+  const [teacher, setTeacher] = useState<Teacher | null>(null)
+  const [conversation, setConversation] = useState<Raw | null>(null)
+  const [messages, setMessages] = useState<Raw[]>([])
+  const [search, setSearch] = useState('')
+  const [text, setText] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
+  const [connected, setConnected] = useState(false)
+
+  const me = String(currentUser()?.id || '').toLowerCase().trim()
+  const selectedRef = useRef<Raw | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  const teachers = useMemo(() => {
+    const map = new Map<string, Teacher>()
+    childrenData.forEach((c) => {
+      const name = c.giaoVienChuNhiem || 'Giáo viên chưa cập nhật'
+      const accountId = String(c.giaoVienUserId || '').toLowerCase().trim()
+      const key = accountId || name
+      const item = map.get(key) || {
+        accountId,
+        name,
+        classes: [],
+        children: [],
+      }
+      if (c.lop && !item.classes.includes(c.lop)) item.classes.push(c.lop)
+      if (c.hoTen && !item.children.includes(c.hoTen)) item.children.push(c.hoTen)
+      map.set(key, item)
+    })
+    return [...map.values()]
+  }, [childrenData])
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return teachers.filter(
+      (t) =>
+        !q || `${t.name} ${t.classes.join(' ')} ${t.children.join(' ')}`.toLowerCase().includes(q)
+    )
+  }, [teachers, search])
+
+  const loadConversations = useCallback(async () => {
+    try {
+      const data = await getMyConversations()
+      setConversations(Array.isArray(data) ? data : [])
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Không tải được hội thoại')
+    }
+  }, [])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    void loadConversations().finally(() => setLoading(false))
+  }, [loadConversations])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
-    onSendMessage(inputText);
-    setInputText('');
-  };
+  const openTeacher = async (t: Teacher) => {
+    try {
+      setError('')
+      let c = conversations.find((x) => users(x).includes(t.accountId))
+      if (!c) {
+        if (!t.accountId) {
+          setError('Giáo viên chưa có tài khoản liên lạc.')
+          return
+        }
+        c = await getOrCreateConversation(t.accountId)
+        setConversations((x) => [...x, c!])
+      }
+      setTeacher(t)
+      setConversation(c)
+      selectedRef.current = c
+      setLoadingMessages(true)
+      const data = await getConversationMessages(cid(c))
+      setMessages(dedupeMessages(Array.isArray(data) ? data : []))
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Không mở được hội thoại')
+    } finally {
+      setLoadingMessages(false)
+    }
+  }
+
+  useEffect(() => {
+    const hub = createHubConnection('chat')
+    let disposed = false
+    const receive = (payload: Raw, maybeIncoming?: Raw) => {
+      if (payload?.type === 'MUTATION') {
+        const activeId = cid(selectedRef.current)
+        if (activeId) {
+          void getConversationMessages(activeId)
+            .then((data) => {
+              if (!disposed && Array.isArray(data)) {
+                setMessages(dedupeMessages(data))
+              }
+            })
+            .catch(() => {})
+        }
+        return
+      }
+      const incoming = maybeIncoming || payload
+      const conversationId = maybeIncoming ? String(payload || '') : cid(incoming)
+      if (!incoming || conversationId !== cid(selectedRef.current)) return
+      setMessages((prev) => dedupeMessages([...prev, incoming]))
+    }
+    hub.on('ReceiveMessage', receive)
+    hub.on('MessageReceived', receive)
+    void hub
+      .start()
+      .then(() => {
+        if (!disposed) setConnected(true)
+      })
+      .catch(() => {
+        if (!disposed) setConnected(false)
+      })
+    return () => {
+      disposed = true
+      setConnected(false)
+      hub.off('ReceiveMessage', receive)
+      hub.off('MessageReceived', receive)
+      if (hub.state === 'Connected') void hub.stop()
+    }
+  }, [])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const send = async () => {
+    const value = text.trim()
+    const id = cid(conversation)
+    if (!value || !id || sending) return
+    setSending(true)
+    try {
+      const created = await sendConversationMessage({
+        messageConversationId: id,
+        messageContent: value,
+        messageType: 0,
+      })
+      setMessages((x) => dedupeMessages([...x, created]))
+      setText('')
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Không gửi được tin nhắn')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
-    <section className="space-y-4">
-      {/* Teacher Profile Bar with Call Actions */}
-      <div className="card-frame p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-sky-600 text-white flex items-center justify-center font-bold text-lg shadow-xs border border-sky-300">
-              NL
-            </div>
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+    <section className="flex h-[calc(100vh-140px)] min-h-[500px] flex-col overflow-hidden rounded-2xl md:rounded-[28px] border border-slate-200 bg-white shadow-xs">
+      <header className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shrink-0">
+            <MessageCircle size={19} />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-slate-800 text-base">{child.giaoVienChuNhiem}</h3>
-              <span className="text-[11px] font-bold px-2 py-0.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full">
-                GVCN
-              </span>
-            </div>
-            <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Đang trực tuyến · {child.lop} (SĐT: {child.sdtGiaoVien})
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base md:text-lg font-extrabold text-slate-900 truncate">
+              {teacher ? teacher.name : 'Liên lạc với giáo viên'}
+            </h2>
+            <p className="text-[11px] text-slate-500 truncate">
+              {teacher ? `Lớp: ${teacher.classes.join(', ')}` : 'Giáo viên chủ nhiệm của tất cả các con'}
             </p>
           </div>
         </div>
-
-        {/* Quick Call Buttons (Yêu cầu: bổ sung nút gọi điện cho giáo viên) */}
         <div className="flex items-center gap-2">
+          <span
+            className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] sm:text-[11px] font-bold sm:flex ${
+              connected ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+            }`}
+          >
+            {connected ? <Wifi size={12} /> : <WifiOff size={12} />}
+            {connected ? 'Trực tuyến' : 'Ngoại tuyến'}
+          </span>
           <button
             onClick={onOpenCall}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-700 cursor-pointer"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-            </svg>
-            <span>Gọi điện cho cô giáo</span>
+            <Phone size={14} />
+            <span className="hidden sm:inline">Gọi GV</span>
           </button>
-          <a
-            href={`tel:${child.sdtGiaoVien.replace(/\s+/g, '')}`}
-            title="Gọi trực tiếp qua SIM"
-            className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/>
-            </svg>
-          </a>
         </div>
-      </div>
+      </header>
 
-      {/* Chat History Box */}
-      <div className="card-frame flex flex-col h-[520px]">
-        {/* Messages Scroll Area */}
-        <div className="flex-1 p-4 space-y-4 overflow-y-auto parent-scroll">
-          {/* Timestamp Divider */}
-          <div className="flex items-center justify-center">
-            <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
-              Hôm nay, 25 Tháng 9
-            </span>
-          </div>
+      {error && (
+        <div className="flex shrink-0 items-center justify-between border-b border-rose-100 bg-rose-50 px-4 py-2 text-xs text-rose-700">
+          <span>{error}</span>
+          <button onClick={() => setError('')} className="cursor-pointer">
+            <X size={15} />
+          </button>
+        </div>
+      )}
 
-          {messages.map((msg) => {
-            const isParent = msg.sender === 'parent';
-            return (
-              <div
-                key={msg.id}
-                className={`flex items-start gap-2.5 max-w-[85%] ${
-                  isParent ? 'ml-auto flex-row-reverse' : ''
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-1 text-white ${
-                    isParent ? 'bg-indigo-500' : 'bg-sky-500'
-                  }`}
-                >
-                  {msg.avatarText}
-                </div>
-                <div className={`flex flex-col ${isParent ? 'items-end' : ''}`}>
-                  {!isParent && (
-                    <p className="text-[11px] font-bold text-slate-500 mb-1 ml-1">{msg.senderName}</p>
-                  )}
-                  <div
-                    className={`p-3.5 text-sm shadow-xs leading-relaxed ${
-                      isParent
-                        ? 'bg-sky-500 text-white rounded-2xl rounded-tr-xs'
-                        : 'bg-slate-100 text-slate-800 border border-slate-200 rounded-2xl rounded-tl-xs'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                  <div className={`flex items-center gap-1 mt-1 ${isParent ? 'mr-1' : 'ml-1'}`}>
-                    <span className="text-[10px] text-slate-400">{msg.time}</span>
-                    {isParent && <span className="text-sky-500 text-[10px] font-bold">✓✓</span>}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          <div ref={messagesEndRef} />
+      {/* Responsive layout: List on mobile; Chat on mobile when selected with Back button; Side-by-side on md+ */}
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {/* Sidebar list */}
+        <div
+          className={`min-h-0 flex-col border-r border-slate-100 md:w-[320px] lg:w-[360px] shrink-0 bg-[#fbfcff] ${
+            teacher ? 'hidden md:flex' : 'flex w-full'
+          }`}
+        >
+          <TeacherListSidebar
+            teachers={teachers}
+            filtered={filtered}
+            search={search}
+            setSearch={setSearch}
+            loading={loading}
+            selectedTeacher={teacher}
+            totalChildren={childrenData.length}
+            onSelectTeacher={openTeacher}
+          />
         </div>
 
-        {/* Chat Input Bar */}
-        <div className="p-3 border-t border-slate-200 bg-slate-50/50 rounded-b-2xl">
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <button
-              type="button"
-              className="p-2 text-slate-400 hover:text-sky-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-              title="Đính kèm ảnh/tài liệu"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-              </svg>
-            </button>
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Nhập tin nhắn trao đổi với cô giáo..."
-              className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm outline-hidden focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-400"
-            />
-            <button
-              type="submit"
-              className="bg-sky-500 hover:bg-sky-600 text-white p-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
-              title="Gửi tin nhắn"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
-              </svg>
-            </button>
-          </form>
-        </div>
+        {/* Conversation area */}
+        <main
+          className={`min-h-0 min-w-0 flex-col bg-[#f8f9fc] flex-1 ${
+            teacher ? 'flex w-full' : 'hidden md:flex'
+          }`}
+        >
+          <ChatConversationView
+            teacher={teacher}
+            conversation={conversation}
+            messages={messages}
+            loadingMessages={loadingMessages}
+            text={text}
+            setText={setText}
+            sending={sending}
+            onSend={send}
+            onBack={() => {
+              setTeacher(null)
+              setConversation(null)
+            }}
+            currentUserId={me}
+            bottomRef={bottomRef}
+          />
+        </main>
       </div>
     </section>
-  );
+  )
 }

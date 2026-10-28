@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import LienLac from "../pages/LienLac";
+
+export default function Page() {
+  return <LienLac />;
+}

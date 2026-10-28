@@ -1,9 +1,16 @@
-import ParentApp from '../ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'Khoảnh Khắc Lớp - Cổng Phụ Huynh OneKids',
-};
+import MomentsTab from "../components/MomentsTab";
+import { useParentContext } from "../ParentContext";
 
 export default function MomentsPage() {
-  return <ParentApp initialTab="moments" />;
+  const { child, selectMoment } = useParentContext();
+  return (
+    <MomentsTab
+      child={child}
+      moments={[]}
+      onSelectMoment={selectMoment}
+      onToggleLike={() => {}}
+    />
+  );
 }

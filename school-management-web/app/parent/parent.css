@@ -77,3 +77,10 @@
 .parent-scroll::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Khung liên lạc phụ huynh: danh sách giáo viên bên trái, chat bên phải. */
+@media (min-width: 768px) {
+  section:has(> header) > div.grid.min-h-0.flex-1 {
+    grid-template-columns: 30% 70% !important;
+  }
+}

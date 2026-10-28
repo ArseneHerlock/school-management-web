@@ -1,9 +1,16 @@
-import ParentApp from '../ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'Học Phí - Cổng Phụ Huynh OneKids',
-};
+import TuitionTab from "../components/TuitionTab";
+import { useParentContext } from "../ParentContext";
 
 export default function TuitionPage() {
-  return <ParentApp initialTab="tuition" />;
+  const { child, fees, parentId } = useParentContext();
+  return (
+    <TuitionTab
+      child={child}
+      items={fees}
+      history={[]}
+      parentId={parentId}
+    />
+  );
 }

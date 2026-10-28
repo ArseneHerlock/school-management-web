@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import LichHoc from "../pages/LichHoc";
+
+export default function Page() {
+  return <LichHoc />;
+}

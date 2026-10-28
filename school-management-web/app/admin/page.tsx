@@ -1,2 +1,5 @@
-import AdminApp from './AdminApp'
-export default function AdminPage(){return <AdminApp/>}
+import Dashboard from "./pages/Dashboard";
+
+export default function AdminDashboardPage() {
+  return <Dashboard />;
+}

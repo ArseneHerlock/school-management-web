@@ -1,175 +1,234 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { ChildInfo, TuitionItem, TuitionPaymentHistory } from '../types';
+import { useEffect, useMemo, useState } from 'react'
+import { LayoutGrid, Loader2 } from 'lucide-react'
+import { ChildInfo } from '../types'
+import {
+  FeeItem,
+  InvoiceItem,
+  BillingPeriodItem,
+  ChargeType,
+  getFees,
+  getInvoices,
+  getBillings,
+  createPayment,
+} from '@/lib/billing'
+import TuitionSummaryCards from './tuition/TuitionSummaryCards'
+import TuitionPeriodsTable from './tuition/TuitionPeriodsTable'
+import OtherFeesTable from './tuition/OtherFeesTable'
+import TuitionPaymentModal from './tuition/TuitionPaymentModal'
+
+const money = (n: any) => Number(n || 0).toLocaleString('vi-VN')
 
 interface TuitionTabProps {
-  child: ChildInfo;
-  items: TuitionItem[];
-  history: TuitionPaymentHistory[];
+  child: ChildInfo
+  items?: any[]
+  history?: any[]
+  parentId?: string | null
 }
 
-export default function TuitionTab({ child, items, history }: TuitionTabProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [selectedMethod, setSelectedMethod] = useState<string>('');
+export default function TuitionTab({ child }: TuitionTabProps) {
+  const [selectedSemester, setSelectedSemester] = useState<string>('ALL')
+  const [activeSubTab, setActiveSubTab] = useState<'hoc_phi' | 'mon_hoc'>('hoc_phi')
+  const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({})
 
-  const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+  const [loading, setLoading] = useState<boolean>(true)
+  const [liveFees, setLiveFees] = useState<FeeItem[]>([])
+  const [liveInvoices, setLiveInvoices] = useState<InvoiceItem[]>([])
+  const [liveBillings, setLiveBillings] = useState<BillingPeriodItem[]>([])
 
-  const handleConfirm = (method: string) => {
-    setSelectedMethod(method);
-    setStep(3);
-  };
+  const [payModalOpen, setPayModalOpen] = useState(false)
+  const [paying, setPaying] = useState(false)
+  const [paySuccess, setPaySuccess] = useState(false)
+
+  const fetchBillingData = async () => {
+    setLoading(true)
+    try {
+      const [feesRes, invoicesRes, billingsRes] = await Promise.allSettled([
+        getFees(),
+        child?.id ? getInvoices({ childId: child.id }) : getInvoices(),
+        child?.id ? getBillings({ childId: child.id }) : getBillings(),
+      ])
+
+      if (feesRes.status === 'fulfilled') setLiveFees(feesRes.value)
+      if (invoicesRes.status === 'fulfilled') setLiveInvoices(invoicesRes.value)
+      if (billingsRes.status === 'fulfilled') setLiveBillings(billingsRes.value)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void fetchBillingData() }, [child?.id])
+
+  const semestersList = useMemo(() => {
+    const years = new Set<string>()
+    liveFees.forEach((f) => { if (f.schoolYear) years.add(f.schoolYear) })
+    liveBillings.forEach((b) => {
+      if (b.billingPeriod) years.add(b.billingPeriod)
+      if (b.schoolYear) years.add(b.schoolYear)
+    })
+    const list = [{ id: 'ALL', label: 'Tất cả niên khóa' }]
+    Array.from(years).sort().reverse().forEach((y) => list.push({ id: y, label: y }))
+    if (list.length === 1) {
+      const curYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+      list.push({ id: curYear, label: curYear })
+    }
+    return list
+  }, [liveFees, liveBillings])
+
+  const otherFeesData = useMemo(() => {
+    const raw = liveFees.filter((f) => f.chargeType !== ChargeType.Tuition)
+    const filtered = selectedSemester === 'ALL' ? raw : raw.filter((f) => f.schoolYear === selectedSemester)
+    return filtered.map((fee, idx) => {
+      const childInvoice = liveInvoices.find((i) => String(i.childId).toLowerCase() === String(child?.id || '').toLowerCase()) || liveInvoices[0]
+      const isPaid = childInvoice && Number(childInvoice.outstandingAmount || 0) <= 0
+      const amount = Number(fee.amount || 0)
+      return {
+        stt: idx + 1,
+        maKhoan: fee.id ? fee.id.slice(0, 8).toUpperCase() : `KTT-${idx + 1}`,
+        tenKhoan: fee.name,
+        mucNop: amount,
+        batBuoc: fee.isMandatory !== false,
+        soTienNop: isPaid ? amount : 0,
+        congNo: isPaid ? 0 : amount,
+      }
+    })
+  }, [liveFees, liveInvoices, child?.id, selectedSemester])
+
+  const otherFeesTotals = useMemo(() => ({
+    totalMucNop: otherFeesData.reduce((s, x) => s + x.mucNop, 0),
+    totalSoTienNop: otherFeesData.reduce((s, x) => s + x.soTienNop, 0),
+    totalCongNo: otherFeesData.reduce((s, x) => s + x.congNo, 0),
+  }), [otherFeesData])
+
+  const tuitionPeriods = useMemo(() => {
+    const tuitionFees = liveFees.filter((f) => f.chargeType === ChargeType.Tuition)
+    const periodsMap: Record<string, any[]> = {}
+
+    tuitionFees.forEach((f) => {
+      const periodKey = f.schoolYear || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+      if (!periodsMap[periodKey]) periodsMap[periodKey] = []
+      const childInvoice = liveInvoices.find((i) => String(i.childId).toLowerCase() === String(child?.id || '').toLowerCase()) || liveInvoices[0]
+      const isPaid = childInvoice && Number(childInvoice.outstandingAmount || 0) <= 0
+      const discount = childInvoice ? Number(childInvoice.discountAmount || 0) : 0
+      const amount = Number(f.amount || 0)
+      const finalAmount = Math.max(0, amount - discount)
+
+      periodsMap[periodKey].push({
+        noiDung: f.name,
+        mucPhiBanDau: amount,
+        soTienGiam: discount,
+        mucNop: finalAmount,
+        daNop: isPaid ? finalAmount : 0,
+        congNo: isPaid ? 0 : finalAmount,
+      })
+    })
+
+    if (tuitionFees.length === 0 && liveInvoices.length > 0) {
+      liveInvoices.forEach((inv, idx) => {
+        const periodKey = inv.invoiceNumber ? `Hóa đơn ${inv.invoiceNumber}` : `Đợt thu ${idx + 1}`
+        if (!periodsMap[periodKey]) periodsMap[periodKey] = []
+        const isPaid = Number(inv.outstandingAmount || 0) <= 0
+        periodsMap[periodKey].push({
+          noiDung: `Học phí theo hóa đơn ${inv.invoiceNumber || inv.id.slice(0, 8)}`,
+          mucPhiBanDau: Number(inv.totalAmount || 0) + Number(inv.discountAmount || 0),
+          soTienGiam: Number(inv.discountAmount || 0),
+          mucNop: Number(inv.totalAmount || 0),
+          daNop: Number(inv.paidAmount || 0),
+          congNo: isPaid ? 0 : Number(inv.outstandingAmount || inv.totalAmount || 0),
+        })
+      })
+    }
+
+    return Object.entries(periodsMap).map(([name, items]) => ({
+      id: name,
+      name,
+      items,
+      subtotalMucNop: items.reduce((s, x) => s + x.mucNop, 0),
+      subtotalDaNop: items.reduce((s, x) => s + x.daNop, 0),
+      subtotalCongNo: items.reduce((s, x) => s + x.congNo, 0),
+    }))
+  }, [liveFees, liveInvoices, child?.id])
+
+  const totals = useMemo(() => {
+    let mucNop = 0, daNop = 0, congNo = 0
+    tuitionPeriods.forEach((p) => {
+      mucNop += p.subtotalMucNop
+      daNop += p.subtotalDaNop
+      congNo += p.subtotalCongNo
+    })
+    mucNop += otherFeesTotals.totalMucNop
+    daNop += otherFeesTotals.totalSoTienNop
+    congNo += otherFeesTotals.totalCongNo
+    return { mucNop, daNop, congNo }
+  }, [tuitionPeriods, otherFeesTotals])
+
+  const handleExecutePayment = async () => {
+    setPaying(true)
+    try {
+      const targetInvoice = liveInvoices.find((i) => Number(i.outstandingAmount || 0) > 0) || liveInvoices[0]
+      if (targetInvoice) {
+        await createPayment({
+          invoiceId: targetInvoice.id,
+          amount: totals.congNo || 1000000,
+          method: 2,
+          idempotencyKey: `pay-${Date.now()}`,
+        })
+      }
+      setPaySuccess(true)
+      await fetchBillingData()
+    } finally {
+      setPaying(false)
+    }
+  }
 
   return (
-    <section className="space-y-5">
-      <div className="card-frame p-5">
-        <h2 className="text-lg font-extrabold text-slate-800">Quản Lý & Thanh Toán Học Phí</h2>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">
-          Minh bạch học phí, tiền ăn và các khoản dịch vụ bán trú của bé {child.hoTen}
-        </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <LayoutGrid size={18} />
+          </div>
+          <h2 className="text-lg font-black text-slate-800">Tra cứu công nợ & Học phí</h2>
+          {loading && <Loader2 size={16} className="animate-spin text-rose-500 ml-2" />}
+        </div>
+
+        <select
+          value={selectedSemester}
+          onChange={(e) => setSelectedSemester(e.target.value)}
+          className="rounded-2xl border border-rose-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-rose-400"
+        >
+          {semestersList.map((s) => (<option key={s.id} value={s.id}>{s.label}</option>))}
+        </select>
       </div>
 
-      {/* Step 1: Bill Details */}
-      {step === 1 && (
-        <div className="space-y-5">
-          <div className="bg-gradient-to-br from-sky-600 to-sky-700 rounded-2xl p-6 text-white shadow-xs border border-sky-400/40 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-white/20 text-white">
-                Học phí Tháng 10/2026
-              </span>
-              <span className="text-xs text-amber-200 font-bold bg-amber-400/20 px-2.5 py-0.5 rounded-full">
-                Hạn nộp: 05/10/2026
-              </span>
-            </div>
-            <p className="text-xs text-sky-100 font-medium mt-2">Tổng số tiền cần thanh toán:</p>
-            <h3 className="text-3xl sm:text-4xl font-black mt-1">
-              {totalAmount.toLocaleString('vi-VN')}đ
-            </h3>
+      {/* 3 Thẻ Tổng quan */}
+      <TuitionSummaryCards totalMucNop={totals.mucNop} totalDaNop={totals.daNop} totalCongNo={totals.congNo} money={money} onOpenPayModal={() => { setPaySuccess(false); setPayModalOpen(true); }} />
 
-            {/* Details */}
-            <div className="mt-5 space-y-2 border-t border-white/20 pt-4 text-xs">
-              {items.map((item, idx) => (
-                <div key={idx} className="flex justify-between">
-                  <span className="text-sky-100">{item.name}</span>
-                  <span className="font-bold text-sm">{item.amount.toLocaleString('vi-VN')}đ</span>
-                </div>
-              ))}
-            </div>
+      {/* Tabs chuyển đổi: Học phí chính khóa vs Khoản thu khác */}
+      <div className="flex items-center gap-2 border-b border-rose-100 pb-2">
+        <button
+          onClick={() => setActiveSubTab('hoc_phi')}
+          className={`rounded-2xl px-4 py-2 text-xs font-bold transition ${activeSubTab === 'hoc_phi' ? 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-rose-50'}`}
+        >
+          Học phí chính khóa ({tuitionPeriods.length} đợt)
+        </button>
+        <button
+          onClick={() => setActiveSubTab('mon_hoc')}
+          className={`rounded-2xl px-4 py-2 text-xs font-bold transition ${activeSubTab === 'mon_hoc' ? 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-rose-50'}`}
+        >
+          Khoản thu khác ({otherFeesData.length})
+        </button>
+      </div>
 
-            <button
-              onClick={() => setStep(2)}
-              className="mt-5 w-full bg-white hover:bg-sky-50 text-sky-700 font-extrabold py-3.5 rounded-xl shadow-xs transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Tiến hành thanh toán ngay</span>
-              <span>→</span>
-            </button>
-          </div>
-
-          {/* Payment History Table */}
-          <div className="card-frame p-5">
-            <h3 className="font-extrabold text-slate-800 text-sm mb-3">Lịch sử giao dịch 3 tháng gần nhất</h3>
-            <div className="space-y-3">
-              {history.map((h) => (
-                <div key={h.id} className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                      ✓
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{h.period}</p>
-                      <p className="text-xs text-slate-400">{h.date} · {h.method}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-extrabold text-slate-800">{h.amount.toLocaleString('vi-VN')}đ</p>
-                    <span className="text-[11px] font-bold text-emerald-600">Đã thanh toán</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {activeSubTab === 'hoc_phi' ? (
+        <TuitionPeriodsTable periods={tuitionPeriods} expandedPeriods={expandedPeriods} togglePeriod={(id) => setExpandedPeriods((p) => ({ ...p, [id]: p[id] === undefined ? false : !p[id] }))} money={money} />
+      ) : (
+        <OtherFeesTable otherFeesData={otherFeesData} otherFeesTotals={otherFeesTotals} money={money} />
       )}
 
-      {/* Step 2: Payment Method */}
-      {step === 2 && (
-        <div className="card-frame p-5 space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-slate-800 text-base">Chọn phương thức thanh toán</h3>
-            <button
-              onClick={() => setStep(1)}
-              className="text-xs text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
-            >
-              ← Quay lại
-            </button>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-sky-50 border border-sky-200 flex justify-between items-center text-sm">
-            <span className="text-slate-600 font-semibold">Số tiền thanh toán:</span>
-            <span className="text-lg font-black text-sky-700">{totalAmount.toLocaleString('vi-VN')}đ</span>
-          </div>
-
-          <div className="space-y-2.5">
-            <button
-              onClick={() => handleConfirm('Ví Điện Tử MoMo')}
-              className="w-full flex items-center gap-3.5 p-3.5 rounded-xl border border-slate-200 hover:border-pink-400 hover:bg-pink-50/40 transition-all text-left cursor-pointer"
-            >
-              <span className="text-2xl">🟣</span>
-              <div>
-                <p className="text-sm font-bold text-slate-800">Ví Điện Tử MoMo</p>
-                <p className="text-xs text-slate-400">Thanh toán an toàn, tức thì qua App MoMo</p>
-              </div>
-              <span className="ml-auto text-xs font-bold text-sky-600">Chọn →</span>
-            </button>
-
-            <button
-              onClick={() => handleConfirm('VNPay QR / SmartBanking')}
-              className="w-full flex items-center gap-3.5 p-3.5 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/40 transition-all text-left cursor-pointer"
-            >
-              <span className="text-2xl">🟦</span>
-              <div>
-                <p className="text-sm font-bold text-slate-800">VNPay QR / SmartBanking</p>
-                <p className="text-xs text-slate-400">Quét mã QR từ hơn 40 ứng dụng ngân hàng</p>
-              </div>
-              <span className="ml-auto text-xs font-bold text-sky-600">Chọn →</span>
-            </button>
-
-            <button
-              onClick={() => handleConfirm('Chuyển khoản Ngân hàng (Vietcombank)')}
-              className="w-full flex items-center gap-3.5 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40 transition-all text-left cursor-pointer"
-            >
-              <span className="text-2xl">🏛️</span>
-              <div>
-                <p className="text-sm font-bold text-slate-800">Chuyển khoản Ngân hàng (Vietcombank)</p>
-                <p className="text-xs text-slate-400">Số tài khoản: 1029384756 - Trường Mầm Non OneKids</p>
-              </div>
-              <span className="ml-auto text-xs font-bold text-sky-600">Chọn →</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Success Screen */}
-      {step === 3 && (
-        <div className="card-frame p-8 text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto font-black">
-            ✓
-          </div>
-          <h3 className="text-xl font-extrabold text-slate-800">Thanh Toán Học Phí Thành Công!</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Số tiền {totalAmount.toLocaleString('vi-VN')}đ đã được ghi nhận qua phương thức {selectedMethod} vào hệ thống học vụ của bé {child.hoTen} ({child.lop}).
-          </p>
-          <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-600 max-w-xs mx-auto border border-slate-200">
-            Mã giao dịch: <span className="font-bold text-slate-800">OKD-20260925-9981</span>
-          </div>
-          <button
-            onClick={() => setStep(1)}
-            className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
-          >
-            Hoàn tất & Quay lại
-          </button>
-        </div>
-      )}
-    </section>
-  );
+      <TuitionPaymentModal isOpen={payModalOpen} onClose={() => setPayModalOpen(false)} payAmount={totals.congNo} money={money} child={child} paying={paying} paySuccess={paySuccess} onExecutePayment={handleExecutePayment} />
+    </div>
+  )
 }

@@ -1,9 +1,9 @@
-import ParentApp from '../ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'Xin Nghỉ Học - Cổng Phụ Huynh OneKids',
-};
+import AbsenceTab from "../components/AbsenceTab";
+import { useParentContext } from "../ParentContext";
 
 export default function AbsencePage() {
-  return <ParentApp initialTab="absence" />;
+  const { child } = useParentContext();
+  return <AbsenceTab child={child} />;
 }

@@ -1,9 +1,9 @@
-import ParentApp from '../ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'Học Tập & Phát Triển - Cổng Phụ Huynh OneKids',
-};
+import ProgressTab from "../components/ProgressTab";
+import { useParentContext } from "../ParentContext";
 
 export default function ProgressPage() {
-  return <ParentApp initialTab="progress" />;
+  const { child } = useParentContext();
+  return <ProgressTab child={child} />;
 }

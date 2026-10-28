@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import TinTuc from "../pages/TinTuc";
+
+export default function Page() {
+  return <TinTuc />;
+}

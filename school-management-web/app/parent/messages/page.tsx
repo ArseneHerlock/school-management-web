@@ -1,9 +1,15 @@
-import ParentApp from '../ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'Tin Nhắn Cô Giáo - Cổng Phụ Huynh OneKids',
-};
+import MessagesTab from "../components/MessagesTab";
+import { useParentContext } from "../ParentContext";
 
 export default function MessagesPage() {
-  return <ParentApp initialTab="messages" />;
+  const { child, childrenData, openCallModal } = useParentContext();
+  return (
+    <MessagesTab
+      child={child}
+      childrenData={childrenData}
+      onOpenCall={openCallModal}
+    />
+  );
 }

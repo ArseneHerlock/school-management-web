@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import DiemDanh from "../pages/DiemDanh";
+
+export default function Page() {
+  return <DiemDanh />;
+}

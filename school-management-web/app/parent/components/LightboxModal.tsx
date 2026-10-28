@@ -29,7 +29,7 @@ export default function LightboxModal({
           onClick={onClose}
           className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors cursor-pointer"
         >
-          ✕
+          
         </button>
 
         <div className="aspect-video bg-black flex items-center justify-center overflow-hidden">
@@ -50,14 +50,14 @@ export default function LightboxModal({
             <span className="text-xs text-slate-400">{moment.date}</span>
           </div>
           <h3 className="text-base font-extrabold text-slate-800">{moment.title}</h3>
-          <p className="text-xs text-slate-500 mt-1">Lớp Chồi 2 · Lưu bút hình ảnh trường mầm non OneKids</p>
+          <p className="text-xs text-slate-500 mt-1">Dữ liệu media của lớp</p>
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
             <button
               onClick={() => onToggleLike(moment.id)}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer"
             >
-              <span>{moment.liked ? '❤️ Đã thích' : '🤍 Thích khoảnh khắc'}</span>
+              <span>{moment.liked ? ' Đã thích' : ' Thích khoảnh khắc'}</span>
               <span>({moment.likes})</span>
             </button>
             <button

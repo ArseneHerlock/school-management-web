@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import ThuChi from "../pages/ThuChi";
+
+export default function Page() {
+  return <ThuChi />;
+}

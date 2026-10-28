@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import NhanSu from "../pages/NhanSu";
+
+export default function Page() {
+  return <NhanSu />;
+}

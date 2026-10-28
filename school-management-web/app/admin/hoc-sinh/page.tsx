@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import HocSinh from "../pages/HocSinh";
+
+export default function Page() {
+  return <HocSinh />;
+}

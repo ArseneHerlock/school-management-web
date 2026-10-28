@@ -1,222 +1,250 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ChildInfo, ParentProfile } from '../types';
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ChildInfo, ParentProfile } from "../types";
+import { 
+  LayoutDashboard, 
+  GraduationCap, 
+  CalendarDays,
+  Award,
+  HeartPulse, 
+  MessageSquareText, 
+  CalendarOff, 
+  WalletCards,
+  Image as ImageIcon,
+  Newspaper,
+  ClipboardCheck,
+  Sparkles,
+  X
+} from "lucide-react";
 
 interface ParentSidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
   child: ChildInfo;
   parent: ParentProfile;
   isOpen: boolean;
   onClose: () => void;
   onOpenProfile: () => void;
+  unreadMessagesCount?: number;
+}
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  badge?: string | number;
+  badgeColor?: string;
 }
 
 export default function ParentSidebar({
-  activeTab,
-  setActiveTab,
   child,
   parent,
   isOpen,
   onClose,
   onOpenProfile,
+  unreadMessagesCount = 0,
 }: ParentSidebarProps) {
-  const navItems = [
+  const pathname = usePathname();
+
+  const navItems: NavItem[] = [
     {
-      id: 'dashboard',
-      label: 'Tổng quan',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>
-        </svg>
-      ),
+      id: "dashboard",
+      label: "Tổng quan",
+      icon: <LayoutDashboard size={20} />,
     },
     {
-      id: 'progress',
-      label: 'Học tập & Sức khỏe',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/>
-        </svg>
-      ),
+      id: "attendance",
+      label: "Điểm danh & Chuyên cần",
+      icon: <ClipboardCheck size={20} />,
     },
     {
-      id: 'messages',
-      label: 'Tin nhắn cô giáo',
-      badge: '2',
-      badgeColor: 'bg-rose-500',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-      ),
+      id: "assessment",
+      label: "Đánh giá phát triển",
+      icon: <Sparkles size={20} />,
     },
     {
-      id: 'absence',
-      label: 'Xin nghỉ học',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/>
-        </svg>
-      ),
+      id: "learning",
+      label: "Góc học tập của bé",
+      icon: <GraduationCap size={20} />,
     },
     {
-      id: 'moments',
-      label: 'Khoảnh khắc lớp',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-        </svg>
-      ),
+      id: "schedule",
+      label: "Lịch học & Sinh hoạt",
+      icon: <CalendarDays size={20} />,
     },
     {
-      id: 'news',
-      label: 'Tin tức trường',
-      badge: '1',
-      badgeColor: 'bg-amber-500',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>
-        </svg>
-      ),
+      id: "good-child",
+      label: "Sổ bé ngoan",
+      icon: <Award size={20} />,
     },
     {
-      id: 'tuition',
-      label: 'Học phí',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
-        </svg>
-      ),
+      id: "health",
+      label: "Sức khoẻ",
+      icon: <HeartPulse size={20} />,
+    },
+    {
+      id: "messages",
+      label: "Liên lạc",
+      icon: <MessageSquareText size={20} />,
+      badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : undefined,
+      badgeColor: "bg-rose-500",
+    },
+    {
+      id: "absence",
+      label: "Xin nghỉ học",
+      icon: <CalendarOff size={20} />,
+    },
+    {
+      id: "tuition",
+      label: "Thanh toán",
+      icon: <WalletCards size={20} />,
+    },
+    {
+      id: "moments",
+      label: "Khoảnh khắc",
+      icon: <ImageIcon size={20} />,
+    },
+    {
+      id: "news",
+      label: "Tin tức",
+      icon: <Newspaper size={20} />,
     },
   ];
 
+  const getItemHref = (id: string) => (id === "dashboard" ? "/parent" : `/parent/${id}`);
+
+  const checkIsActive = (id: string) => {
+    const href = getItemHref(id);
+    if (id === "dashboard") {
+      return pathname === "/parent";
+    }
+    return pathname === href || pathname?.startsWith(`${href}/`);
+  };
+
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
           onClick={onClose}
         />
       )}
 
-      {/* Main Sidebar */}
       <aside
         className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:static`}
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 shadow-xl shadow-slate-200/50`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center shadow-xs shadow-sky-500/25 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/>
-                <path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/>
-              </svg>
+        <div className="p-4 sm:p-6 flex items-center justify-between">
+          <Link href="/parent" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+              <Sparkles size={20} className="animate-pulse" />
             </div>
             <div>
-              <h1 className="font-extrabold text-slate-800 text-lg leading-tight tracking-tight">OneKids</h1>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200">
-                Cổng Phụ Huynh
-              </span>
+              <h1 className="font-extrabold text-base text-slate-800 leading-tight">
+                Mầm Non Tuổi Thơ
+              </h1>
+              <p className="text-[11px] font-semibold text-indigo-600">
+                Cổng thông tin Phụ Huynh
+              </p>
             </div>
-          </div>
-
+          </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 lg:hidden cursor-pointer"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-            </svg>
+            <X size={20} />
           </button>
         </div>
 
-        {/* Active Child Profile Card */}
-        <div className="p-3 mx-3 mt-3 bg-gradient-to-br from-sky-50/80 to-slate-50 border border-sky-200 rounded-2xl shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-sky-100 text-2xl flex items-center justify-center border border-sky-200 shadow-xs shrink-0">
-              {child.avatar}
+        {/* Selected Child Mini-Card */}
+        <div className="px-4 pb-2">
+          <div className="p-3 bg-gradient-to-r from-indigo-50 via-indigo-50/50 to-transparent border border-indigo-100 rounded-2xl flex items-center gap-3 relative overflow-hidden">
+            <div className="w-10 h-10 rounded-xl bg-white border border-indigo-200 text-indigo-700 flex items-center justify-center font-black text-sm shrink-0 shadow-xs relative z-10">
+              {child.avatar || "BE"}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-extrabold text-slate-800 truncate">{child.hoTen}</p>
-                <span className="w-2 h-2 rounded-full bg-emerald-500" title="Đang học tại trường"></span>
+            <div className="min-w-0 flex-1 relative z-10">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-sm font-bold text-slate-800 truncate">
+                  {child.hoTen || "Học sinh"}
+                </p>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 animate-pulse"></span>
               </div>
-              <p className="text-xs text-sky-700 font-semibold">{child.lop} · {child.khoi}</p>
-              <p className="text-[11px] text-slate-400 font-medium">Mã: {child.maHocSinh}</p>
+              <p className="text-[11px] font-medium text-slate-500 mb-0.5 flex items-center gap-1">
+                Lớp <span className="font-bold text-indigo-600">{child.lop || "Chưa phân lớp"}</span>
+              </p>
+              <p className="text-[10px] text-slate-400 font-medium font-mono bg-slate-100 inline-block px-1.5 py-0.5 rounded">
+                ID: {child.maHocSinh ? child.maHocSinh.slice(0, 8).toUpperCase() : "--"}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Navigation List */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto parent-scroll">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
+        {/* Navigation List with Next.js Link prefetching */}
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto parent-scroll">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-3">
             Chức năng chính
           </div>
           {navItems.map((item) => {
-            const isActive = activeTab === item.id;
+            const isActive = checkIsActive(item.id);
+            const href = getItemHref(item.id);
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  onClose();
-                }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                href={href}
+                onClick={onClose}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
                   isActive
-                    ? 'bg-sky-500 text-white shadow-xs shadow-sky-500/25 font-bold'
-                    : 'text-slate-600 hover:text-sky-600 hover:bg-slate-50'
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
+                    : "text-slate-600 hover:text-indigo-700 hover:bg-indigo-50"
                 }`}
               >
-                {item.icon}
-                <span>{item.label}</span>
-                {item.badge && (
+                <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                  {item.icon}
+                </div>
+                <span className="tracking-wide">{item.label}</span>
+                {Boolean(item.badge) && (
                   <span
-                    className={`ml-auto ${item.badgeColor || 'bg-sky-500'} text-white text-xs font-bold px-2 py-0.5 rounded-full`}
+                    className={`ml-auto ${item.badgeColor || "bg-indigo-500"} text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm`}
                   >
                     {item.badge}
                   </span>
                 )}
-              </button>
+              </Link>
             );
           })}
         </nav>
 
         {/* Parent Profile Mini-Card at Footer */}
-        <div className="p-3 border-t border-slate-100">
-          <div
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+          <button
             onClick={onOpenProfile}
-            className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer transition-all group"
-            title="Nhấn để xem & chỉnh sửa thông tin chi tiết phụ huynh"
+            className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md cursor-pointer transition-all group text-left"
           >
-            <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-              {parent.hoTen.split(' ').slice(-1)[0]?.slice(0, 2).toUpperCase() || 'PH'}
+            <div className="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0 overflow-hidden">
+              {parent.avatar ? (
+                <img src={parent.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                parent.hoTen
+                  .split(" ")
+                  .slice(-1)[0]
+                  ?.slice(0, 2)
+                  .toUpperCase() || "PH"
+              )}
             </div>
-            <div className="min-w-0 flex-1 text-left">
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-bold text-slate-800 truncate group-hover:text-sky-600">{parent.hoTen}</p>
-                <span className="text-[10px] bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded font-bold">{parent.moiQuanHe}</span>
-              </div>
-              <p className="text-xs text-slate-500 truncate">{parent.soDienThoai}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                {parent.hoTen || "Phụ huynh"}
+              </p>
+              <p className="text-[10px] font-medium text-slate-400 truncate">
+                {parent.soDienThoai || parent.moiQuanHe || "Phụ huynh bé"}
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenProfile();
-              }}
-              title="Xem thông tin chi tiết"
-              className="p-1.5 text-slate-400 group-hover:text-sky-600 hover:bg-white rounded-lg transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </button>
-          </div>
+          </button>
         </div>
       </aside>
     </>

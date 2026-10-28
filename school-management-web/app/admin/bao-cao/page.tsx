@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import BaoCao from "../pages/BaoCao";
+
+export default function Page() {
+  return <BaoCao />;
+}

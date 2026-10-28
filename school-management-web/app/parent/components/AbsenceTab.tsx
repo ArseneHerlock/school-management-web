@@ -1,192 +1,184 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { AbsenceRequest, ChildInfo } from '../types';
+import { useEffect, useState } from "react";
+import { CalendarOff, Send, Clock, CheckCircle2, XCircle, FileText, Loader2 } from "lucide-react";
+import { getLeavesByChild, submitLeave } from "@/services/leave";
+import { ChildInfo } from "../types";
 
-interface AbsenceTabProps {
-  child: ChildInfo;
-  absences: AbsenceRequest[];
-  onSubmitAbsence: (newAbsence: Omit<AbsenceRequest, 'id' | 'createdAt'>) => void;
-}
+export default function AbsenceTab({ child }: { child: ChildInfo }) {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    fromDate: new Date().toISOString().slice(0, 10),
+    toDate: new Date().toISOString().slice(0, 10),
+    reason: "Nghỉ ốm",
+    note: "",
+  });
+  const [msg, setMsg] = useState("");
 
-export default function AbsenceTab({ child, absences, onSubmitAbsence }: AbsenceTabProps) {
-  const [selectedReason, setSelectedReason] = useState<'sick' | 'family' | 'travel' | 'other'>('sick');
-  const [fromDate, setFromDate] = useState('2026-09-26');
-  const [toDate, setToDate] = useState('2026-09-26');
-  const [note, setNote] = useState('');
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const load = () => {
+    setLoading(true);
+    getLeavesByChild(child.id)
+      .then(x => setRows(Array.isArray(x) ? x : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
 
-  const reasonOptions: Array<{ id: 'sick' | 'family' | 'travel' | 'other'; icon: string; label: string }> = [
-    { id: 'sick', icon: '🤒', label: 'Bé bị ốm/sốt' },
-    { id: 'family', icon: '👨‍👩‍👧', label: 'Việc gia đình' },
-    { id: 'travel', icon: '✈️', label: 'Đi du lịch/về quê' },
-    { id: 'other', icon: '📝', label: 'Lý do khác' },
-  ];
+  useEffect(() => {
+    if (child.id) load();
+  }, [child.id]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const reasonTitles = {
-      sick: 'Bé bị ốm/sốt cần theo dõi',
-      family: 'Việc gia đình',
-      travel: 'Đi du lịch/về quê cùng gia đình',
-      other: 'Lý do cá nhân',
-    };
+  const submit = async () => {
+    if (!form.reason.trim()) {
+      setMsg("Vui lòng nhập lý do nghỉ.");
+      return;
+    }
+    setSubmitting(true);
+    setMsg("");
+    try {
+      await submitLeave({ subjectType: "Child", childId: child.id, ...form });
+      setMsg("Đã gửi đơn xin nghỉ thành công!");
+      setForm({ ...form, note: "" });
+      load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Không thể gửi đơn");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    onSubmitAbsence({
-      reasonCategory: selectedReason,
-      reasonTitle: reasonTitles[selectedReason],
-      fromDate,
-      toDate,
-      note: note.trim() || 'Bé nghỉ phép theo nguyện vọng gia đình',
-      status: 'pending',
-    });
-
-    setNote('');
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 4000);
+  const getStatusDisplay = (status: number | string) => {
+    if (status === 0 || status === '0' || status === 'pending' || status === 'Pending') {
+      return { icon: <Clock size={16} />, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", label: "Chờ duyệt" };
+    }
+    if (status === 1 || status === '1' || status === 'approved' || status === 'Approved') {
+      return { icon: <CheckCircle2 size={16} />, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", label: "Đã duyệt" };
+    }
+    if (status === 2 || status === '2' || status === 'rejected' || status === 'Rejected') {
+      return { icon: <XCircle size={16} />, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200", label: "Từ chối" };
+    }
+    return { icon: <Clock size={16} />, color: "text-slate-600", bg: "bg-slate-50", border: "border-slate-200", label: "Không rõ" };
   };
 
   return (
-    <section className="space-y-5">
-      <div className="card-frame p-5">
-        <h2 className="text-lg font-extrabold text-slate-800">Gửi Đơn Xin Nghỉ Học</h2>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">
-          Đơn xin nghỉ của bé {child.hoTen} sẽ được gửi trực tiếp đến giáo viên chủ nhiệm & nhà trường
-        </p>
+    <section className="space-y-6 lg:flex lg:gap-8 lg:space-y-0">
+      {/* Form xin nghỉ */}
+      <div className="lg:w-5/12 space-y-6">
+        <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+              <CalendarOff size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-800">Xin nghỉ học</h2>
+              <p className="text-sm font-medium text-slate-500 mt-1">
+                Tạo đơn xin nghỉ phép cho {child.hoTen}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Từ ngày</label>
+                <input
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                  type="date"
+                  value={form.fromDate}
+                  onChange={e => setForm({ ...form, fromDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Đến ngày</label>
+                <input
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                  type="date"
+                  value={form.toDate}
+                  onChange={e => setForm({ ...form, toDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Lý do nghỉ</label>
+              <select
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                value={form.reason}
+                onChange={e => setForm({ ...form, reason: e.target.value })}
+              >
+                <option value="Nghỉ ốm">Nghỉ ốm / Khám bệnh</option>
+                <option value="Việc gia đình">Việc gia đình</option>
+                <option value="Đi du lịch">Đi du lịch</option>
+                <option value="Lý do khác">Lý do khác</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Chi tiết (Không bắt buộc)</label>
+              <textarea
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all resize-none"
+                rows={3}
+                value={form.note}
+                onChange={e => setForm({ ...form, note: e.target.value })}
+                placeholder="Ví dụ: Cháu bị sốt nhẹ cần đi khám..."
+              />
+            </div>
+
+            {msg && (
+              <div className={`p-4 rounded-xl text-sm font-bold ${msg.includes("thành công") ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-rose-50 text-rose-700 border border-rose-200"}`}>
+                {msg}
+              </div>
+            )}
+
+            <button
+              onClick={() => void submit()}
+              disabled={submitting}
+              className="w-full rounded-2xl bg-indigo-600 text-white py-4 font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              {submitting ? <Loader2 className="animate-spin" size={20} /> : <><Send size={18} /> Gửi đơn xin nghỉ</>}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {showSuccessToast && (
-        <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            Đã gửi đơn xin nghỉ học thành công đến {child.giaoVienChuNhiem}!
-          </div>
-          <button onClick={() => setShowSuccessToast(false)} className="text-emerald-700 hover:text-emerald-900 cursor-pointer">
-            ✕
-          </button>
-        </div>
-      )}
+      {/* Danh sách đơn */}
+      <div className="lg:w-7/12">
+        <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+          <h3 className="font-extrabold text-lg text-slate-800 mb-6 flex items-center gap-2">
+            <FileText size={20} className="text-slate-400" /> Lịch sử đơn từ
+          </h3>
 
-      {/* Form Card */}
-      <form onSubmit={handleSubmit} className="card-frame p-5 space-y-5">
-        {/* Reasons Selector */}
-        <div>
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-            Lý do nghỉ học
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {reasonOptions.map((opt) => {
-              const isSelected = selectedReason === opt.id;
-              return (
-                <button
-                  type="button"
-                  key={opt.id}
-                  onClick={() => setSelectedReason(opt.id)}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                    isSelected
-                      ? 'border-sky-500 bg-sky-50 shadow-xs'
-                      : 'border-slate-200 bg-slate-50 hover:border-sky-300'
-                  }`}
-                >
-                  <span className="text-2xl block mb-1">{opt.icon}</span>
-                  <span className="text-xs font-bold text-slate-800">{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Date inputs */}
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-1">Từ ngày</label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-hidden focus:border-sky-500 transition-all"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-1">Đến hết ngày</label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-hidden focus:border-sky-500 transition-all"
-              required
-            />
-          </div>
-        </div>
-
-        {/* Detailed Note */}
-        <div>
-          <label className="block text-xs font-bold text-slate-600 mb-1">
-            Ghi chú chi tiết / Dặn dò cô giáo
-          </label>
-          <textarea
-            rows={3}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ví dụ: Bé bị sốt nhẹ 38 độ, gia đình xin phép cho bé nghỉ ngơi theo dõi tại nhà..."
-            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm outline-hidden focus:border-sky-500 transition-all resize-none placeholder:text-slate-400"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
-          </svg>
-          <span>Gửi đơn xin nghỉ học</span>
-        </button>
-      </form>
-
-      {/* Absence History */}
-      <div className="card-frame p-5">
-        <h3 className="font-extrabold text-slate-800 text-sm mb-3">Lịch sử xin nghỉ học gần đây</h3>
-        <div className="space-y-3">
-          {absences.map((abs) => {
-            const isApproved = abs.status === 'approved';
-            return (
-              <div
-                key={abs.id}
-                className={`flex items-center justify-between p-3 rounded-xl border ${
-                  isApproved
-                    ? 'bg-slate-50 border-slate-200'
-                    : 'bg-amber-50/70 border-amber-300'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold ${
-                      isApproved ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}
-                  >
-                    {isApproved ? '✓' : '⏳'}
+          {loading ? (
+            <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-indigo-500" /></div>
+          ) : rows.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
+              <CalendarOff size={40} className="mx-auto mb-3 text-slate-300" />
+              <p className="text-sm font-bold text-slate-600">Chưa có đơn xin nghỉ nào</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {rows.map((x) => {
+                const status = getStatusDisplay(x.status);
+                return (
+                  <div key={x.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                       <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-slate-800 text-sm">{x.reason}</span>
+                          <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${status.bg} ${status.color} ${status.border}`}>
+                             {status.icon} {status.label}
+                          </span>
+                       </div>
+                       <p className="text-xs text-slate-500 font-medium">
+                         Từ <strong className="text-slate-700">{x.fromDate?.slice(0, 10)}</strong> đến <strong className="text-slate-700">{x.toDate?.slice(0, 10)}</strong>
+                       </p>
+                       {x.note && <p className="text-xs text-slate-400 mt-2 bg-white px-2 py-1.5 rounded-lg border border-slate-100 inline-block">{x.note}</p>}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">{abs.reasonTitle}</p>
-                    <p className="text-xs text-slate-500">
-                      {abs.fromDate} đến {abs.toDate} · &quot;{abs.note}&quot;
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${
-                    isApproved
-                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                      : 'text-amber-700 bg-amber-100 border-amber-300'
-                  }`}
-                >
-                  {isApproved ? 'Cô giáo đã duyệt' : 'Đang chờ cô duyệt'}
-                </span>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </section>

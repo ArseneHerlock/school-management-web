@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import Khoi from "../pages/Khoi";
+
+export default function Page() {
+  return <Khoi />;
+}

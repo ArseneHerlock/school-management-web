@@ -1,413 +1,471 @@
 'use client';
-import { useState, useRef } from 'react';
-import { CHILDREN, PHOTO_ALBUMS, UNSPLASH } from '../data/mockData';
-import Avatar from '../components/Avatar';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useState, useEffect } from 'react';
+import {
+  Camera,
+  Upload,
+  Plus,
+  Image as ImageIcon,
+  Loader2,
+  Trash2,
+  Inbox,
+  Video,
+  Filter,
+  Eye,
+  Sparkles,
+  Users,
+  AlertCircle,
+  Calendar,
+  ShieldAlert,
+} from 'lucide-react';
+import { uploadMedia, getMediaUrl, api, currentUser } from '@/services';
+import { loadLiveTeacherContext } from '../data';
+import MediaLightbox from '@/app/admin/components/shared/MediaLightbox';
+import Pagination from '@/app/admin/components/shared/Pagination';
 
-type ClassAlbum = {
-  id: number;
+interface AlbumItem {
+  id: string;
+  url: string;
   title: string;
   date: string;
-  photos: number;
-  cover: string;
-  tags: string[];
-};
+  type: 'image' | 'video';
+  category: string;
+  createdBy?: string;
+}
 
-type ChildPhoto = {
-  id: string;
-  childId: number;
-  src: string;
-  caption: string;
-  date: string;
-  sessionLabel: string;
-};
-
-// Mock child photos
-const INIT_CHILD_PHOTOS: ChildPhoto[] = [
-  { id:'cp1', childId:1,  src:'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop&sig=1', caption:'Tranh vẽ gia đình', date:'2026-09-15', sessionLabel:'Tiết tạo hình' },
-  { id:'cp2', childId:1,  src:'https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?w=400&h=400&fit=crop&sig=2', caption:'Bức tranh trường mầm non', date:'2026-09-10', sessionLabel:'Tiết tạo hình' },
-  { id:'cp3', childId:3,  src:'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop&sig=3', caption:'Hoa nặn đất sét', date:'2026-09-14', sessionLabel:'Hoạt động thủ công' },
-  { id:'cp4', childId:10, src:'https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?w=400&h=400&fit=crop&sig=4', caption:'Tranh màu nước mùa thu', date:'2026-09-15', sessionLabel:'Tiết tạo hình' },
-  { id:'cp5', childId:10, src:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=400&fit=crop&sig=5', caption:'Cắt dán bướm giấy', date:'2026-09-12', sessionLabel:'Hoạt động thủ công' },
-  { id:'cp6', childId:6,  src:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&sig=6', caption:'Mô hình nhà từ khối gỗ', date:'2026-09-11', sessionLabel:'Xây dựng sáng tạo' },
-  { id:'cp7', childId:13, src:'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=400&fit=crop&sig=7', caption:'Tranh con vật', date:'2026-09-16', sessionLabel:'Tiết tạo hình' },
+const CATEGORIES = [
+  'Tất cả',
+  'Hoạt động học tập',
+  'Vui chơi ngoài trời',
+  'Bữa ăn - Giấc ngủ',
+  'Sự kiện & Dã ngoại',
 ];
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+export default function TeacherAlbumPage() {
+  const [photos, setPhotos] = useState<AlbumItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'warning' } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
+  const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+  const [currentCategoryForUpload, setCurrentCategoryForUpload] = useState<string>('Hoạt động học tập');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [classInfo, setClassInfo] = useState<any>(null);
+  const itemsPerPage = 12;
 
-export default function AlbumPage() {
-  const [tab, setTab] = useState<'class' | 'child'>('class');
+  const activeUserId = currentUser()?.id;
+  const isUserAdmin = currentUser()?.roles.includes('ADMIN');
 
-  // ── Class album state ──
-  const [albums, setAlbums] = useState<ClassAlbum[]>(PHOTO_ALBUMS);
-  const [selectedAlbum, setSelectedAlbum] = useState<number | null>(null);
-  const [showCreateAlbum, setShowCreateAlbum] = useState(false);
-  const [showAddClassPhoto, setShowAddClassPhoto] = useState(false);
-  const [classPhotoCaption, setClassPhotoCaption] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-  const [newTag, setNewTag] = useState('');
+  const loadPhotos = async () => {
+    setLoading(true);
+    try {
+      const context = await loadLiveTeacherContext();
+      setClassInfo(context.cls);
+      const currentClassId = String(context.cls?.id || '');
+      const currentClassName = context.cls?.tenLop || '';
 
-  // ── Child portfolio state ──
-  const [childPhotos, setChildPhotos] = useState<ChildPhoto[]>(INIT_CHILD_PHOTOS);
-  const [selectedChild, setSelectedChild] = useState<number | null>(null);
-  const [viewPhoto, setViewPhoto] = useState<ChildPhoto | null>(null);
-  const [showAddPhoto, setShowAddPhoto] = useState(false);
-  const [addPhotoChildId, setAddPhotoChildId] = useState<number | null>(null);
-  const [newCaption, setNewCaption] = useState('');
-  const [newSession, setNewSession] = useState('');
-  const [searchChild, setSearchChild] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+      const res = await api.get<any>('learning', '/api/learning/products?pageSize=100').catch(() => []);
+      const list = Array.isArray(res) ? res : (res as any)?.items || [];
 
-  const addClassAlbum = () => {
-    if (!newTitle.trim()) return;
-    setAlbums(p => [...p, { id: p.length+1, title: newTitle, date: new Date().toLocaleDateString('vi-VN'), photos:0, cover:'outdoor', tags: newTag ? [newTag] : [] }]);
-    setNewTitle(''); setNewTag(''); setShowCreateAlbum(false);
+      // Lọc các khoảnh khắc thuộc lớp:
+      // - childId trùng với classId
+      // - hoặc description có tag [CLASS:
+      const classItems: AlbumItem[] = list
+        .filter((item: any) => {
+          const desc = String(item.description || '');
+          const isClassTagged = desc.includes('[CLASS:');
+          const isClassIdMatched = currentClassId && String(item.childId) === currentClassId;
+          const isNameMatched = currentClassName && desc.toLowerCase().includes(currentClassName.toLowerCase());
+          return isClassTagged || isClassIdMatched || isNameMatched;
+        })
+        .map((item: any) => {
+          const mediaIdentifier = item.mediaId || item.mediaUrl || item.url || '';
+          const url = getMediaUrl(mediaIdentifier);
+          const rawDesc = String(item.description || '');
+
+          // Trích xuất chuyên mục từ tag [CAT:...]
+          let itemCategory = 'Hoạt động học tập';
+          const catMatch = rawDesc.match(/\[CAT:([^\]]+)\]/i);
+          if (catMatch && CATEGORIES.includes(catMatch[1].trim())) {
+            itemCategory = catMatch[1].trim();
+          }
+
+          const isVideo = String(url).match(/\.(mp4|webm|ogg|mov)$/i);
+          let rawTitle = String(item.title || item.tieuDe || '').trim();
+          if (!rawTitle || /^\d{6,}$/.test(rawTitle) || /^(IMG|VID|image|photo|upload)[_\d-]+$/i.test(rawTitle)) {
+            const dateStr = String(item.createdAtUtc || item.createdAt || '').slice(0, 10);
+            rawTitle = `${itemCategory}${dateStr ? ` (${dateStr})` : ''}`;
+          }
+
+          return {
+            id: String(item.id),
+            url,
+            title: rawTitle,
+            date: String(item.createdAtUtc || item.createdAt || '').slice(0, 10),
+            type: isVideo ? 'video' : 'image',
+            category: itemCategory,
+            createdBy: item.createdBy ? String(item.createdBy) : undefined,
+          };
+        });
+
+      setPhotos(classItems);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAddChildPhoto = () => {
-    if (!addPhotoChildId || !newCaption.trim()) return;
-    const now = new Date().toISOString().split('T')[0];
-    // Simulate adding a photo (use a placeholder URL since we can't upload real files in demo)
-    const colors = ['f97316','ec4899','3b82f6','a855f7','22c55e','f59e0b'];
-    const clr = colors[addPhotoChildId % colors.length];
-    const newPhoto: ChildPhoto = {
-      id: `cp${Date.now()}`,
-      childId: addPhotoChildId,
-      src: `https://placehold.co/400x400/${clr}/ffffff?text=${encodeURIComponent(newCaption.slice(0,10))}`,
-      caption: newCaption,
-      date: now,
-      sessionLabel: newSession || 'Tiết học',
-    };
-    setChildPhotos(p => [newPhoto, ...p]);
-    setNewCaption(''); setNewSession(''); setShowAddPhoto(false); setAddPhotoChildId(null);
+  useEffect(() => {
+    void loadPhotos();
+  }, []);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const currentClassId = classInfo?.id || classInfo?.Id;
+    if (!currentClassId) {
+      setMessage({
+        text: 'Chưa xác định được lớp học của giáo viên. Vui lòng thử lại sau.',
+        type: 'error',
+      });
+      return;
+    }
+
+    setUploading(true);
+    setMessage(null);
+
+    try {
+      let successCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadRes = await uploadMedia(file);
+        const uploadedMediaId = uploadRes.id || uploadRes.mediaId || '';
+
+        if (uploadedMediaId) {
+          const classNameStr = classInfo?.tenLop || 'Lớp của cô';
+          const tag = `[CLASS:${currentClassId}:${classNameStr}] [CAT:${currentCategoryForUpload}]`;
+          let cleanTitle = file.name.replace(/\.[^/.]+$/, '').trim();
+          if (!cleanTitle || /^\d{6,}$/.test(cleanTitle) || /^(IMG|VID|image|photo|upload)[_\d-]+$/i.test(cleanTitle)) {
+            cleanTitle = `${currentCategoryForUpload} - ${classNameStr}`;
+          }
+
+          await api.post('learning', '/api/learning/products', {
+            childId: currentClassId,
+            activityId: null,
+            mediaId: uploadedMediaId,
+            title: cleanTitle,
+            description: `${tag} Khoảnh khắc sinh hoạt lớp ${classNameStr}`,
+          });
+          successCount++;
+        }
+      }
+
+      await loadPhotos();
+      setMessage({
+        text: `Đã đăng thành công ${successCount} hình ảnh/video khoảnh khắc vào Album lớp!`,
+        type: 'success',
+      });
+    } catch (err: any) {
+      setMessage({
+        text: err instanceof Error ? err.message : 'Tải phương tiện lên thất bại. Vui lòng thử lại.',
+        type: 'error',
+      });
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
-  const selectedAlbumData = albums.find(a => a.id === selectedAlbum);
-  const selectedChildData  = CHILDREN.find(c => c.id === selectedChild);
-  const selectedChildPhotos = childPhotos.filter(p => p.childId === selectedChild).sort((a,b) => b.date.localeCompare(a.date));
+  const handleDelete = async (id: string, createdBy?: string) => {
+    // Kiểm tra quyền trước khi gửi yêu cầu
+    if (!isUserAdmin && createdBy && activeUserId && createdBy !== activeUserId) {
+      setMessage({
+        text: 'Bạn không có quyền xóa khoảnh khắc này. Chỉ người đã đăng hoặc Quản trị viên mới có quyền xóa.',
+        type: 'warning',
+      });
+      return;
+    }
 
-  const filteredChildren = CHILDREN.filter(c =>
-    c.nickname.toLowerCase().includes(searchChild.toLowerCase()) ||
-    c.name.toLowerCase().includes(searchChild.toLowerCase())
+    if (!confirm('Bạn có chắc chắn muốn xóa khoảnh khắc lớp học này không?')) return;
+
+    try {
+      await api.delete('learning', `/api/learning/products/${id}`);
+      setPhotos((prev) => prev.filter((x) => x.id !== id));
+      setMessage({
+        text: 'Đã xóa khoảnh khắc thành công khỏi album lớp.',
+        type: 'success',
+      });
+    } catch (err: any) {
+      const is403 = err?.status === 403 || String(err?.message || '').includes('403');
+      if (is403) {
+        setMessage({
+          text: 'Bạn không có quyền xóa khoảnh khắc này (chỉ người đăng hoặc Quản trị viên mới được xóa).',
+          type: 'warning',
+        });
+      } else {
+        setMessage({
+          text: 'Không thể xóa khoảnh khắc từ hệ thống.',
+          type: 'error',
+        });
+      }
+    }
+  };
+
+  const filteredPhotos = photos.filter((p) => {
+    if (selectedCategory === 'Tất cả') return true;
+    return p.category === selectedCategory;
+  });
+
+  const totalPages = Math.ceil(filteredPhotos.length / itemsPerPage) || 1;
+  const paginatedPhotos = filteredPhotos.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
-  const photoCountForChild = (id: number) => childPhotos.filter(p => p.childId === id).length;
+  const lightboxItems = filteredPhotos.map((p) => ({
+    id: p.id,
+    url: p.url,
+    title: p.title,
+    date: p.date,
+    type: p.type,
+  }));
+
+  const openLightbox = (index: number) => {
+    const globalIdx = (currentPage - 1) * itemsPerPage + index;
+    setLightboxIndex(globalIdx);
+    setLightboxOpen(true);
+  };
+
+  const className = classInfo?.tenLop || 'Lớp của cô';
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4">
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* Header */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-orange-100 bg-white p-6 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
+              KHOẢNH KHẮC & ALBUM LỚP
+            </span>
+            <span className="text-xs text-slate-400 font-semibold">
+              · Lớp {className}
+            </span>
+          </div>
+          <h1 className="text-2xl font-black text-slate-800 mt-1">
+            Album Khoảnh Khắc Lớp Học
+          </h1>
+          <p className="mt-1 text-xs text-slate-500">
+            Tổng hợp toàn bộ hình ảnh và video hoạt động chung của lớp học. Phụ huynh trong lớp đều có thể xem.
+          </p>
+        </div>
 
-      {/* ── Tabs ── */}
-      <div className="flex gap-2">
-        <button onClick={() => setTab('class')}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${tab==='class'?'bg-orange-400 text-white shadow-md':'bg-white border border-orange-200 text-orange-600 hover:bg-orange-50'}`}>
-          📸 Album lớp
-        </button>
-        <button onClick={() => setTab('child')}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${tab==='child'?'bg-orange-400 text-white shadow-md':'bg-white border border-orange-200 text-orange-600 hover:bg-orange-50'}`}>
-          🎨 Sản phẩm của bé
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <select
+            value={currentCategoryForUpload}
+            onChange={(e) => setCurrentCategoryForUpload(e.target.value)}
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 outline-none focus:border-orange-400 cursor-pointer"
+          >
+            {CATEGORIES.filter((c) => c !== 'Tất cả').map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+
+          <label className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-xs font-black text-white shadow-sm shadow-orange-500/30 hover:from-orange-600 hover:to-amber-600 cursor-pointer transition">
+            {uploading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Upload size={16} />
+            )}
+            <span>{uploading ? 'Đang tải lên...' : 'Đăng ảnh / Video lớp'}</span>
+            <input
+              type="file"
+              multiple
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={handleUpload}
+              disabled={uploading}
+            />
+          </label>
+        </div>
+      </header>
+
+      {/* Thông báo thông điệp */}
+      {message && (
+        <div
+          className={`rounded-2xl p-4 text-xs font-bold flex items-center justify-between shadow-xs ${
+            message.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : message.type === 'warning'
+              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+              : 'bg-rose-50 text-rose-800 border border-rose-200'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {message.type === 'warning' ? (
+              <ShieldAlert size={16} className="text-amber-600" />
+            ) : (
+              <AlertCircle size={16} />
+            )}
+            <span>{message.text}</span>
+          </div>
+          <button
+            onClick={() => setMessage(null)}
+            className="text-slate-400 hover:text-slate-700 font-bold ml-4 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Tabs phân loại chuyên mục */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <Filter size={15} className="text-slate-400 mr-1" />
+        {CATEGORIES.map((categoryName) => (
+          <button
+            key={categoryName}
+            onClick={() => {
+              setSelectedCategory(categoryName);
+              setCurrentPage(1);
+            }}
+            className={`whitespace-nowrap rounded-2xl px-4 py-2 text-xs font-black transition cursor-pointer ${
+              selectedCategory === categoryName
+                ? 'bg-orange-500 text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50 hover:border-orange-200'
+            }`}
+          >
+            {categoryName}
+          </button>
+        ))}
       </div>
 
-      {/* ════════════════════════════════════════════════════════
-          TAB 1 — CLASS ALBUM
-         ════════════════════════════════════════════════════════ */}
-      {tab === 'class' && !selectedAlbum && (
-        <>
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <h2 className="font-bold text-slate-800">Album lớp học</h2>
-              <p className="text-sm text-slate-500">Chia sẻ kỷ niệm chung với tất cả phụ huynh</p>
-            </div>
-            <button onClick={() => setShowCreateAlbum(true)}
-              className="bg-orange-400 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-500 transition-colors shadow-sm">
-              + Tạo album
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {albums.map(album => (
-              <button key={album.id} onClick={() => setSelectedAlbum(album.id)}
-                className="bg-white border border-orange-100 rounded-2xl overflow-hidden text-left card-hover shadow-sm">
-                <div className="relative">
-                  <img src={UNSPLASH[album.cover]||UNSPLASH.outdoor} alt={album.title} className="w-full h-36 object-cover" />
-                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">{album.photos} ảnh</span>
-                </div>
-                <div className="p-3">
-                  <p className="font-bold text-slate-800 text-sm truncate">{album.title}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{album.date}</p>
-                  <div className="flex gap-1 mt-2 flex-wrap">
-                    {album.tags.map(t => (
-                      <span key={t} className="px-2 py-0.5 bg-orange-50 text-orange-600 text-xs rounded-full border border-orange-100">{t}</span>
-                    ))}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Album detail */}
-      {tab === 'class' && selectedAlbum && selectedAlbumData && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSelectedAlbum(null)} className="text-2xl text-slate-600">←</button>
-            <div className="flex-1">
-              <h3 className="font-bold text-slate-800">{selectedAlbumData.title}</h3>
-              <p className="text-sm text-slate-500">{selectedAlbumData.photos} ảnh · {selectedAlbumData.date}</p>
-            </div>
-            <button onClick={() => setShowAddClassPhoto(true)}
-              className="bg-white border border-orange-300 text-orange-600 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-orange-50 transition-colors">
-              + Thêm ảnh
-            </button>
-            <button className="bg-orange-400 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-orange-500 transition-colors">
-              📤 Chia sẻ với PH
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {Array.from({ length: Math.max(0, selectedAlbumData.photos) }).map((_, i) => (
-              <img key={i} src={`${UNSPLASH[selectedAlbumData.cover]||UNSPLASH.outdoor}&sig=${i}`} alt=""
-                className="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity" />
-            ))}
-            {/* Add photo tile */}
-            <button onClick={() => setShowAddClassPhoto(true)}
-              className="w-full aspect-square bg-orange-50 border-2 border-dashed border-orange-300 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-orange-100 transition-colors text-orange-500">
-              <span className="text-3xl">+</span>
-              <span className="text-xs font-semibold">Thêm ảnh</span>
-            </button>
-          </div>
+      {/* Lưới hình ảnh và video */}
+      {loading ? (
+        <div className="flex h-72 items-center justify-center rounded-3xl border border-orange-100 bg-white">
+          <Loader2 className="animate-spin text-orange-500 mb-2" size={36} />
         </div>
-      )}
-
-      {/* ════════════════════════════════════════════════════════
-          TAB 2 — CHILD PORTFOLIO
-         ════════════════════════════════════════════════════════ */}
-      {tab === 'child' && !selectedChild && (
-        <>
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2 text-sm text-blue-800">
-            <span>🎨</span>
-            <span>Mỗi bé có <strong>gallery riêng</strong> — phụ huynh chỉ thấy sản phẩm của con mình.</span>
+      ) : paginatedPhotos.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-16 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-orange-50 text-orange-500 mb-3 border border-orange-100">
+            <Inbox size={32} />
           </div>
+          <h3 className="text-base font-black text-slate-800">Chưa có khoảnh khắc lớp nào</h3>
+          <p className="mt-1 text-xs text-slate-400 max-w-sm">
+            Hãy tải lên các hình ảnh hoặc video hoạt động sinh hoạt, học tập, dã ngoại của lớp {className}.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          {paginatedPhotos.map((item, index) => {
+            const isOwner = Boolean(
+              isUserAdmin || (activeUserId && item.createdBy === activeUserId)
+            );
 
-          <input value={searchChild} onChange={e => setSearchChild(e.target.value)}
-            placeholder="🔍 Tìm tên bé..."
-            className="w-full px-4 py-2.5 bg-white border border-orange-200 rounded-xl text-sm focus:outline-none focus:border-orange-400" />
+            return (
+              <div
+                key={item.id}
+                className="group relative rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                {/* Khung xem ảnh / video */}
+                <div
+                  className="relative h-44 w-full bg-slate-100 overflow-hidden cursor-pointer"
+                  onClick={() => openLightbox(index)}
+                >
+                  {item.type === 'video' ? (
+                    <div className="h-full w-full bg-slate-900 flex items-center justify-center text-white">
+                      <Video size={36} className="text-orange-400 group-hover:scale-110 transition" />
+                    </div>
+                  ) : item.url ? (
+                    <img
+                      src={item.url}
+                      alt={item.title}
+                      className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
+                      onError={(e) => {
+                        // Fallback placeholder khi ảnh bị 404
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent && !parent.querySelector('.fallback-box')) {
+                          const fallbackDiv = document.createElement('div');
+                          fallbackDiv.className =
+                            'fallback-box h-full w-full bg-gradient-to-br from-orange-50 to-amber-100 flex flex-col items-center justify-center text-orange-400 p-2 text-center';
+                          fallbackDiv.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg><span style="font-size: 10px; font-weight: bold; margin-top: 4px; color: #ea580c">Hình ảnh lớp</span>`;
+                          parent.appendChild(fallbackDiv);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-gradient-to-br from-orange-50 to-amber-100 flex flex-col items-center justify-center text-orange-500">
+                      <ImageIcon size={30} />
+                      <span className="text-[10px] font-bold mt-1">Ảnh hoạt động</span>
+                    </div>
+                  )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {filteredChildren.map(c => {
-              const count = photoCountForChild(c.id);
-              const lastPhoto = childPhotos.filter(p => p.childId === c.id).sort((a,b) => b.date.localeCompare(a.date))[0];
-              return (
-                <div key={c.id}
-                  className="bg-white border border-orange-100 rounded-2xl overflow-hidden text-left card-hover hover:border-orange-400 transition-all cursor-pointer">
-                  {/* Thumbnail — click to open child portfolio */}
-                  <div className="relative h-28 bg-orange-50 flex items-center justify-center"
-                    onClick={() => setSelectedChild(c.id)}>
-                    {lastPhoto ? (
-                      <img src={lastPhoto.src} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-1 opacity-40">
-                        <span className="text-3xl">🎨</span>
-                        <span className="text-xs text-slate-400">Chưa có ảnh</span>
-                      </div>
-                    )}
-                    <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full font-bold ${count > 0 ? 'bg-orange-400 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                      {count} ảnh
+                  {/* Chuyên mục badge */}
+                  <span className="absolute top-2 left-2 rounded-xl bg-black/60 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white">
+                    {item.category}
+                  </span>
+
+                  {/* Nút xem to */}
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                    <span className="flex items-center gap-1 bg-white/90 text-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">
+                      <Eye size={13} /> Xem phóng to
                     </span>
                   </div>
-                  {/* Footer — click name to open, click + to add photo */}
-                  <div className="p-3 flex items-center gap-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0" onClick={() => setSelectedChild(c.id)}>
-                      <Avatar initials={c.avatar} id={c.id} size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-800 text-sm truncate">{c.nickname}</p>
-                        <p className="text-xs text-slate-400 truncate">{c.parentName}</p>
-                      </div>
-                    </div>
-                    <button onClick={() => { setAddPhotoChildId(c.id); setShowAddPhoto(true); }}
-                      className="w-7 h-7 bg-orange-100 hover:bg-orange-200 rounded-lg flex items-center justify-center text-orange-600 text-sm transition-colors flex-shrink-0">
-                      +
-                    </button>
-                  </div>
                 </div>
-              );
-            })}
-          </div>
-        </>
-      )}
 
-      {/* Child portfolio detail */}
-      {tab === 'child' && selectedChild && selectedChildData && (
-        <div className="flex flex-col gap-4">
-          {/* Header */}
-          <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl p-4 text-white flex items-center gap-3">
-            <button onClick={() => setSelectedChild(null)} className="text-xl">←</button>
-            <Avatar initials={selectedChildData.avatar} id={selectedChildData.id} size="md" />
-            <div className="flex-1">
-              <h3 className="font-bold text-lg">{selectedChildData.name}</h3>
-              <p className="text-orange-100 text-sm">Phụ huynh: {selectedChildData.parentName} · {selectedChildPhotos.length} sản phẩm</p>
-            </div>
-            <button onClick={() => { setAddPhotoChildId(selectedChild); setShowAddPhoto(true); }}
-              className="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-sm font-bold transition-colors">
-              + Thêm ảnh
-            </button>
-          </div>
-
-          {/* Parent-view note */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
-            <span>👨‍👩‍👦</span>
-            <p className="text-sm text-amber-800 flex-1">Phụ huynh <strong>{selectedChildData.parentName}</strong> chỉ thấy gallery của bé <strong>{selectedChildData.nickname}</strong>.</p>
-            <button className="text-xs bg-amber-400 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-500 transition-colors">
-              📤 Gửi cho PH
-            </button>
-          </div>
-
-          {selectedChildPhotos.length === 0 ? (
-            <div className="bg-white border border-orange-100 rounded-2xl p-10 text-center">
-              <p className="text-4xl mb-3">🎨</p>
-              <p className="text-slate-500 font-semibold mb-4">Chưa có sản phẩm nào của bé {selectedChildData.nickname}</p>
-              <button onClick={() => { setAddPhotoChildId(selectedChild); setShowAddPhoto(true); }}
-                className="bg-orange-400 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-orange-500 transition-colors">
-                + Thêm ảnh đầu tiên
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {selectedChildPhotos.map(photo => (
-                <button key={photo.id} onClick={() => setViewPhoto(photo)}
-                  className="bg-white border border-orange-100 rounded-2xl overflow-hidden text-left card-hover hover:border-orange-400 transition-all">
-                  <img src={photo.src} alt={photo.caption} className="w-full h-36 object-cover" />
-                  <div className="p-2.5">
-                    <p className="text-xs font-bold text-slate-700 truncate">{photo.caption}</p>
-                    <p className="text-xs text-orange-500 font-semibold">{photo.sessionLabel}</p>
-                    <p className="text-xs text-slate-400" suppressHydrationWarning>
-                      {new Date(photo.date).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' })}
+                {/* Phần dưới: Tiêu đề, ngày & nút xóa */}
+                <div className="p-3.5 flex items-center justify-between border-t border-slate-100">
+                  <div className="min-w-0 flex-1 pr-2">
+                    <p className="font-bold text-xs text-slate-800 truncate" title={item.title}>
+                      {item.title}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                      <Calendar size={11} />
+                      {item.date || 'Hôm nay'}
                     </p>
                   </div>
-                </button>
-              ))}
-            </div>
-          )}
+
+                  <button
+                    onClick={() => void handleDelete(item.id, item.createdBy)}
+                    className={`p-1.5 rounded-lg transition cursor-pointer ${
+                      isOwner
+                        ? 'text-rose-500 hover:bg-rose-50'
+                        : 'text-slate-300 hover:text-rose-400 hover:bg-slate-100'
+                    }`}
+                    title={
+                      isOwner
+                        ? 'Xóa khoảnh khắc này'
+                        : 'Chỉ người đăng hoặc Quản trị viên mới có quyền xóa'
+                    }
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* ── Photo fullscreen modal ── */}
-      {viewPhoto && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex flex-col" onClick={() => setViewPhoto(null)}>
-          <div className="flex items-center gap-3 p-4 flex-shrink-0" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setViewPhoto(null)} className="text-white text-2xl">←</button>
-            <div>
-              <p className="text-white font-bold">{viewPhoto.caption}</p>
-              <p className="text-slate-400 text-sm">{viewPhoto.sessionLabel} · <span suppressHydrationWarning>{new Date(viewPhoto.date).toLocaleDateString('vi-VN')}</span></p>
-            </div>
-            <button className="ml-auto bg-orange-400 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-orange-500">📤 Gửi PH</button>
-          </div>
-          <div className="flex-1 flex items-center justify-center p-4" onClick={e => e.stopPropagation()}>
-            <img src={viewPhoto.src} alt={viewPhoto.caption} className="max-h-full max-w-full rounded-2xl object-contain" />
-          </div>
-        </div>
+      {/* Phân trang */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredPhotos.length}
+          onPageChange={setCurrentPage}
+        />
       )}
 
-      {/* ── Create class album modal ── */}
-      {showCreateAlbum && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={() => setShowCreateAlbum(false)}>
-          <div className="bg-white w-full max-w-lg mx-auto rounded-t-3xl p-5 slide-in" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-slate-800 text-lg mb-4">📸 Tạo album lớp mới</h3>
-            <input value={newTitle} onChange={e => setNewTitle(e.target.value)}
-              className="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none focus:border-orange-400"
-              placeholder="Tiêu đề album..." autoFocus />
-            <input value={newTag} onChange={e => setNewTag(e.target.value)}
-              className="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none focus:border-orange-400"
-              placeholder="Nhãn (VD: ngoài trời, nghệ thuật)..." />
-            <div className="flex gap-2">
-              <button onClick={() => setShowCreateAlbum(false)} className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-500">Huỷ</button>
-              <button onClick={addClassAlbum} className="flex-1 bg-orange-400 text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition-colors">Tạo album</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Add photos to class album modal ── */}
-      {showAddClassPhoto && selectedAlbum && selectedAlbumData && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={() => setShowAddClassPhoto(false)}>
-          <div className="bg-white w-full max-w-lg mx-auto rounded-t-3xl p-5 slide-in" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-slate-800 text-lg mb-1">📷 Thêm ảnh vào album</h3>
-            <p className="text-sm text-slate-500 mb-4">{selectedAlbumData.title}</p>
-            <div className="border-2 border-dashed border-orange-200 rounded-xl p-6 text-center mb-4 bg-orange-50 hover:border-orange-400 transition-colors cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}>
-              <p className="text-4xl mb-2">📷</p>
-              <p className="text-sm font-semibold text-orange-600">Nhấn để chọn ảnh</p>
-              <p className="text-xs text-slate-400 mt-1">Chọn nhiều ảnh cùng lúc · JPG, PNG, WEBP</p>
-            </div>
-            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" />
-            <input value={classPhotoCaption} onChange={e => setClassPhotoCaption(e.target.value)}
-              className="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none focus:border-orange-400"
-              placeholder="Ghi chú cho ảnh (tuỳ chọn)..." />
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {['📷 Chụp ảnh', '🖼️ Thư viện', '📁 Máy tính'].map(opt => (
-                <button key={opt} className="p-2.5 bg-orange-50 border border-orange-200 rounded-xl text-xs font-semibold text-orange-700 hover:bg-orange-100 transition-colors">
-                  {opt}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => { setShowAddClassPhoto(false); setClassPhotoCaption(''); }}
-                className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-500">Huỷ</button>
-              <button onClick={() => {
-                setAlbums(p => p.map(a => a.id === selectedAlbum ? { ...a, photos: a.photos + 3 } : a));
-                setShowAddClassPhoto(false); setClassPhotoCaption('');
-              }} className="flex-1 bg-orange-400 text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition-colors">
-                💾 Lưu ảnh
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Add child photo modal ── */}
-      {showAddPhoto && addPhotoChildId && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end" onClick={() => setShowAddPhoto(false)}>
-          <div className="bg-white w-full max-w-lg mx-auto rounded-t-3xl p-5 slide-in" onClick={e => e.stopPropagation()}>
-            {(() => {
-              const child = CHILDREN.find(c => c.id === addPhotoChildId)!;
-              return (
-                <>
-                  <div className="flex items-center gap-3 mb-4">
-                    <Avatar initials={child.avatar} id={child.id} size="sm" />
-                    <h3 className="font-bold text-slate-800 text-lg">Thêm sản phẩm — {child.nickname}</h3>
-                  </div>
-
-                  {/* Upload area */}
-                  <div className="border-2 border-dashed border-orange-200 rounded-xl p-6 text-center mb-4 bg-orange-50 hover:border-orange-400 transition-colors cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}>
-                    <p className="text-3xl mb-2">📷</p>
-                    <p className="text-sm font-semibold text-orange-600">Nhấn để chọn ảnh</p>
-                    <p className="text-xs text-slate-400 mt-1">JPG, PNG, WEBP</p>
-                  </div>
-                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" />
-
-                  <input value={newCaption} onChange={e => setNewCaption(e.target.value)}
-                    className="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none focus:border-orange-400"
-                    placeholder="Tên sản phẩm (VD: Tranh vẽ mùa hè)..." />
-                  <input value={newSession} onChange={e => setNewSession(e.target.value)}
-                    className="w-full border border-orange-200 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none focus:border-orange-400"
-                    placeholder="Tiết học (VD: Tiết tạo hình, Thủ công)..." />
-
-                  <div className="flex gap-2">
-                    <button onClick={() => { setShowAddPhoto(false); setAddPhotoChildId(null); }}
-                      className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-500">Huỷ</button>
-                    <button onClick={handleAddChildPhoto} disabled={!newCaption.trim()}
-                      className="flex-1 bg-orange-400 text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                      💾 Lưu sản phẩm
-                    </button>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      )}
+      {/* Lightbox phóng to ảnh / video */}
+      <MediaLightbox
+        media={lightboxItems}
+        initialIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </div>
   );
 }

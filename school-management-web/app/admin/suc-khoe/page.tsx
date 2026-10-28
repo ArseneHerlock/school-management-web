@@ -1,2 +1,5 @@
-import AdminApp from '../AdminApp'
-export default function Page(){return <AdminApp/>}
+import SucKhoe from "../pages/SucKhoe";
+
+export default function Page() {
+  return <SucKhoe />;
+}

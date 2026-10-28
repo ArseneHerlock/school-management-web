@@ -1,84 +1,87 @@
-'use client';
-
-import React from 'react';
-import { ParentProfile } from '../types';
-
-interface ParentHeaderProps {
-  title: string;
-  subtitle: string;
-  onToggleSidebar: () => void;
-  onOpenCall: () => void;
-  onOpenNotifications: () => void;
-  onOpenProfile: () => void;
-  parent: ParentProfile;
-}
+"use client";
+import { Menu, Phone, Search } from "lucide-react";
+import { ChildInfo, ParentProfile } from "../types";
+import NotificationCenter from "@/app/components/NotificationCenter";
 
 export default function ParentHeader({
   title,
   subtitle,
   onToggleSidebar,
   onOpenCall,
-  onOpenNotifications,
+  onNavigateNotificationTab,
   onOpenProfile,
   parent,
-}: ParentHeaderProps) {
+  childrenData = [],
+  onNotificationCountsChange,
+}: {
+  title: string;
+  subtitle: string;
+  onToggleSidebar: () => void;
+  onOpenCall: () => void;
+  onNavigateNotificationTab: (tab: string, childId?: string) => void;
+  onOpenProfile: () => void;
+  parent: ParentProfile;
+  childrenData?: ChildInfo[];
+  onNotificationCountsChange?: (counts: {
+    unreadTotal: number;
+    urgentUnread: number;
+    unreadMessages: number;
+    pendingLeaves: number;
+  }) => void;
+}) {
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-6 py-3.5 flex items-center justify-between">
-      {/* Left side: hamburger + title */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-hidden"
-          title="Mở menu"
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/95 px-3 py-2.5 sm:px-4 sm:py-3 backdrop-blur-xl shadow-xs pt-[calc(env(safe-area-inset-top,0px)+6px)]">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <button 
+          onClick={onToggleSidebar} 
+          className="rounded-xl p-1.5 sm:p-2 lg:hidden bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors shrink-0"
+          aria-label="Mở danh mục menu"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
-          </svg>
+          <Menu size={18} />
         </button>
-        <div>
-          <h2 className="text-lg lg:text-xl font-extrabold text-slate-800">{title}</h2>
-          <p className="text-xs text-slate-500 font-semibold hidden sm:block">{subtitle}</p>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm sm:text-base lg:text-lg font-extrabold text-slate-800 tracking-tight truncate leading-tight">{title}</h2>
+          <p className="text-[10px] sm:text-xs font-medium text-slate-500 mt-0.5 truncate">
+            {subtitle}
+          </p>
         </div>
       </div>
-
-      {/* Right side: attendance badge + action buttons */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Quick Attendance status pill */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Bé đã đến trường (07:42)
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-2">
+        <div className="hidden md:flex items-center bg-slate-100 rounded-full px-3 py-1.5 border border-transparent focus-within:border-indigo-300 focus-within:bg-white transition-all">
+          <Search size={14} className="text-slate-400 mr-2" />
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm..." 
+            className="bg-transparent border-none outline-none text-xs w-36 text-slate-700 placeholder:text-slate-400 font-medium"
+          />
         </div>
 
-        {/* Notification Button */}
-        <button
-          onClick={onOpenNotifications}
-          title="Xem thông báo"
-          className="relative p-2.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-xl border border-slate-200 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-          </svg>
-          <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
-        </button>
+        {/* Trung tâm thông báo & Cảnh báo thông minh cho Phụ huynh */}
+        <NotificationCenter
+          role="parent"
+          childrenList={childrenData}
+          onNavigateParentTab={onNavigateNotificationTab}
+          onCountsChange={onNotificationCountsChange}
+        />
 
-        {/* Quick Teacher Call button in Top Bar */}
         <button
           onClick={onOpenCall}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all"
+          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-2.5 py-1.5 sm:px-3 sm:py-1.5 text-white font-bold text-xs shadow-xs hover:from-emerald-600 hover:to-emerald-700 transition-all active:scale-95 shrink-0 cursor-pointer"
+          title="Gọi giáo viên"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-          <span className="hidden sm:inline">Gọi cô giáo</span>
+          <Phone size={14} />
+          <span className="hidden sm:inline">Gọi GV</span>
         </button>
-
-        {/* Parent Avatar / Profile */}
         <button
           onClick={onOpenProfile}
-          title="Hồ sơ phụ huynh"
-          className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-300 text-sky-700 flex items-center justify-center font-bold text-xs hover:bg-sky-100 transition-colors"
+          className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 font-bold text-xs text-indigo-700 border border-indigo-200 hover:shadow-xs transition-all active:scale-95 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
+          title="Thiết lập tài khoản"
         >
-          {parent.hoTen.split(' ').slice(-1)[0]?.slice(0, 2).toUpperCase() || 'PH'}
+          {parent.avatar ? (
+            <img src={parent.avatar} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            parent.hoTen.split(" ").slice(-1)[0]?.slice(0, 2).toUpperCase() || "PH"
+          )}
         </button>
       </div>
     </header>

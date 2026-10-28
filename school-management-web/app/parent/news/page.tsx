@@ -1,9 +1,9 @@
-import ParentApp from '../ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'Tin Tức Trường - Cổng Phụ Huynh OneKids',
-};
+import NewsTab from "../components/NewsTab";
+import { useParentContext } from "../ParentContext";
 
 export default function NewsPage() {
-  return <ParentApp initialTab="news" />;
+  const { news } = useParentContext();
+  return <NewsTab newsList={news} />;
 }

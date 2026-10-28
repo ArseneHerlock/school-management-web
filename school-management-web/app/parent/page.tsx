@@ -1,10 +1,15 @@
-import ParentApp from './ParentApp';
+"use client";
 
-export const metadata = {
-  title: 'OneKids - Cổng Thông Tin Phụ Huynh',
-  description: 'Hệ thống quản lý và tương tác dành cho phụ huynh trường mầm non OneKids',
-};
+import DashboardTab from "./components/DashboardTab";
+import { useParentContext } from "./ParentContext";
 
-export default function ParentPage() {
-  return <ParentApp />;
+export default function ParentDashboardPage() {
+  const { childrenData, parent, navigateTab } = useParentContext();
+  return (
+    <DashboardTab
+      childrenData={childrenData}
+      parent={parent}
+      onNavigateTab={navigateTab}
+    />
+  );
 }

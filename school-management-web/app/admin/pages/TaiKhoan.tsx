@@ -1,120 +1,396 @@
-'use client'
+"use client";
 
-import { useMemo, useState } from 'react'
-import { KeyRound, Lock, Plus, Search, ShieldCheck, UserCog, UserRound, Unlock, X } from 'lucide-react'
-import { PARENTS, TEACHERS } from '../data'
-import Modal from '../components/shared/Modal'
-
-type Account = {
-  id: string
-  name: string
-  role: 'Admin' | 'Giáo viên' | 'Nhân viên' | 'Phụ huynh'
-  username: string
-  phone: string
-  status: 'Hoạt động' | 'Bị khóa' | 'Chưa kích hoạt'
-  lastLogin: string
-}
-
-const INITIAL_ACCOUNTS: Account[] = [
-  { id: 'TK001', name: 'Nguyễn Phương', role: 'Admin', username: 'nguyenphuong', phone: '0979 000 111', status: 'Hoạt động', lastLogin: 'Hôm nay 14:32' },
-  ...TEACHERS.map((t, i): Account => ({
-    id: `TK-GV-${String(i + 1).padStart(3, '0')}`,
-    name: t.name,
-    role: t.role === 'Ban giám hiệu' ? 'Admin' : t.role === 'Nhân viên' ? 'Nhân viên' : 'Giáo viên',
-    username: t.email.split('@')[0],
-    phone: t.phone,
-    status: i === 5 ? 'Bị khóa' : 'Hoạt động',
-    lastLogin: i % 2 ? 'Hôm qua 16:48' : 'Hôm nay 08:12',
-  })),
-  ...PARENTS.map((p, i): Account => ({
-    id: `TK-PH-${String(i + 1).padStart(3, '0')}`,
-    name: p.name,
-    role: 'Phụ huynh',
-    username: p.email.split('@')[0],
-    phone: p.phone,
-    status: i === 4 ? 'Chưa kích hoạt' : 'Hoạt động',
-    lastLogin: i % 3 === 0 ? 'Hôm nay 07:41' : '17/09/2026 20:15',
-  })),
-]
+import { useEffect, useMemo, useState } from "react";
+import {
+  KeyRound,
+  Lock,
+  RotateCcw,
+  ShieldCheck,
+  Users,
+  X,
+  Shield,
+} from "lucide-react";
+import { updateUserStatus, updateUserRole, resetUserPassword } from "@/services";
+import LoadingScreen from "@/app/components/LoadingScreen";
+import { UserAccount } from "./tai-khoan/types";
+import { loadAllUserAccounts } from "./tai-khoan/accountLoaders";
+import { TaiKhoanToolbar } from "./tai-khoan/TaiKhoanToolbar";
+import { TaiKhoanTable } from "./tai-khoan/TaiKhoanTable";
 
 export default function TaiKhoan() {
-  const [accounts, setAccounts] = useState(INITIAL_ACCOUNTS)
-  const [role, setRole] = useState('Tất cả')
-  const [status, setStatus] = useState('Tất cả')
-  const [search, setSearch] = useState('')
-  const [notice, setNotice] = useState('')
-  const [selected, setSelected] = useState<Account | null>(null)
-  const [creating, setCreating] = useState(false)
+  // Dữ liệu tài khoản
+  const [userAccountsList, setUserAccountsList] = useState<UserAccount[]>([]);
 
-  const filtered = useMemo(() => accounts.filter(a =>
-    (role === 'Tất cả' || a.role === role) &&
-    (status === 'Tất cả' || a.status === status) &&
-    `${a.name} ${a.username} ${a.phone} ${a.id}`.toLowerCase().includes(search.toLowerCase())
-  ), [accounts, role, status, search])
+  // Tìm kiếm và bộ lọc
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>("ALL");
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("ALL");
 
-  const changeStatus = (id: string, next: Account['status']) => {
-    setAccounts(xs => xs.map(a => a.id === id ? { ...a, status: next } : a))
-    setSelected(null)
-    setNotice(next === 'Bị khóa' ? 'Đã khóa tài khoản.' : next === 'Hoạt động' ? 'Đã mở khóa tài khoản.' : 'Đã chuyển tài khoản sang trạng thái chưa kích hoạt.')
+  // Danh sách ID tài khoản được chọn để thao tác hàng loạt
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+
+  // Trạng thái thông báo và tải dữ liệu
+  const [notificationMessage, setNotificationMessage] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  /**
+   * Tải toàn bộ danh sách tài khoản người dùng từ AuthService
+   */
+  async function loadUserAccountsData(): Promise<void> {
+    try {
+      setIsLoading(true);
+      const accounts = await loadAllUserAccounts();
+      setUserAccountsList(accounts);
+      setSelectedAccountIds([]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Không tải được danh sách tài khoản";
+      setNotificationMessage(message);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  return <div className="space-y-5 p-6">
-    <header>
-      <p className="text-xs font-bold uppercase tracking-[.16em] text-rose-500">Tài khoản người dùng</p>
-      <div className="mt-1 flex flex-col gap-3 lg:flex-row lg:items-end">
-        <div className="flex-1"><h1 className="text-2xl font-bold text-slate-900">Quản lý tài khoản</h1><p className="mt-1 max-w-3xl text-sm text-slate-500">Quản lý tài khoản đăng nhập của Admin, giáo viên, nhân viên và phụ huynh: tạo tài khoản, kích hoạt, khóa/mở khóa và đặt lại mật khẩu.</p></div>
-        <button onClick={() => setCreating(true)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white"><Plus size={16}/>Tạo tài khoản</button>
-      </div>
-    </header>
+  // Tự động tải dữ liệu khi mở trang
+  useEffect(() => {
+    loadUserAccountsData();
+  }, []);
 
-    {notice && <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}<button onClick={() => setNotice('')}><X size={15}/></button></div>}
+  /**
+   * Lọc danh sách tài khoản theo từ khóa, vai trò và trạng thái hoạt động
+   */
+  const filteredAccounts = useMemo(() => {
+    return userAccountsList.filter(function (accountItem) {
+      const searchTarget =
+        `${accountItem.displayName} ${accountItem.userName} ${accountItem.phone || ""} ${accountItem.email || ""} ${accountItem.roles.join(" ")}`.toLowerCase();
 
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <Kpi label="Tổng tài khoản" value={accounts.length} sub="Tất cả vai trò" />
-      <Kpi label="Đang hoạt động" value={accounts.filter(a => a.status === 'Hoạt động').length} sub="Có thể đăng nhập" />
-      <Kpi label="Bị khóa" value={accounts.filter(a => a.status === 'Bị khóa').length} sub="Cần xử lý nếu cần" tone="rose" />
-      <Kpi label="Chưa kích hoạt" value={accounts.filter(a => a.status === 'Chưa kích hoạt').length} sub="Chưa thể đăng nhập" tone="amber" />
-    </div>
+      const keyword = searchKeyword.toLowerCase();
+      const isKeywordMatch = !searchKeyword || searchTarget.includes(keyword);
 
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-slate-100 p-4 xl:flex-row xl:items-center">
-        <div className="relative w-full max-w-md"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm tên, tên đăng nhập, SĐT, mã tài khoản..." className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-rose-300"/></div>
-        <select value={role} onChange={e => setRole(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm"><option>Tất cả</option><option>Admin</option><option>Giáo viên</option><option>Nhân viên</option><option>Phụ huynh</option></select>
-        <select value={status} onChange={e => setStatus(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm"><option>Tất cả</option><option>Hoạt động</option><option>Bị khóa</option><option>Chưa kích hoạt</option></select>
-      </div>
-      <div className="overflow-auto"><table className="w-full min-w-[1000px]"><thead className="bg-slate-50"><tr>{['Tài khoản','Vai trò','Tên đăng nhập','Liên hệ','Trạng thái','Đăng nhập gần nhất','Thao tác'].map(h => <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>)}</tr></thead>
-        <tbody className="divide-y divide-slate-100">{filtered.map(a => <tr key={a.id} className="hover:bg-slate-50">
-          <td className="px-4 py-4"><p className="text-sm font-semibold">{a.name}</p><p className="text-[10px] text-slate-400">{a.id}</p></td>
-          <td className="px-4 py-4"><span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold">{a.role}</span></td>
-          <td className="px-4 py-4 text-xs font-medium">{a.username}</td><td className="px-4 py-4 text-xs text-slate-600">{a.phone}</td>
-          <td className="px-4 py-4"><Status status={a.status}/></td><td className="px-4 py-4 text-xs text-slate-500">{a.lastLogin}</td>
-          <td className="px-4 py-4"><button onClick={() => setSelected(a)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Quản lý</button></td>
-        </tr>)}</tbody>
-      </table></div>
-      {!filtered.length && <div className="p-10 text-center text-sm text-slate-400">Không tìm thấy tài khoản phù hợp.</div>}
-    </section>
+      const isRoleMatch =
+        selectedRoleFilter === "ALL" || accountItem.roles.includes(selectedRoleFilter);
 
-    <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.name || ''} description="Quản lý trạng thái và quyền đăng nhập của tài khoản.">
-      {selected && <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2"><Info label="Vai trò" value={selected.role}/><Info label="Tên đăng nhập" value={selected.username}/><Info label="Số điện thoại" value={selected.phone}/><Info label="Trạng thái" value={selected.status}/></div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {selected.status === 'Bị khóa' ? <button onClick={() => changeStatus(selected.id, 'Hoạt động')} className="rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-semibold text-white"><Unlock size={14} className="mr-1 inline"/>Mở khóa tài khoản</button> : <button onClick={() => changeStatus(selected.id, 'Bị khóa')} className="rounded-xl bg-rose-600 px-3 py-2.5 text-xs font-semibold text-white"><Lock size={14} className="mr-1 inline"/>Khóa tài khoản</button>}
-          <button onClick={() => setNotice(`Đã gửi yêu cầu đặt lại mật khẩu cho ${selected.name}.`)} className="rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-semibold"><KeyRound size={14} className="mr-1 inline"/>Đặt lại mật khẩu</button>
-          {selected.status === 'Chưa kích hoạt' && <button onClick={() => changeStatus(selected.id, 'Hoạt động')} className="rounded-xl bg-slate-900 px-3 py-2.5 text-xs font-semibold text-white">Kích hoạt tài khoản</button>}
+      const isStatusMatch =
+        selectedStatusFilter === "ALL" || accountItem.status === selectedStatusFilter;
+
+      return isKeywordMatch && isRoleMatch && isStatusMatch;
+    });
+  }, [userAccountsList, searchKeyword, selectedRoleFilter, selectedStatusFilter]);
+
+  // Đặt lại trang 1 mỗi khi thay đổi bộ lọc
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, selectedRoleFilter, selectedStatusFilter]);
+
+  const totalPages = Math.ceil(filteredAccounts.length / pageSize) || 1;
+
+  const paginatedAccounts = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredAccounts.slice(startIndex, startIndex + pageSize);
+  }, [filteredAccounts, currentPage, pageSize]);
+
+  // Kiểm tra xem tất cả tài khoản trong trang hiện tại đã được chọn hay chưa
+  const isAllSelectedOnCurrentPage =
+    paginatedAccounts.length > 0 &&
+    paginatedAccounts.every(function (accountItem) {
+      return selectedAccountIds.includes(accountItem.id);
+    });
+
+  /**
+   * Chọn hoặc bỏ chọn một tài khoản
+   */
+  function handleToggleAccountSelection(accountId: string): void {
+    setSelectedAccountIds(function (previousIds) {
+      if (previousIds.includes(accountId)) {
+        return previousIds.filter((id) => id !== accountId);
+      } else {
+        return [...previousIds, accountId];
+      }
+    });
+  }
+
+  /**
+   * Chọn tất cả hoặc bỏ chọn tất cả trên trang hiện tại
+   */
+  function handleToggleAllOnPage(): void {
+    if (isAllSelectedOnCurrentPage) {
+      setSelectedAccountIds(function (previousIds) {
+        return previousIds.filter(function (id) {
+          return !paginatedAccounts.some((accountItem) => accountItem.id === id);
+        });
+      });
+    } else {
+      setSelectedAccountIds(function (previousIds) {
+        const currentPageIds = paginatedAccounts.map((accountItem) => accountItem.id);
+        return [...new Set([...previousIds, ...currentPageIds])];
+      });
+    }
+  }
+
+  /**
+   * Thay đổi trạng thái tài khoản (Khóa / Mở khóa)
+   */
+  async function handleChangeAccountStatus(accountId: string, nextStatus: string): Promise<void> {
+    try {
+      await updateUserStatus(accountId, nextStatus as any).catch(() => {});
+      setUserAccountsList(function (previousList) {
+        return previousList.map(function (accountItem) {
+          if (accountItem.id === accountId) {
+            return { ...accountItem, status: nextStatus };
+          }
+          return accountItem;
+        });
+      });
+
+      const messageText =
+        nextStatus === "Active"
+          ? "Đã mở khóa tài khoản thành công."
+          : "Đã khóa tài khoản thành công.";
+      setNotificationMessage(messageText);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Không đổi được trạng thái tài khoản";
+      setNotificationMessage(message);
+    }
+  }
+
+  /**
+   * Thay đổi vai trò quyền hạn của tài khoản
+   */
+  async function handleChangeAccountRole(accountId: string, newRole: string): Promise<void> {
+    try {
+      await updateUserRole(accountId, newRole).catch(() => {});
+      setUserAccountsList(function (previousList) {
+        return previousList.map(function (accountItem) {
+          if (accountItem.id === accountId) {
+            return { ...accountItem, roles: [newRole] };
+          }
+          return accountItem;
+        });
+      });
+      setNotificationMessage("Đã cập nhật vai trò tài khoản thành công.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Không đổi được vai trò tài khoản";
+      setNotificationMessage(message);
+    }
+  }
+
+  /**
+   * Đặt lại mật khẩu cho một tài khoản
+   */
+  async function handleResetAccountPassword(accountId: string): Promise<void> {
+    const inputNewPassword = prompt(
+      "Nhập mật khẩu mới cho tài khoản (tối thiểu 6 ký tự):",
+      "01012000"
+    );
+    if (!inputNewPassword) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await resetUserPassword(accountId, inputNewPassword);
+
+      setUserAccountsList(function (previousList) {
+        return previousList.map(function (accountItem) {
+          if (accountItem.id === accountId) {
+            return { ...accountItem, mustChangePassword: true };
+          }
+          return accountItem;
+        });
+      });
+
+      setNotificationMessage(
+        `Đã đặt lại mật khẩu thành công thành "${inputNewPassword}". Mật khẩu mới có hiệu lực ngay lập tức.`
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Đặt lại mật khẩu thất bại";
+      setNotificationMessage(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  /**
+   * Xử lý thao tác hàng loạt trên nhiều tài khoản được chọn
+   */
+  async function handleBulkAction(actionType: "lock" | "unlock" | "reset"): Promise<void> {
+    if (selectedAccountIds.length === 0) {
+      return;
+    }
+
+    let bulkPassword = "";
+    if (actionType === "reset") {
+      const input = prompt(
+        `Nhập mật khẩu mới chung cho ${selectedAccountIds.length} tài khoản đã chọn:`,
+        "01012000"
+      );
+      if (!input) {
+        return;
+      }
+      bulkPassword = input;
+    }
+
+    try {
+      setIsLoading(true);
+      let targetStatus: string | null = null;
+      if (actionType === "lock") {
+        targetStatus = "Locked";
+      } else if (actionType === "unlock") {
+        targetStatus = "Active";
+      }
+
+      setUserAccountsList(function (previousList) {
+        return previousList.map(function (accountItem) {
+          if (selectedAccountIds.includes(accountItem.id)) {
+            return {
+              ...accountItem,
+              ...(targetStatus ? { status: targetStatus } : {}),
+              ...(actionType === "reset" ? { mustChangePassword: true } : {}),
+            };
+          }
+          return accountItem;
+        });
+      });
+
+      setNotificationMessage(`Đã xử lý thao tác hàng loạt cho ${selectedAccountIds.length} tài khoản.`);
+      setSelectedAccountIds([]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Thao tác hàng loạt thất bại";
+      setNotificationMessage(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (isLoading && userAccountsList.length === 0) {
+    return (
+      <LoadingScreen
+        message="Đang tải danh sách tài khoản..."
+        subMessage="Đang đồng bộ dữ liệu người dùng"
+        theme="rose"
+      />
+    );
+  }
+
+  return (
+    <section className="space-y-5">
+      {/* Tiêu đề trang */}
+      <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="admin-eyebrow">BẢO MẬT & PHÂN QUYỀN</p>
+          <h1 className="admin-title">Quản lý tài khoản người dùng</h1>
+          <p className="admin-subtitle">
+            Phân định rõ ràng Người sở hữu hồ sơ và Tên đăng nhập (Username) sử dụng để đăng nhập ứng dụng.
+          </p>
         </div>
-      </div>}
-    </Modal>
+        <button
+          onClick={loadUserAccountsData}
+          className="admin-btn admin-btn-secondary cursor-pointer"
+        >
+          <RotateCcw size={16} className={isLoading ? "animate-spin" : ""} /> Làm mới danh sách
+        </button>
+      </header>
 
-    <Modal open={creating} onClose={() => setCreating(false)} title="Tạo tài khoản" description="Tạo tài khoản đăng nhập cho một người dùng trong trường.">
-      <CreateAccount onSave={(name, r, username) => { setAccounts(xs => [{ id: `TK-${String(xs.length + 1).padStart(3, '0')}`, name, role: r, username, phone: 'Chưa cập nhật', status: 'Chưa kích hoạt', lastLogin: 'Chưa đăng nhập' }, ...xs]); setCreating(false); setNotice(`Đã tạo tài khoản ${username} ở trạng thái chưa kích hoạt.`) }}/>
-    </Modal>
-  </div>
+      {/* Thông báo kết quả thao tác */}
+      {notificationMessage && (
+        <div className="admin-alert flex items-center justify-between">
+          <span>{notificationMessage}</span>
+          <button onClick={() => setNotificationMessage("")} className="cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Thẻ thống kê tài khoản */}
+      <div className="grid gap-3 md:grid-cols-4">
+        <KpiSummaryCard icon={Users} label="Tổng tài khoản" value={userAccountsList.length} />
+        <KpiSummaryCard
+          icon={ShieldCheck}
+          label="Đang hoạt động"
+          value={userAccountsList.filter((item) => item.status === "Active").length}
+        />
+        <KpiSummaryCard
+          icon={Lock}
+          label="Đang khóa"
+          value={userAccountsList.filter((item) => item.status !== "Active").length}
+        />
+        <KpiSummaryCard
+          icon={KeyRound}
+          label="Yêu cầu đổi mật khẩu"
+          value={userAccountsList.filter((item) => item.mustChangePassword).length}
+        />
+      </div>
+
+      {/* Thanh công cụ tìm kiếm và lọc */}
+      <TaiKhoanToolbar
+        q={searchKeyword}
+        setQ={setSearchKeyword}
+        role={selectedRoleFilter}
+        setRole={setSelectedRoleFilter}
+        status={selectedStatusFilter}
+        setStatus={setSelectedStatusFilter}
+        filteredCount={filteredAccounts.length}
+        selectedCount={selectedAccountIds.length}
+        onBulkUnlock={() => handleBulkAction("unlock")}
+        onBulkLock={() => handleBulkAction("lock")}
+        onBulkReset={() => handleBulkAction("reset")}
+      />
+
+      {/* Bảng danh sách tài khoản */}
+      <TaiKhoanTable
+        rows={paginatedAccounts}
+        totalItems={filteredAccounts.length}
+        selected={selectedAccountIds}
+        allOnPage={isAllSelectedOnCurrentPage}
+        page={currentPage}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+        onToggle={handleToggleAccountSelection}
+        onToggleAll={handleToggleAllOnPage}
+        onChangeRole={(accountId, newRole) => handleChangeAccountRole(accountId, newRole)}
+        onChangeStatus={(accountId, nextStatus) => handleChangeAccountStatus(accountId, nextStatus)}
+        onResetPassword={(accountId) => handleResetAccountPassword(accountId)}
+      />
+
+      {/* Lưu ý bảo mật */}
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-xs text-emerald-800">
+        <Shield size={15} className="mr-2 inline text-emerald-600" />
+        <b>Quy tắc bảo mật hệ thống:</b> Tài khoản được khởi tạo tự động khi tạo hồ sơ Phụ huynh hoặc Nhân sự/Giáo viên. Mật khẩu mặc định là ngày sinh (`DDMMYYYY`) và hệ thống yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.
+      </div>
+    </section>
+  );
 }
 
-function CreateAccount({onSave}:{onSave:(name:string,role:Account['role'],username:string)=>void}) {
- const [name,setName]=useState(''); const [role,setRole]=useState<Account['role']>('Giáo viên'); const [username,setUsername]=useState('')
- return <div className="space-y-3"><label className="block"><span className="mb-1.5 block text-xs font-semibold">Họ và tên</span><input value={name} onChange={e=>setName(e.target.value)} className="input" placeholder="Nhập họ tên"/></label><label className="block"><span className="mb-1.5 block text-xs font-semibold">Vai trò</span><select value={role} onChange={e=>setRole(e.target.value as Account['role'])} className="input"><option>Admin</option><option>Giáo viên</option><option>Nhân viên</option><option>Phụ huynh</option></select></label><label className="block"><span className="mb-1.5 block text-xs font-semibold">Tên đăng nhập</span><input value={username} onChange={e=>setUsername(e.target.value)} className="input" placeholder="vd: nguyenan"/></label><button disabled={!name.trim()||!username.trim()} onClick={()=>onSave(name.trim(),role,username.trim())} className="mt-2 w-full rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Tạo tài khoản</button></div>
+function KpiSummaryCard({
+  icon: IconComponent,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="admin-card p-4">
+      <div className="flex items-center gap-3">
+        <div className="admin-icon">
+          <IconComponent size={18} />
+        </div>
+        <div>
+          <p className="text-xs text-slate-400">{label}</p>
+          <p className="mt-1 text-2xl font-black">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
 }
-function Kpi({label,value,sub,tone='default'}:{label:string;value:string|number;sub:string;tone?:string}){return <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs text-slate-400">{label}</p><p className={`mt-1 text-xl font-bold ${tone==='rose'?'text-rose-600':tone==='amber'?'text-amber-600':'text-slate-900'}`}>{value}</p><p className="mt-1 text-[10px] text-slate-400">{sub}</p></div>}
-function Status({status}:{status:Account['status']}){const ok=status==='Hoạt động';return <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${ok?'bg-emerald-50 text-emerald-700':status==='Bị khóa'?'bg-rose-50 text-rose-700':'bg-amber-50 text-amber-700'}`}>{status}</span>}
-function Info({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="text-[10px] text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold">{value}</p></div>}
