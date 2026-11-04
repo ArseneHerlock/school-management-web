@@ -25,3 +25,8 @@ dist/
 .idea/
 .vscode/
 *.suo
+
+
+# scripts test
+scripts/
+tsconfig.tsbuildinfo

@@ -8,7 +8,7 @@ import {
   currentUser,
   getPasswordChangeToken,
   setPasswordChangeToken,
-} from "@/lib/api";
+} from "@/services";
 
 export default function ChangePasswordPage() {
   const router = useRouter();

@@ -15,7 +15,7 @@ import {
   currentUser,
   setAccessToken,
   setPasswordChangeToken,
-} from "@/lib/api";
+} from "@/services";
 
 export default function LoginPage() {
   const router = useRouter();
