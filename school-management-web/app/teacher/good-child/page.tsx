@@ -1,72 +1,49 @@
-'use client'
+'use client';
 
-import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { CalendarDays, Loader2, RefreshCw, X, CheckCircle2, Share2 } from 'lucide-react'
-import { getGoodChildRecords } from '@/services/learning'
-import { CHILDREN, loadLiveTeacherChildren, type Child } from '../data'
-import { isGoodChildDelivered, setGoodChildDelivered } from '@/lib/activitySchedule'
-import { GoodChildGrid } from './components/GoodChildGrid'
-
-const list = (x: any) => (Array.isArray(x) ? x : Array.isArray(x?.items) ? x.items : [])
+import React, { Suspense } from 'react';
+import {
+  CalendarDays,
+  Loader2,
+  RefreshCw,
+  CheckCircle2,
+  Flower2,
+  X,
+} from 'lucide-react';
+import { useGoodChildList } from './useGoodChildList';
+import { FridayAwardsSection } from './components/FridayAwardsSection';
+import { MonthlyBookSection } from './components/MonthlyBookSection';
 
 function GoodChildListContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  const initialMonth = Number(searchParams.get('month')) || new Date().getMonth() + 1
-  const initialYear = Number(searchParams.get('year')) || new Date().getFullYear()
-
-  const [children, setChildren] = useState<Child[]>([])
-  const [rows, setRows] = useState<any[]>([])
-  const [month, setMonth] = useState(initialMonth)
-  const [year, setYear] = useState(initialYear)
-  const [busy, setBusy] = useState(true)
-  const [successToast, setSuccessToast] = useState('')
-  const [msg, setMsg] = useState('')
-  const [deliveryKey, setDeliveryKey] = useState<number>(0)
-
-  const handleDeliverAllClass = () => {
-    children.forEach((child) => {
-      const cId = child.apiId || String(child.id)
-      setGoodChildDelivered(cId, month, year, true)
-    })
-    setDeliveryKey((k) => k + 1)
-    setSuccessToast(`Đã bàn giao toàn bộ sổ bé ngoan tháng ${month}/${year} của lớp cho phụ huynh!`)
-    setTimeout(() => setSuccessToast(''), 3500)
-  }
-
-  const load = async () => {
-    setBusy(true)
-    try {
-      await loadLiveTeacherChildren()
-      setChildren([...CHILDREN])
-      const r = await getGoodChildRecords({
-        month,
-        year,
-        pageSize: 100,
-      })
-      setRows(list(r))
-    } catch (e: any) {
-      setMsg(e instanceof Error ? e.message : 'Không tải được sổ bé ngoan')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  useEffect(() => {
-    void load()
-  }, [month, year])
-
-  const rowFor = (id: string) => rows.find((x) => String(x.childId) === String(id))
-
-  const handleOpenChildPage = (child: Child) => {
-    const cId = child.apiId || String(child.id)
-    router.push(`/teacher/good-child/${encodeURIComponent(cId)}?month=${month}&year=${year}`)
-  }
+  const {
+    activeTab,
+    setActiveTab,
+    className,
+    children,
+    month,
+    setMonth,
+    year,
+    setYear,
+    busy,
+    successToast,
+    msg,
+    setMsg,
+    fridayData,
+    selectedChildIds,
+    awarding,
+    classDelivery,
+    deliveringClass,
+    fridayAwardMap,
+    loadData,
+    toggleSelectChild,
+    handleSelectAll,
+    handleAwardFriday,
+    handleToggleDeliverAllClass,
+    rowFor,
+    handleOpenChildPage,
+  } = useGoodChildList();
 
   return (
-    <section className="mx-auto max-w-6xl space-y-6">
+    <section className="mx-auto max-w-6xl space-y-6 font-sans">
       {successToast && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3.5 text-xs font-bold text-white shadow-xl shadow-emerald-600/30 animate-in fade-in slide-in-from-bottom-5">
           <CheckCircle2 size={18} />
@@ -74,99 +51,149 @@ function GoodChildListContent() {
         </div>
       )}
 
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs">
         <div>
-          <span className="text-[11px] font-black tracking-widest text-amber-600 uppercase bg-amber-100/80 px-2.5 py-0.5 rounded-full">
-            ĐÁNH GIÁ ĐỊNH KỲ
-          </span>
-          <h1 className="mt-1 text-2xl font-black text-slate-800">Sổ Bé Ngoan</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-amber-100 text-amber-700">
+              <Flower2 size={16} />
+            </span>
+            <span className="text-[11px] font-black tracking-widest text-amber-700 uppercase">
+              THEO DÕI RÈN LUYỆN NỀ NẾP
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-800">
+            Theo dõi rèn luyện - {className}
+          </h1>
           <p className="mt-0.5 text-xs text-slate-500">
-            Chọn học sinh để chuyển sang trang viết nhận xét và tổng hợp đánh giá từ các hoạt động trong tháng.
+            Theo dõi nề nếp chuyên cần của tất cả học sinh, phát phiếu khen thứ Sáu, tổng hợp sao rèn luyện tháng.
           </p>
         </div>
 
-        <button
-          onClick={() => void load()}
-          className="rounded-xl border border-amber-200 bg-white p-2.5 text-amber-600 hover:bg-amber-50 shadow-2xs transition cursor-pointer"
-          title="Tải lại danh sách"
-        >
-          <RefreshCw size={17} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => void loadData()}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+            title="Tải lại danh sách"
+          >
+            <RefreshCw size={14} className={busy ? 'animate-spin' : ''} />
+            <span>Làm mới</span>
+          </button>
+        </div>
       </header>
 
       {msg && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold text-amber-800 flex items-center justify-between">
           <span>{msg}</span>
-          <button onClick={() => setMsg('')} className="text-amber-600 hover:text-amber-900 cursor-pointer">
+          <button
+            onClick={() => setMsg('')}
+            className="text-amber-600 hover:text-amber-900 cursor-pointer"
+          >
             <X size={16} />
           </button>
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 bg-white p-4 shadow-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-            <CalendarDays size={16} className="text-amber-500" />
-            <span>Kỳ đánh giá:</span>
-          </div>
-
-          <select
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-amber-500 focus:bg-white"
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
+      <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('FRIDAY_AWARDS')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'FRIDAY_AWARDS'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
           >
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                Tháng {i + 1}
-              </option>
-            ))}
-          </select>
+            <Flower2 size={15} />
+            <span>Phát Phiếu Bé Ngoan Thứ 6</span>
+            {fridayData && (
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                  activeTab === 'FRIDAY_AWARDS'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {fridayData.qualifiedCount}/{fridayData.totalCount}
+              </span>
+            )}
+          </button>
 
-          <input
-            type="number"
-            className="w-24 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-amber-500 focus:bg-white"
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          />
+          <button
+            onClick={() => setActiveTab('MONTHLY_BOOK')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'MONTHLY_BOOK'
+                ? 'bg-slate-800 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <CalendarDays size={15} />
+            <span>Sổ Rèn Luyện Của Bé</span>
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={handleDeliverAllClass}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3.5 py-1.5 text-xs font-black text-white shadow-xs transition cursor-pointer"
-        >
-          <Share2 size={13} />
-          <span>Giao toàn bộ sổ tháng {month} cho PH</span>
-        </button>
+        {activeTab === 'MONTHLY_BOOK' && (
+          <div className="flex items-center gap-2">
+            <select
+              value={month}
+              onChange={(e) => setMonth(Number(e.target.value))}
+              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none"
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                <option key={m} value={m}>Tháng {m}</option>
+              ))}
+            </select>
+            <select
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none"
+            >
+              {[2025, 2026, 2027].map((y) => (
+                <option key={y} value={y}>Năm {y}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
-      {busy ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-amber-500" size={32} />
-        </div>
-      ) : (
-        <GoodChildGrid
-          key={deliveryKey}
+      {activeTab === 'FRIDAY_AWARDS' && (
+        <FridayAwardsSection
+          fridayData={fridayData}
+          selectedChildIds={selectedChildIds}
+          awarding={awarding}
+          month={month}
+          onAwardFriday={() => void handleAwardFriday()}
+          onToggleSelectChild={toggleSelectChild}
+          onSelectAll={handleSelectAll}
+        />
+      )}
+
+      {activeTab === 'MONTHLY_BOOK' && (
+        <MonthlyBookSection
+          month={month}
+          year={year}
           childrenList={children}
           rowFor={rowFor}
-          onOpen={handleOpenChildPage}
-          isDelivered={(id) => isGoodChildDelivered(id, month, year)}
+          onOpenChildPage={handleOpenChildPage}
+          fridayAwardMap={fridayAwardMap}
+          classDelivery={classDelivery}
+          deliveringClass={deliveringClass}
+          onToggleDeliverAllClass={() => void handleToggleDeliverAllClass()}
         />
       )}
     </section>
-  )
+  );
 }
 
-export default function GoodChild() {
+export default function TeacherGoodChildPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-amber-500" size={32} />
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <Loader2 className="animate-spin text-amber-500" />
         </div>
       }
     >
       <GoodChildListContent />
     </Suspense>
-  )
+  );
 }

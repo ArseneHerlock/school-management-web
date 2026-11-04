@@ -4,19 +4,18 @@ import React, { useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
-  HeartPulse,
-  Sparkles,
-  TrendingUp,
-  Users,
   Ruler,
   Scale,
   Activity,
-  ArrowRight,
-  Info,
 } from 'lucide-react';
-import Avatar from '../../components/Avatar';
 import { Child } from '../../data';
 import { evaluateWhoMetrics, WhoAssessmentResult } from './whoStandards';
+import {
+  TeacherHealthFcmButtons,
+  WhoFilterGroup,
+  WhoGroupButtonItem,
+} from './TeacherHealthFcmButtons';
+import { TeacherHealthFcmCard } from './TeacherHealthFcmCard';
 
 interface TeacherHealthFCMProps {
   childrenList: Child[];
@@ -29,9 +28,8 @@ export const TeacherHealthFCM: React.FC<TeacherHealthFCMProps> = ({
   liveHealth,
   onSelectChildToInspect,
 }) => {
-  const [filterGroup, setFilterGroup] = useState<'ALL' | 'NORMAL' | 'STUNTED' | 'UNDERWEIGHT' | 'WASTED' | 'OVERWEIGHT'>('ALL');
+  const [filterGroup, setFilterGroup] = useState<WhoFilterGroup>('ALL');
 
-  // Phân loại từng học sinh theo 3 chỉ số WHO
   const assessedList: Array<{
     child: Child;
     weight: number;
@@ -47,7 +45,7 @@ export const TeacherHealthFCM: React.FC<TeacherHealthFCMProps> = ({
     const height = rec?.chieuCao != null ? Number(rec.chieuCao) : null;
 
     if (weight && height && weight > 0 && height > 0) {
-      const assessment = evaluateWhoMetrics(weight, height, c.dob, c.gender);
+      const assessment = evaluateWhoMetrics(weight, height, c.dob, c.gender, rec?.ngayDo);
       assessedList.push({ child: c, weight, height, assessment });
     } else {
       unmeasuredList.push(c);
@@ -55,23 +53,148 @@ export const TeacherHealthFCM: React.FC<TeacherHealthFCMProps> = ({
   });
 
   const normalGroup = assessedList.filter((x) => !x.assessment.canCanThiep);
-  const stuntedGroup = assessedList.filter((x) => x.assessment.haz.isAlert); // Thấp còi (HAZ < -2SD)
-  const underweightGroup = assessedList.filter((x) => x.assessment.waz.isAlert); // Nhẹ cân (WAZ < -2SD)
-  const wastedGroup = assessedList.filter((x) => x.assessment.whz.code.startsWith('GAY_COM')); // Gầy còm (WHZ < -2SD)
-  const overweightGroup = assessedList.filter((x) => x.assessment.whz.code === 'THUA_CAN' || x.assessment.whz.code === 'BEO_PHI'); // Thừa cân/Béo phì
+  const thapCoiGroup = assessedList.filter((x) => x.assessment.haz.code === 'THAP_COI');
+  const thapCoiNangGroup = assessedList.filter((x) => x.assessment.haz.code === 'THAP_COI_NANG');
+  const nheCanGroup = assessedList.filter((x) => x.assessment.waz.code === 'NHE_CAN');
+  const nheCanNangGroup = assessedList.filter((x) => x.assessment.waz.code === 'NHE_CAN_NANG');
+  const gayComGroup = assessedList.filter((x) => x.assessment.whz.code === 'GAY_COM');
+  const gayComNangGroup = assessedList.filter((x) => x.assessment.whz.code === 'GAY_COM_NANG');
+  const thuaCanGroup = assessedList.filter(
+    (x) => x.assessment.whz.code === 'THUA_CAN' || x.assessment.waz.code === 'THUA_CAN'
+  );
+  const beoPhiGroup = assessedList.filter(
+    (x) => x.assessment.whz.code === 'BEO_PHI' || x.assessment.waz.code === 'BEO_PHI'
+  );
 
   const totalAssessed = assessedList.length;
   const normalRate = totalAssessed > 0 ? Math.round((normalGroup.length / totalAssessed) * 100) : 0;
 
-  // Lọc danh sách theo nhóm đang chọn
   const displayList = assessedList.filter((x) => {
-    if (filterGroup === 'NORMAL') return !x.assessment.canCanThiep;
-    if (filterGroup === 'STUNTED') return x.assessment.haz.isAlert;
-    if (filterGroup === 'UNDERWEIGHT') return x.assessment.waz.isAlert;
-    if (filterGroup === 'WASTED') return x.assessment.whz.code.startsWith('GAY_COM');
-    if (filterGroup === 'OVERWEIGHT') return x.assessment.whz.code === 'THUA_CAN' || x.assessment.whz.code === 'BEO_PHI';
-    return true;
+    switch (filterGroup) {
+      case 'DAT_CHUAN_WHO':
+        return !x.assessment.canCanThiep;
+      case 'THAP_COI':
+        return x.assessment.haz.code === 'THAP_COI';
+      case 'THAP_COI_NANG':
+        return x.assessment.haz.code === 'THAP_COI_NANG';
+      case 'NHE_CAN':
+        return x.assessment.waz.code === 'NHE_CAN';
+      case 'NHE_CAN_NANG':
+        return x.assessment.waz.code === 'NHE_CAN_NANG';
+      case 'GAY_COM':
+        return x.assessment.whz.code === 'GAY_COM';
+      case 'GAY_COM_NANG':
+        return x.assessment.whz.code === 'GAY_COM_NANG';
+      case 'THUA_CAN':
+        return x.assessment.whz.code === 'THUA_CAN' || x.assessment.waz.code === 'THUA_CAN';
+      case 'BEO_PHI':
+        return x.assessment.whz.code === 'BEO_PHI' || x.assessment.waz.code === 'BEO_PHI';
+      default:
+        return true;
+    }
   });
+
+  const whoGroupButtons: WhoGroupButtonItem[] = [
+    {
+      key: 'DAT_CHUAN_WHO',
+      label: 'Đạt chuẩn WHO',
+      sub: '-2 SD ≤ Z ≤ +2 SD',
+      count: normalGroup.length,
+      icon: CheckCircle2,
+      activeClass: 'bg-emerald-600 text-white border-emerald-700 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-emerald-300',
+      iconIdle: 'text-emerald-500',
+      subActive: 'text-emerald-100',
+    },
+    {
+      key: 'THAP_COI',
+      label: 'Thấp còi',
+      sub: 'HAZ: -3 ≤ Z < -2 SD',
+      count: thapCoiGroup.length,
+      icon: Ruler,
+      activeClass: 'bg-blue-600 text-white border-blue-700 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-blue-300',
+      iconIdle: 'text-blue-500',
+      subActive: 'text-blue-100',
+    },
+    {
+      key: 'THAP_COI_NANG',
+      label: 'Thấp còi nặng',
+      sub: 'HAZ: Z < -3 SD',
+      count: thapCoiNangGroup.length,
+      icon: Ruler,
+      activeClass: 'bg-indigo-600 text-white border-indigo-700 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-indigo-300',
+      iconIdle: 'text-indigo-600',
+      subActive: 'text-indigo-100',
+    },
+    {
+      key: 'NHE_CAN',
+      label: 'Nhẹ cân',
+      sub: 'WAZ: -3 ≤ Z < -2 SD',
+      count: nheCanGroup.length,
+      icon: Scale,
+      activeClass: 'bg-amber-500 text-white border-amber-600 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-amber-300',
+      iconIdle: 'text-amber-500',
+      subActive: 'text-amber-100',
+    },
+    {
+      key: 'NHE_CAN_NANG',
+      label: 'Nhẹ cân nặng',
+      sub: 'WAZ: Z < -3 SD',
+      count: nheCanNangGroup.length,
+      icon: Scale,
+      activeClass: 'bg-orange-600 text-white border-orange-700 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-orange-300',
+      iconIdle: 'text-orange-600',
+      subActive: 'text-orange-100',
+    },
+    {
+      key: 'GAY_COM',
+      label: 'Gầy còm',
+      sub: 'WHZ: -3 ≤ Z < -2 SD',
+      count: gayComGroup.length,
+      icon: Activity,
+      activeClass: 'bg-rose-500 text-white border-rose-600 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-rose-300',
+      iconIdle: 'text-rose-500',
+      subActive: 'text-rose-100',
+    },
+    {
+      key: 'GAY_COM_NANG',
+      label: 'Gầy còm nặng',
+      sub: 'WHZ: Z < -3 SD',
+      count: gayComNangGroup.length,
+      icon: Activity,
+      activeClass: 'bg-red-600 text-white border-red-700 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-red-300',
+      iconIdle: 'text-red-600',
+      subActive: 'text-red-100',
+    },
+    {
+      key: 'THUA_CAN',
+      label: 'Thừa cân',
+      sub: '+2 SD < Z ≤ +3 SD',
+      count: thuaCanGroup.length,
+      icon: AlertTriangle,
+      activeClass: 'bg-yellow-500 text-white border-yellow-600 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-yellow-300',
+      iconIdle: 'text-yellow-600',
+      subActive: 'text-yellow-100',
+    },
+    {
+      key: 'BEO_PHI',
+      label: 'Béo phì',
+      sub: 'Z > +3 SD',
+      count: beoPhiGroup.length,
+      icon: AlertTriangle,
+      activeClass: 'bg-purple-600 text-white border-purple-700 shadow-sm',
+      idleClass: 'bg-white border-slate-200 hover:border-purple-300',
+      iconIdle: 'text-purple-600',
+      subActive: 'text-purple-100',
+    },
+  ];
 
   return (
     <div className="space-y-5">
@@ -104,179 +227,22 @@ export const TeacherHealthFCM: React.FC<TeacherHealthFCMProps> = ({
         </div>
       </div>
 
-      {/* 5 Thẻ Phân Nhóm Thể Trạng Cho Cô Giáo Quan Sát */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {/* Bình thường */}
-        <button
-          type="button"
-          onClick={() => setFilterGroup(filterGroup === 'NORMAL' ? 'ALL' : 'NORMAL')}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterGroup === 'NORMAL'
-              ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm'
-              : 'bg-white border-slate-200 hover:border-emerald-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <CheckCircle2 size={18} className={filterGroup === 'NORMAL' ? 'text-white' : 'text-emerald-500'} />
-            <span className="text-lg font-black">{normalGroup.length}</span>
-          </div>
-          <p className="text-xs font-black mt-2">Bình thường (Đạt)</p>
-          <p className={`text-[10px] ${filterGroup === 'NORMAL' ? 'text-emerald-100' : 'text-slate-400'}`}>Thể trạng cân đối</p>
-        </button>
-
-        {/* Thấp còi (HAZ) */}
-        <button
-          type="button"
-          onClick={() => setFilterGroup(filterGroup === 'STUNTED' ? 'ALL' : 'STUNTED')}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterGroup === 'STUNTED'
-              ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
-              : 'bg-white border-slate-200 hover:border-blue-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <Ruler size={18} className={filterGroup === 'STUNTED' ? 'text-white' : 'text-blue-500'} />
-            <span className="text-lg font-black">{stuntedGroup.length}</span>
-          </div>
-          <p className="text-xs font-black mt-2">Thấp còi (HAZ)</p>
-          <p className={`text-[10px] ${filterGroup === 'STUNTED' ? 'text-blue-100' : 'text-slate-400'}`}>Chiều cao &lt; -2 SD</p>
-        </button>
-
-        {/* Nhẹ cân (WAZ) */}
-        <button
-          type="button"
-          onClick={() => setFilterGroup(filterGroup === 'UNDERWEIGHT' ? 'ALL' : 'UNDERWEIGHT')}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterGroup === 'UNDERWEIGHT'
-              ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
-              : 'bg-white border-slate-200 hover:border-amber-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <Scale size={18} className={filterGroup === 'UNDERWEIGHT' ? 'text-white' : 'text-amber-500'} />
-            <span className="text-lg font-black">{underweightGroup.length}</span>
-          </div>
-          <p className="text-xs font-black mt-2">Nhẹ cân (WAZ)</p>
-          <p className={`text-[10px] ${filterGroup === 'UNDERWEIGHT' ? 'text-amber-100' : 'text-slate-400'}`}>Cân nặng &lt; -2 SD</p>
-        </button>
-
-        {/* Gầy còm (WHZ) */}
-        <button
-          type="button"
-          onClick={() => setFilterGroup(filterGroup === 'WASTED' ? 'ALL' : 'WASTED')}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterGroup === 'WASTED'
-              ? 'bg-rose-500 text-white border-rose-600 shadow-sm'
-              : 'bg-white border-slate-200 hover:border-rose-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <Activity size={18} className={filterGroup === 'WASTED' ? 'text-white' : 'text-rose-500'} />
-            <span className="text-lg font-black">{wastedGroup.length}</span>
-          </div>
-          <p className="text-xs font-black mt-2">Gầy còm (WHZ)</p>
-          <p className={`text-[10px] ${filterGroup === 'WASTED' ? 'text-rose-100' : 'text-slate-400'}`}>Cấp tính &lt; -2 SD</p>
-        </button>
-
-        {/* Thừa cân / Béo phì */}
-        <button
-          type="button"
-          onClick={() => setFilterGroup(filterGroup === 'OVERWEIGHT' ? 'ALL' : 'OVERWEIGHT')}
-          className={`p-3.5 rounded-2xl border text-left transition cursor-pointer ${
-            filterGroup === 'OVERWEIGHT'
-              ? 'bg-orange-500 text-white border-orange-600 shadow-sm'
-              : 'bg-white border-slate-200 hover:border-orange-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <AlertTriangle size={18} className={filterGroup === 'OVERWEIGHT' ? 'text-white' : 'text-orange-500'} />
-            <span className="text-lg font-black">{overweightGroup.length}</span>
-          </div>
-          <p className="text-xs font-black mt-2">Thừa cân / Béo phì</p>
-          <p className={`text-[10px] ${filterGroup === 'OVERWEIGHT' ? 'text-orange-100' : 'text-slate-400'}`}>WHZ &gt; +2 SD</p>
-        </button>
-      </div>
-
-      {/* Hướng dẫn can thiệp kịp thời cho giáo viên */}
-      <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-xs text-indigo-950 flex items-start gap-3">
-        <Info size={18} className="text-indigo-600 shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold">Biện pháp điều chỉnh kịp thời cho giáo viên: </span>
-          {filterGroup === 'STUNTED' && 'Với các bé thấp còi: Nhắc nhở phụ huynh bổ sung vi chất (Canxi, Kẽm, Vitamin D3); khuyến khích bé uống đủ sữa tại lớp và tham gia các hoạt động vươn vai, kéo giãn ngoài trời.'}
-          {filterGroup === 'UNDERWEIGHT' && 'Với các bé nhẹ cân: Phối hợp nhà bếp tăng khẩu phần đạm và dầu mỡ lành mạnh; theo dõi bé ăn hết suất và bổ sung bữa phụ buổi chiều.'}
-          {filterGroup === 'WASTED' && 'Với các bé gầy còm (suy dinh dưỡng cấp): Báo ngay cho phụ huynh và nhân viên y tế trường để có chế độ chăm sóc và theo dõi cân nặng hàng tuần.'}
-          {filterGroup === 'OVERWEIGHT' && 'Với các bé thừa cân / béo phì: Hạn chế cho bé ăn thêm tinh bột hoặc uống nước ngọt có đường; khuyến khích bé làm "trực nhật", tăng cường chạy nhảy vận động ngoài trời ít nhất 60 phút mỗi ngày.'}
-          {(filterGroup === 'ALL' || filterGroup === 'NORMAL') && 'Bấm vào từng nhóm ở trên để lọc danh sách các bé cần hỗ trợ đặc biệt. Cô có thể bấm vào từng học sinh để xem chi tiết biểu đồ phát triển.'}
-        </div>
-      </div>
+      <TeacherHealthFcmButtons
+        buttons={whoGroupButtons}
+        filterGroup={filterGroup}
+        setFilterGroup={setFilterGroup}
+      />
 
       {/* Danh sách học sinh theo trạng thái phân loại */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {displayList.map(({ child, weight, height, assessment }) => {
-          return (
-            <div
-              key={child.id}
-              onClick={() => onSelectChildToInspect?.(child)}
-              className="bg-white rounded-2xl p-4 border border-slate-200 hover:border-orange-300 hover:shadow-sm transition cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar initials={child.avatar} id={child.id} size="sm" />
-                    <div>
-                      <p className="font-black text-slate-800 text-xs">{child.name}</p>
-                      <p className="text-[10px] text-slate-400">
-                        {child.gender === 'F' ? '♀ Bé gái' : '♂ Bé trai'} · {assessment.ageMonths} tháng
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                      assessment.canCanThiep
-                        ? 'bg-amber-50 text-amber-800 border-amber-200'
-                        : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                    }`}
-                  >
-                    {assessment.trangThaiTongThe}
-                  </span>
-                </div>
-
-                {/* 3 chỉ số Z-score */}
-                <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-100 text-center">
-                  <div className="bg-slate-50 rounded-xl p-1.5">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">HAZ</span>
-                    <p className={`text-xs font-black ${assessment.haz.isAlert ? 'text-blue-700' : 'text-slate-700'}`}>
-                      {assessment.haz.zScore > 0 ? `+${assessment.haz.zScore}` : assessment.haz.zScore}
-                    </p>
-                    <p className="text-[9px] text-slate-500 truncate">{assessment.haz.label}</p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-1.5">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">WAZ</span>
-                    <p className={`text-xs font-black ${assessment.waz.isAlert ? 'text-amber-700' : 'text-slate-700'}`}>
-                      {assessment.waz.zScore > 0 ? `+${assessment.waz.zScore}` : assessment.waz.zScore}
-                    </p>
-                    <p className="text-[9px] text-slate-500 truncate">{assessment.waz.label}</p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-1.5">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">WHZ</span>
-                    <p className={`text-xs font-black ${assessment.whz.isAlert ? 'text-rose-700' : 'text-slate-700'}`}>
-                      {assessment.whz.zScore > 0 ? `+${assessment.whz.zScore}` : assessment.whz.zScore}
-                    </p>
-                    <p className="text-[9px] text-slate-500 truncate">{assessment.whz.label}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Lời khuyên tóm tắt */}
-              <div className="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex items-center justify-between">
-                <span className="truncate">{assessment.loiKhuyen}</span>
-                <ArrowRight size={13} className="text-slate-400 shrink-0 ml-1" />
-              </div>
-            </div>
-          );
-        })}
+        {displayList.map(({ child, assessment }) => (
+          <TeacherHealthFcmCard
+            key={child.id}
+            child={child}
+            assessment={assessment}
+            onSelectChildToInspect={onSelectChildToInspect}
+          />
+        ))}
       </div>
     </div>
   );

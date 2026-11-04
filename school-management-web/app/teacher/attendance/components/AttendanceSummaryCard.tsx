@@ -38,19 +38,21 @@ export const AttendanceSummaryCard: React.FC<AttendanceSummaryCardProps> = ({
   totalCount,
 }) => {
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 p-6 text-white shadow-lg shadow-orange-500/20 relative overflow-hidden">
+    <div className="rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 p-4 sm:p-6 text-white shadow-lg shadow-orange-500/20 relative overflow-hidden max-w-full min-w-0">
       {/* Background soft decoration */}
-      <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-amber-400/20 blur-xl pointer-events-none" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
+        <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-amber-400/20 blur-xl" />
+      </div>
 
       {/* Header dòng đầu: Tiêu đề + Chuyển chế độ Đón/Trả + Chọn ngày */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-black backdrop-blur-md text-orange-100 uppercase tracking-wider mb-2">
-            {mode === 'DEN' ? <Sun size={13} className="text-amber-300" /> : <Moon size={13} className="text-amber-200" />}
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black backdrop-blur-md text-orange-100 uppercase tracking-wider mb-1.5">
+            {mode === 'DEN' ? <Sun size={12} className="text-amber-300" /> : <Moon size={12} className="text-amber-200" />}
             {mode === 'DEN' ? 'Ca Sáng · Điểm danh đón trẻ' : 'Ca Chiều · Xác nhận trả trẻ'}
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
             Sổ Điểm Danh Lớp Học
           </h1>
           <p className="text-xs font-semibold text-orange-100 capitalize mt-0.5">
@@ -58,10 +60,13 @@ export const AttendanceSummaryCard: React.FC<AttendanceSummaryCardProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Ô chọn ngày */}
-          <div className="flex items-center gap-2 rounded-2xl bg-white/15 px-3 py-2 border border-white/20 backdrop-blur-md">
-            <CalendarDays size={16} className="text-amber-200" />
+          <div className="flex items-center justify-between sm:justify-start gap-2 rounded-2xl bg-white/15 px-3 py-2 border border-white/20 backdrop-blur-md">
+            <span className="flex items-center gap-2">
+              <CalendarDays size={16} className="text-amber-200" />
+              <span className="text-[11px] font-bold sm:hidden">Ngày:</span>
+            </span>
             <input
               type="date"
               value={selectedDate}
@@ -71,27 +76,27 @@ export const AttendanceSummaryCard: React.FC<AttendanceSummaryCardProps> = ({
           </div>
 
           {/* Nút chuyển chế độ Đón trẻ / Trả trẻ */}
-          <div className="flex rounded-2xl bg-black/20 p-1 border border-white/15 backdrop-blur-md">
+          <div className="grid grid-cols-2 sm:flex rounded-2xl bg-black/20 p-1 border border-white/15 backdrop-blur-md">
             <button
               onClick={() => setMode('DEN')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 mode === 'DEN'
                   ? 'bg-white text-orange-600 shadow-sm'
                   : 'text-orange-100 hover:text-white'
               }`}
             >
-              <Sun size={14} />
+              <Sun size={13} />
               <span>Đón trẻ (Sáng)</span>
             </button>
             <button
               onClick={() => setMode('VE')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 mode === 'VE'
                   ? 'bg-white text-orange-600 shadow-sm'
                   : 'text-orange-100 hover:text-white'
               }`}
             >
-              <Moon size={14} />
+              <Moon size={13} />
               <span>Trả trẻ (Chiều)</span>
             </button>
           </div>

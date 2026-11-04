@@ -122,7 +122,7 @@ export default function TeacherAssessmentModals({
         isOpen={childRadarModal.open}
         onClose={onCloseRadar}
         title={`Hồ sơ năng lực: ${childRadarModal.student?.tenHocSinh || ''}`}
-        subtitle="Biểu đồ đa giác 5 lĩnh vực phát triển toàn diện của bé"
+        subtitle="Biểu đồ đa giác đánh giá năng lực các hoạt động giáo dục của bé"
         maxWidth="lg"
       >
         <div className="space-y-4">

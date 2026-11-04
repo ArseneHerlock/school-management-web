@@ -10,16 +10,16 @@ export default function TeacherNews() {
         <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600">
           BẢN TIN NỘI BỘ & TOÀN TRƯỜNG
         </span>
-        <h1 className="text-2xl font-black text-slate-800">Tin Tức & Sự Kiện Trường</h1>
+        <h1 className="text-2xl font-black text-slate-800">Bản Tin & Thông Báo Trường</h1>
         <p className="mt-1 text-xs text-slate-500">
-          Đăng tải thông báo, bản tin mầm non kèm hình ảnh minh họa và theo dõi sự kiện sắp tới.
+          Cập nhật các văn bản thông báo, bản tin mầm non và tin tức chính thức từ Ban Giám Hiệu nhà trường.
         </p>
       </header>
 
       <NewsListView
         role="teacher"
-        pageTitle="Tin Tức & Sự Kiện Trường"
-        pageSubtitle="Đăng tải thông báo, bản tin mầm non kèm hình ảnh minh họa và theo dõi sự kiện sắp tới."
+        pageTitle="Bản Tin & Thông Báo Trường"
+        pageSubtitle="Cập nhật các văn bản thông báo, bản tin mầm non và tin tức chính thức từ Ban Giám Hiệu nhà trường."
       />
     </div>
   );

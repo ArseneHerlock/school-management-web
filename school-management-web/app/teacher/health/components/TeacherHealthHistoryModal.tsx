@@ -65,6 +65,7 @@ export const TeacherHealthHistoryModal: React.FC<TeacherHealthHistoryModalProps>
             </div>
           ) : (
             <WhoGrowthChart
+              childId={child.apiId || child.id}
               records={historyLogs}
               gender={gender}
               dob={child.dob}

@@ -55,7 +55,9 @@ export default function TeacherProfilePage() {
         // Tìm lớp mà giáo viên làm chủ nhiệm
         const classesResponse = await getClasses()
         const assignedClass = classesResponse.find(
-          (classItem) => classItem.giaoVienChuNhiemId === matchedStaff.staffId
+          (classItem) =>
+            classItem.giaoVienChuNhiemId === matchedStaff.staffId ||
+            classItem.giaoVienPhuId === matchedStaff.staffId
         )
 
         if (assignedClass) {

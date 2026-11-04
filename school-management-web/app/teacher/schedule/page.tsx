@@ -3,10 +3,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, RefreshCw, CheckCircle2, Sparkles, BookOpen, School } from 'lucide-react';
+import { ArrowLeft, RefreshCw, CheckCircle2, Sparkles, BookOpen, School, Camera } from 'lucide-react';
 import { getTeacherSchedules, getSchedules } from '@/services';
 import { loadLiveTeacherContext, CLASS_INFO } from '../data';
 import WeeklyTimetable, { TimetableScheduleItem, isEvaluableActivity } from '@/app/components/schedule/WeeklyTimetable';
+import TeacherActivityActionModal from './components/TeacherActivityActionModal';
+import TeacherPostMomentModal from '../components/TeacherPostMomentModal';
+import ActivityMomentsModal from '../activities/components/ActivityMomentsModal';
+import { ActivityItem } from '@/services/development';
 
 export default function TeacherSchedulePage() {
   const router = useRouter();
@@ -14,6 +18,27 @@ export default function TeacherSchedulePage() {
   const [allClasses, setAllClasses] = useState<any[]>([]);
   const [noticeMessage, setNoticeMessage] = useState<string>('');
   const [refreshKey, setRefreshKey] = useState<number>(0);
+
+  // Modal lựa chọn thao tác (Đánh giá trẻ / Đăng khoảnh khắc / Xem khoảnh khắc)
+  const [actionModalItem, setActionModalItem] = useState<TimetableScheduleItem | null>(null);
+  const [viewMomentsActivity, setViewMomentsActivity] = useState<ActivityItem | null>(null);
+
+  // Modal đăng khoảnh khắc cho hoạt động được chọn
+  const [postMomentModalData, setPostMomentModalData] = useState<{
+    open: boolean;
+    activityId: string;
+    activityTitle: string;
+    date: string;
+    classId: string;
+    className: string;
+  }>({
+    open: false,
+    activityId: '',
+    activityTitle: '',
+    date: '',
+    classId: '',
+    className: '',
+  });
 
   useEffect(() => {
     loadLiveTeacherContext()
@@ -127,23 +152,50 @@ export default function TeacherSchedulePage() {
   );
 
   const handleItemClick = (item: TimetableScheduleItem) => {
-    // Chỉ chuyển sang màn hình Đánh giá khi là hoạt động giáo dục / trải nghiệm có tiêu chí đánh giá
-    if (isEvaluableActivity(item)) {
-      const clsId = item.classId || teacherContext?.cls?.id || '';
-      try {
-        sessionStorage.setItem(
-          'teacher_focused_activity',
-          JSON.stringify({
-            scheduleId: item.id,
-            activityId: item.activityId || '',
-            title: item.title,
-            classId: clsId,
-            date: item.date,
-          })
-        );
-      } catch {}
-      router.push('/teacher/assessment');
-    }
+    setActionModalItem(item);
+  };
+
+  const handleExecuteEvaluate = (item: TimetableScheduleItem) => {
+    setActionModalItem(null);
+    const clsId = item.classId || teacherContext?.cls?.id || '';
+    try {
+      sessionStorage.setItem(
+        'teacher_focused_activity',
+        JSON.stringify({
+          scheduleId: item.id,
+          activityId: item.activityId || '',
+          title: item.title,
+          classId: clsId,
+          date: item.date,
+        })
+      );
+    } catch {}
+    router.push('/teacher/assessment');
+  };
+
+  const handleExecutePostMoment = (item: TimetableScheduleItem) => {
+    setActionModalItem(null);
+    setPostMomentModalData({
+      open: true,
+      activityId: item.activityId || item.id,
+      activityTitle: item.title,
+      date: item.date,
+      classId: item.classId || teacherContext?.cls?.id || '',
+      className: item.className || teacherContext?.cls?.tenLop || '',
+    });
+  };
+
+  const handleExecuteViewMoments = (item: TimetableScheduleItem) => {
+    setActionModalItem(null);
+    setViewMomentsActivity({
+      id: item.activityId || item.id,
+      code: item.date,
+      name: item.title,
+      description: item.description || `${item.className || ''} • ${item.startTime} - ${item.endTime}`,
+      createdAt: item.date,
+      isActive: true,
+      developmentCriteria: [],
+    });
   };
 
   const currentClassName = teacherContext?.cls?.tenLop || CLASS_INFO.name || 'Lớp phụ trách';
@@ -219,6 +271,52 @@ export default function TeacherSchedulePage() {
         userRole="teacher"
         fetchSchedules={fetchTeacherSchedules}
         onItemClick={handleItemClick}
+      />
+
+      {/* Modal lựa chọn: Đánh giá trẻ, Đăng khoảnh khắc hoặc Xem khoảnh khắc */}
+      <TeacherActivityActionModal
+        isOpen={Boolean(actionModalItem)}
+        onClose={() => setActionModalItem(null)}
+        item={actionModalItem}
+        onSelectEvaluate={handleExecuteEvaluate}
+        onSelectPostMoment={handleExecutePostMoment}
+        onSelectViewMoments={handleExecuteViewMoments}
+      />
+
+      {/* Modal xem khoảnh khắc của hoạt động ngay trên Thời khóa biểu */}
+      <ActivityMomentsModal
+        isOpen={Boolean(viewMomentsActivity)}
+        onClose={() => setViewMomentsActivity(null)}
+        activity={viewMomentsActivity}
+        onOpenPostMoment={(act) => {
+          setViewMomentsActivity(null);
+          setPostMomentModalData({
+            open: true,
+            activityId: act.id,
+            activityTitle: act.name,
+            date: act.code || new Date().toISOString().slice(0, 10),
+            classId: teacherContext?.cls?.id || '',
+            className: teacherContext?.cls?.tenLop || '',
+          });
+        }}
+      />
+
+      {/* Modal đăng khoảnh khắc nhanh có tự động gán tên hoạt động */}
+      <TeacherPostMomentModal
+        isOpen={postMomentModalData.open}
+        onClose={() =>
+          setPostMomentModalData((prev) => ({ ...prev, open: false }))
+        }
+        defaultActivityId={postMomentModalData.activityId}
+        defaultActivityTitle={postMomentModalData.activityTitle}
+        defaultDate={postMomentModalData.date}
+        defaultClassId={postMomentModalData.classId}
+        defaultClassName={postMomentModalData.className}
+        onSuccess={() => {
+          setNoticeMessage(
+            `Đã lưu khoảnh khắc thành công cho hoạt động "${postMomentModalData.activityTitle}"!`
+          );
+        }}
       />
     </div>
   );

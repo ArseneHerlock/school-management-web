@@ -1,14 +1,18 @@
 'use client'
 
 import React from 'react'
-import { Edit3 } from 'lucide-react'
+import { Edit3, Flower2, Star } from 'lucide-react'
 import { Child } from '../../data'
+import { FridayAwardChild } from '@/services/awards'
 
 interface GoodChildGridProps {
   childrenList: Child[]
   rowFor: (id: string) => any
   onOpen: (child: Child) => void
   isDelivered?: (id: string) => boolean
+  fridayAwardMap?: Map<string, FridayAwardChild>
+  month?: number
+  year?: number
 }
 
 export const GoodChildGrid: React.FC<GoodChildGridProps> = ({
@@ -16,6 +20,8 @@ export const GoodChildGrid: React.FC<GoodChildGridProps> = ({
   rowFor,
   onOpen,
   isDelivered,
+  fridayAwardMap,
+  month = new Date().getMonth() + 1,
 }) => {
   if (!childrenList.length) {
     return (
@@ -28,9 +34,21 @@ export const GoodChildGrid: React.FC<GoodChildGridProps> = ({
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {childrenList.map((child) => {
-        const cId = child.apiId || String(child.id)
-        const r = rowFor(cId)
+        const cId = (child.apiId || String(child.id)).toLowerCase()
+        const r = rowFor(child.apiId || String(child.id))
         const hasComment = Boolean(r?.teacherComment?.trim())
+
+        // Lấy dữ liệu hoa thực tế từ CSDL
+        const awardInfo = fridayAwardMap?.get(cId)
+        const monthFlowers = awardInfo
+          ? awardInfo.monthFlowerCount
+          : Number(r?.dailyFlowerCount || (Array.isArray(r?.flowers) ? r.flowers.length : 0))
+        const hasStar = awardInfo
+          ? awardInfo.hasMonthlyStar
+          : (monthFlowers >= 4 || Number(r?.bonusFlowerCount || 0) > 0)
+        const allTimeFlowers = awardInfo
+          ? awardInfo.totalFlowerCount
+          : monthFlowers
 
         return (
           <button
@@ -68,12 +86,55 @@ export const GoodChildGrid: React.FC<GoodChildGridProps> = ({
                   {isDelivered && (
                     <span
                       className={`font-bold px-2 py-0.5 rounded-md text-[10px] ${
-                        isDelivered(cId)
+                        isDelivered(child.apiId || String(child.id))
                           ? 'bg-sky-100 text-sky-800'
                           : 'bg-amber-50 text-amber-700 border border-amber-200'
                       }`}
                     >
-                      {isDelivered(cId) ? '✓ Đã giao PH' : 'Chưa giao PH'}
+                      {isDelivered(child.apiId || String(child.id)) ? '✓ Đã giao PH' : 'Chưa giao PH'}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Thông tin số phiếu bé ngoan & hoa tháng */}
+              <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50/50 p-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <Flower2 size={14} className="text-pink-500 shrink-0" />
+                    <span className="text-xs font-black text-slate-800">
+                      {monthFlowers}/4 phiếu tháng {month}
+                    </span>
+                    {hasStar && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-200 px-1.5 py-0.5 text-[9px] font-black text-amber-900">
+                        <Star size={9} className="fill-amber-500 text-amber-500" /> Sao tháng
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 4 nấc tích lũy hoa trong tháng */}
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4].map((slot) => (
+                      <span
+                        key={slot}
+                        title={`Tuần ${slot}`}
+                        className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] ${
+                          slot <= monthFlowers
+                            ? 'bg-pink-500 font-black text-white shadow-2xs'
+                            : 'bg-slate-200 text-slate-400'
+                        }`}
+                      >
+                        {slot <= monthFlowers ? '🌸' : ''}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500">
+                  <span>Tổng tích lũy: <strong className="text-slate-700">{allTimeFlowers}</strong> phiếu</span>
+                  {awardInfo && awardInfo.monthFlowers.length > 0 && (
+                    <span className="text-slate-400">
+                      Ngày nhận: {awardInfo.monthFlowers.map((f) => f.date.slice(5).replace('-', '/')).join(', ')}
                     </span>
                   )}
                 </div>

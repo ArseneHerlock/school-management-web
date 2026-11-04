@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { BookOpenCheck, Loader2, Users, Sparkles, Calendar, Trash2 } from 'lucide-react'
-import { getMediaUrl } from '@/lib/api'
+import { getMediaUrl } from "@/services"
 import { Child } from '../../data'
 import { cleanDescription, extractCategory } from './types'
 

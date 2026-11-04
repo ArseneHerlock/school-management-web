@@ -1,28 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getAllHealthRecords, getHealthRecords, createBatchHealthRecords } from '@/services/health';
 import { CHILDREN, loadLiveTeacherChildren, Child } from '../data';
-import Avatar from '../components/Avatar';
-import {
-  History,
-  Activity,
-  HeartPulse,
-  TrendingUp,
-  Scale,
-  Ruler,
-  PieChart,
-  RefreshCw,
-  CheckCircle2,
-  AlertTriangle,
-  Info,
-  Calendar,
-  Sparkles,
-} from 'lucide-react';
+import { HeartPulse, RefreshCw } from 'lucide-react';
 import { TeacherHealthHistoryModal } from './components/TeacherHealthHistoryModal';
 import { TeacherHealthFCM } from './components/TeacherHealthFCM';
 import { TeacherHealthEntry } from './components/TeacherHealthEntry';
-import { calculateBmi, classifyWhoBmi } from './components/whoStandards';
+import { TeacherHealthOverviewTable } from './components/TeacherHealthOverviewTable';
 
 type Mode = 'entry' | 'who' | 'view';
 
@@ -196,7 +181,6 @@ export default function HealthPage() {
         ))}
       </div>
 
-      {/* Tab 1: Nhập số đo cả lớp */}
       {mode === 'entry' && (
         <TeacherHealthEntry
           quarter={quarter}
@@ -212,7 +196,6 @@ export default function HealthPage() {
         />
       )}
 
-      {/* Tab 2: Phân nhóm thể trạng WHO & Cảnh báo béo phì */}
       {mode === 'who' && (
         <TeacherHealthFCM
           childrenList={CHILDREN}
@@ -221,116 +204,14 @@ export default function HealthPage() {
         />
       )}
 
-      {/* Tab 3: Sổ theo dõi & Lịch sử tiến trình */}
       {mode === 'view' && (
-        <div className="rounded-3xl border border-orange-100 bg-white overflow-hidden shadow-xs space-y-4">
-          <div className="p-5 bg-orange-50/60 border-b border-orange-100 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-black uppercase text-slate-800 tracking-wide">
-                Bảng tổng hợp chỉ số thể lực & Phân loại WHO lớp học
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Chỉ số BMI được tự động tính từ cân nặng và chiều cao mới nhất.
-              </p>
-            </div>
-            <span className="text-xs text-orange-600 font-extrabold bg-orange-100 px-3 py-1 rounded-full">
-              {CHILDREN.length} học sinh
-            </span>
-          </div>
-
-          <div className="overflow-x-auto px-3 sm:px-5 pb-5 w-full max-w-full">
-            <div className="sm:hidden text-[10px] text-orange-600 font-bold mb-2 text-right">
-              Vuốt ngang để xem đầy đủ cột →
-            </div>
-            <table className="w-full min-w-[680px] text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 text-slate-500 bg-slate-50/60">
-                  <th className="py-3 px-4 font-bold">Học sinh</th>
-                  <th className="py-3 px-4 font-bold">Giới tính & Tuổi</th>
-                  <th className="py-3 px-4 text-center font-bold">Cân nặng (kg)</th>
-                  <th className="py-3 px-4 text-center font-bold">Chiều cao (cm)</th>
-                  <th className="py-3 px-4 text-center font-bold">BMI (Tự tính)</th>
-                  <th className="py-3 px-4 text-center font-bold">Thể trạng WHO</th>
-                  <th className="py-3 px-4 text-right font-bold">Lịch sử tiến trình</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {CHILDREN.map((c) => {
-                  const rec = liveHealth[c.id];
-                  const w = rec?.canNang != null ? Number(rec.canNang) : null;
-                  const h = rec?.chieuCao != null ? Number(rec.chieuCao) : null;
-                  const bmi = calculateBmi(w, h);
-                  const gender = c.gender === 'F' ? 'F' : 'M';
-                  const classification = classifyWhoBmi(bmi, gender, c.dob);
-
-                  return (
-                    <tr key={c.id} className="hover:bg-orange-50/30 transition">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar initials={c.avatar} id={c.id} size="xs" />
-                          <div>
-                            <p className="font-black text-slate-800">{c.name}</p>
-                            <p className="text-[11px] text-slate-400 font-medium">({c.nickname})</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 text-slate-500">
-                        <span className={c.gender === 'F' ? 'text-rose-500 font-bold' : 'text-blue-500 font-bold'}>
-                          {c.gender === 'F' ? '♀ Nữ' : '♂ Nam'}
-                        </span>
-                        {c.dob && <span className="ml-2 text-slate-400">· {c.dob}</span>}
-                      </td>
-
-                      <td className="py-3 px-4 text-center font-mono font-bold text-slate-700">
-                        {w != null ? `${w} kg` : '—'}
-                      </td>
-
-                      <td className="py-3 px-4 text-center font-mono font-bold text-slate-700">
-                        {h != null ? `${h} cm` : '—'}
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        {bmi != null ? (
-                          <span className="font-mono font-black text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/50">
-                            {bmi}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300 italic">—</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        {bmi != null ? (
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black border ${classification.badgeBg} ${classification.textClass} ${classification.borderClass}`}
-                          >
-                            {classification.shortLabel}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 text-[11px] italic">Chưa đo</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => void openHistoryModal(c)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 text-xs font-black text-orange-600 hover:bg-orange-100 transition cursor-pointer"
-                        >
-                          <History size={13} />
-                          <span>Xem tiến trình</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <TeacherHealthOverviewTable
+          childrenList={CHILDREN}
+          liveHealth={liveHealth}
+          onOpenHistoryModal={(child) => void openHistoryModal(child)}
+        />
       )}
 
-      {/* Modal Lịch sử khám & Tiến trình tăng trưởng của từng bé */}
       <TeacherHealthHistoryModal
         child={historyModalChild}
         historyLogs={historyLogs}

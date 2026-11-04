@@ -108,36 +108,79 @@ export async function loadLiveTeacherContext() {
       ? staffResult.value
       : [];
 
-  const activeUserId = typeof window !== 'undefined' ? currentUser()?.id : '';
-  const currentStaff = staffList.find((member: any) => member.userId === activeUserId);
+  const activeUser = typeof window !== 'undefined' ? currentUser() : null;
+  const activeUserId = (activeUser?.id || '').toLowerCase().trim();
+  const activeUsername = (activeUser?.username || '').toLowerCase().trim();
 
+  const currentStaff = staffList.find((member: any) => {
+    const mUserId = String(member.userId || member.UserId || '').toLowerCase().trim();
+    const mStaffCode = String(member.staffCode || member.StaffCode || '').toLowerCase().trim();
+    const mEmail = String(member.email || member.Email || '').toLowerCase().trim();
+    return (
+      (activeUserId && mUserId === activeUserId) ||
+      (activeUsername && (mStaffCode === activeUsername || mEmail === activeUsername))
+    );
+  });
+
+  const staffId = currentStaff?.staffId || (currentStaff as any)?.StaffId;
+  const currentStaffUserId = currentStaff?.userId || (currentStaff as any)?.UserId || activeUserId;
   const assignedClass =
-    classes.find((clsItem: any) => clsItem.giaoVienChuNhiemId === currentStaff?.staffId) ||
-    null;
+    classes.find((clsItem: any) => {
+      const gv1 = String(clsItem.giaoVienChuNhiemId || clsItem.GiaoVienChuNhiemId || '').toLowerCase();
+      const gv2 = String(clsItem.giaoVienPhuId || clsItem.GiaoVienPhuId || '').toLowerCase();
+      const sId = String(staffId || '').toLowerCase();
+      const uId = String(currentStaffUserId || '').toLowerCase();
+      return (
+        (sId && (gv1 === sId || gv2 === sId)) ||
+        (uId && (gv1 === uId || gv2 === uId))
+      );
+    }) || null;
 
   CLASS_INFO.name = assignedClass?.tenLop || (currentStaff ? 'Chưa phân công lớp' : '');
   CLASS_INFO.room = assignedClass?.phongHoc || '';
   CLASS_INFO.ageGroup = assignedClass?.namHoc ? `Năm học ${assignedClass.namHoc}` : '';
 
-  const teacherName = currentStaff?.fullName || '';
-  const initials = teacherName
-    .split(/\s+/)
-    .slice(-2)
-    .map((part: string) => part[0])
-    .join('')
-    .toUpperCase();
+  const teacherListItems: TeacherMember[] = [];
+  if (assignedClass) {
+    const rawClass = assignedClass as any;
+    const gv1Id = assignedClass.giaoVienChuNhiemId || rawClass.GiaoVienChuNhiemId;
+    const gv2Id = assignedClass.giaoVienPhuId || rawClass.GiaoVienPhuId;
+    
+    const teacher1 = staffList.find((s) => s.staffId === gv1Id);
+    const teacher2 = staffList.find((s) => s.staffId === gv2Id);
 
-  CLASS_INFO.teachers = currentStaff
-    ? [
-        {
-          id: currentStaff.staffId,
-          name: teacherName,
-          role: 'Giáo viên chủ nhiệm',
-          avatar: initials || 'GV',
-          color: '#f97316',
-        },
-      ]
-    : [];
+    if (teacher1) {
+      teacherListItems.push({
+        id: teacher1.staffId,
+        name: teacher1.fullName,
+        role: 'Giáo viên chủ nhiệm (GV1)',
+        avatar: teacher1.fullName.split(/\s+/).slice(-2).map((p: string) => p[0]).join('').toUpperCase() || 'GV',
+        color: '#f97316',
+      });
+    }
+    if (teacher2) {
+      teacherListItems.push({
+        id: teacher2.staffId,
+        name: teacher2.fullName,
+        role: 'Giáo viên đồng phụ trách (GV2)',
+        avatar: teacher2.fullName.split(/\s+/).slice(-2).map((p: string) => p[0]).join('').toUpperCase() || 'GV',
+        color: '#0ea5e9',
+      });
+    }
+  }
+
+  if (teacherListItems.length === 0 && currentStaff) {
+    const teacherName = currentStaff?.fullName || (currentStaff as any)?.FullName || activeUser?.name || '';
+    teacherListItems.push({
+      id: currentStaff.staffId,
+      name: teacherName,
+      role: 'Giáo viên',
+      avatar: teacherName.split(/\s+/).slice(-2).map((part: string) => part[0]).join('').toUpperCase() || 'GV',
+      color: '#f97316',
+    });
+  }
+
+  CLASS_INFO.teachers = teacherListItems;
 
   CLASS_INFO.currentTeacher = currentStaff?.staffId || '';
 

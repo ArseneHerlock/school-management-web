@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { School, Clock, Users, Sparkles, MapPin, CheckCircle } from 'lucide-react'
+import { School, Clock, Users, Sparkles, MapPin, CheckCircle, Sun, Moon, Utensils, BookOpen, Smile, LogOut } from 'lucide-react'
 
 interface TeacherHeroCardProps {
   today: string
@@ -22,6 +22,27 @@ interface TeacherHeroCardProps {
   }
 }
 
+interface RoutinePhase {
+  id: string
+  label: string
+  timeRange: string
+  startHour: number
+  startMinute: number
+  endHour: number
+  endMinute: number
+  icon: React.ElementType
+}
+
+const ROUTINE_PHASES: RoutinePhase[] = [
+  { id: 'arrival', label: 'Đón trẻ & Sàng lọc', timeRange: '07:00 - 08:30', startHour: 7, startMinute: 0, endHour: 8, endMinute: 30, icon: Sun },
+  { id: 'breakfast', label: 'Ăn sáng & Thể dục', timeRange: '08:30 - 09:15', startHour: 8, startMinute: 30, endHour: 9, endMinute: 15, icon: Utensils },
+  { id: 'learning', label: 'Hoạt động học', timeRange: '09:15 - 10:30', startHour: 9, startMinute: 15, endHour: 10, endMinute: 30, icon: BookOpen },
+  { id: 'lunch', label: 'Ăn trưa', timeRange: '10:30 - 11:30', startHour: 10, startMinute: 30, endHour: 11, endMinute: 30, icon: Utensils },
+  { id: 'nap', label: 'Giờ ngủ trưa', timeRange: '11:30 - 14:00', startHour: 11, startMinute: 30, endHour: 14, endMinute: 0, icon: Moon },
+  { id: 'snack', label: 'Ăn xế chiều', timeRange: '14:00 - 15:30', startHour: 14, startMinute: 0, endHour: 15, endMinute: 30, icon: Smile },
+  { id: 'departure', label: 'Trả trẻ & Bàn giao', timeRange: '15:30 - 17:30', startHour: 15, startMinute: 30, endHour: 17, endMinute: 30, icon: LogOut },
+]
+
 export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
   today,
   time,
@@ -33,11 +54,22 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
   const totalStudents = classInfo.totalStudents || 0
   const teachersList = classInfo.teachers || []
 
+  // Xác định phase hiện tại theo giờ
+  const currentTotalMinutes = time.getHours() * 60 + time.getMinutes()
+
+  const activePhase = ROUTINE_PHASES.find((p) => {
+    const start = p.startHour * 60 + p.startMinute
+    const end = p.endHour * 60 + p.endMinute
+    return currentTotalMinutes >= start && currentTotalMinutes < end
+  }) || ROUTINE_PHASES[0]
+
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-6 md:p-8 text-white shadow-lg shadow-orange-500/20">
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 p-4 sm:p-6 md:p-7 text-white shadow-xl shadow-orange-600/20 max-w-full min-w-0">
       {/* Background Decorative Blobs */}
-      <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-      <div className="absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-amber-400/20 blur-xl pointer-events-none" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
+        <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-amber-400/20 blur-xl" />
+      </div>
 
       <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         {/* Bên trái: Thông tin lớp học và ngày giảng dạy */}
@@ -49,7 +81,7 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
 
           <div>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight drop-shadow-xs">
-              {className}
+              Bàn Làm Việc Giáo Viên: {className}
             </h2>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-orange-50">
               <span className="flex items-center gap-1.5 rounded-lg bg-black/15 px-2.5 py-1 backdrop-blur-xs">
@@ -68,51 +100,76 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
           </div>
         </div>
 
-        {/* Bên phải: Đồng hồ điện tử và trạng thái trực tuyến */}
-        <div className="flex flex-col items-start md:items-end justify-center rounded-2xl bg-black/15 p-4 backdrop-blur-md border border-white/15">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-200">
-            <Clock size={14} />
-            <span>Thời gian hiện tại</span>
+        {/* Bên phải: Đồng hồ điện tử & Giai đoạn nề nếp hiện tại */}
+        <div className="flex flex-col items-start md:items-end justify-center rounded-2xl bg-black/20 p-4 backdrop-blur-md border border-white/15">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-amber-200">
+            <Clock size={13} />
+            <span>Nề nếp đang diễn ra:</span>
+          </div>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="text-lg md:text-xl font-black text-white">{activePhase.label}</span>
+            <span className="rounded-md bg-amber-400 px-1.5 py-0.5 text-[10px] font-black text-slate-900">
+              {activePhase.timeRange}
+            </span>
           </div>
           <div
-            className="mt-1 font-mono text-3xl md:text-4xl font-black tracking-wider text-white"
+            className="mt-1 font-mono text-xs font-bold text-orange-200"
             suppressHydrationWarning
           >
-            {time.toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            })}
+            Giờ hệ thống: {time.toLocaleTimeString('vi-VN')}
           </div>
-          <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-bold text-emerald-200 border border-emerald-400/30">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
-            <span>Hệ thống giảng dạy trực tuyến</span>
-          </div>
+        </div>
+      </div>
+
+      {/* Routine Stepper Timeline (Chuỗi Nề nếp sinh hoạt trong ngày - Vuốt ngang nhẹ nhàng) */}
+      <div className="mt-4 sm:mt-5 border-t border-white/15 pt-3">
+        <p className="text-[10px] sm:text-[11px] font-bold text-orange-100 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <span>Chuỗi nhịp sinh hoạt trong ngày:</span>
+        </p>
+
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          {ROUTINE_PHASES.map((phase) => {
+            const Icon = phase.icon
+            const isCurrent = phase.id === activePhase.id
+
+            return (
+              <div
+                key={phase.id}
+                className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-center transition shrink-0 ${
+                  isCurrent
+                    ? 'bg-white text-orange-800 shadow-md ring-2 ring-amber-300'
+                    : 'bg-black/15 text-orange-100 hover:bg-black/25'
+                }`}
+              >
+                <div className={`p-1 rounded-lg ${isCurrent ? 'bg-orange-100 text-orange-600' : 'bg-white/10'}`}>
+                  <Icon size={13} />
+                </div>
+                <div className="text-left">
+                  <span className="text-[11px] font-extrabold whitespace-nowrap block">{phase.label}</span>
+                  <span className={`text-[9px] block ${isCurrent ? 'font-bold text-orange-700' : 'opacity-80'}`}>
+                    {phase.timeRange}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
       {/* Danh sách giáo viên phụ trách */}
       {teachersList.length > 0 && (
-        <div className="mt-6 border-t border-white/15 pt-4">
-          <p className="text-xs font-bold text-orange-100 uppercase tracking-wider mb-2">
-            Giáo viên phụ trách lớp:
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {teachersList.map((teacherItem) => (
-              <div
-                key={teacherItem.id}
-                className="flex items-center gap-2.5 rounded-xl bg-white/20 px-3 py-1.5 backdrop-blur-sm border border-white/10"
-              >
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/30 text-xs font-black text-white">
-                  {teacherItem.avatar || 'GV'}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-white">{teacherItem.name}</p>
-                  <p className="text-[10px] text-orange-100">{teacherItem.role}</p>
-                </div>
-              </div>
-            ))}
+        <div className="mt-4 border-t border-white/15 pt-3 flex items-center justify-between text-xs text-orange-100">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">Giáo viên phụ trách lớp:</span>
+            <div className="flex gap-2">
+              {teachersList.map((t) => (
+                <span key={t.id} className="rounded-lg bg-black/15 px-2 py-0.5 font-semibold text-white">
+                  {t.name} ({t.role})
+                </span>
+              ))}
+            </div>
           </div>
+          <span className="text-[11px] text-amber-200">Đã kích hoạt chế độ thao tác 1 chạm</span>
         </div>
       )}
     </div>

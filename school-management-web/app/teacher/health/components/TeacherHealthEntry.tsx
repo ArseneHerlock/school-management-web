@@ -1,22 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Calendar,
-  Save,
-  Loader2,
-  CheckCircle2,
-  Search,
-  Scale,
-  Ruler,
-  AlertTriangle,
-  Sparkles,
-  Info,
-  Activity,
-} from 'lucide-react';
-import Avatar from '../../components/Avatar';
+import { Calendar, Save, Loader2, CheckCircle2, Search, Info } from 'lucide-react';
 import { Child } from '../../data';
 import { evaluateWhoMetrics } from './whoStandards';
+import { TeacherHealthCategoryCards } from './TeacherHealthCategoryCards';
+import { TeacherHealthEntryTable } from './TeacherHealthEntryTable';
+import { getWhoCategoryCards } from './whoCategoryCardsData';
 
 interface TeacherHealthEntryProps {
   quarter: string;
@@ -44,19 +34,20 @@ export const TeacherHealthEntry: React.FC<TeacherHealthEntryProps> = ({
   onSave,
 }) => {
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  const filteredChildren = childrenList.filter(
-    (c) =>
-      !search.trim() ||
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.nickname.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Thống kê nhanh tình trạng lớp theo chuẩn WHO (0 - 5 tuổi)
-  let countNormal = 0;
-  let countOverweightOrObese = 0;
-  let countUnderweightOrStunted = 0;
   let countMeasured = 0;
+  let countNormal = 0;
+  let countThapCoi = 0;
+  let countThapCoiNang = 0;
+  let countNheCan = 0;
+  let countNheCanNang = 0;
+  let countGayCom = 0;
+  let countGayComNang = 0;
+  let countThuaCan = 0;
+  let countBeoPhi = 0;
+
+  const childAssessments = new Map<number, ReturnType<typeof evaluateWhoMetrics>>();
 
   childrenList.forEach((c) => {
     const w = parseFloat(weightVals[c.id] || '0');
@@ -64,17 +55,69 @@ export const TeacherHealthEntry: React.FC<TeacherHealthEntryProps> = ({
     if (w > 0 && h > 0) {
       countMeasured++;
       const res = evaluateWhoMetrics(w, h, c.dob, c.gender);
-      if (res.canCanThiep) {
-        if (res.whz.code === 'BEO_PHI' || res.whz.code === 'THUA_CAN' || res.whz.code === 'NGUY_CO_THUA_CAN') {
-          countOverweightOrObese++;
-        } else {
-          countUnderweightOrStunted++;
-        }
-      } else {
-        countNormal++;
-      }
+      childAssessments.set(c.id, res);
+
+      if (!res.canCanThiep) countNormal++;
+      if (res.haz.code === 'THAP_COI') countThapCoi++;
+      if (res.haz.code === 'THAP_COI_NANG') countThapCoiNang++;
+      if (res.waz.code === 'NHE_CAN') countNheCan++;
+      if (res.waz.code === 'NHE_CAN_NANG') countNheCanNang++;
+      if (res.whz.code === 'GAY_COM') countGayCom++;
+      if (res.whz.code === 'GAY_COM_NANG') countGayComNang++;
+      if (res.whz.code === 'THUA_CAN' || res.waz.code === 'THUA_CAN') countThuaCan++;
+      if (res.whz.code === 'BEO_PHI' || res.waz.code === 'BEO_PHI') countBeoPhi++;
     }
   });
+
+  const matchesStatusFilter = (c: Child) => {
+    if (statusFilter === 'ALL') return true;
+    const res = childAssessments.get(c.id);
+    if (!res) return false;
+    switch (statusFilter) {
+      case 'DAT_CHUAN_WHO':
+        return !res.canCanThiep;
+      case 'THAP_COI':
+        return res.haz.code === 'THAP_COI';
+      case 'THAP_COI_NANG':
+        return res.haz.code === 'THAP_COI_NANG';
+      case 'NHE_CAN':
+        return res.waz.code === 'NHE_CAN';
+      case 'NHE_CAN_NANG':
+        return res.waz.code === 'NHE_CAN_NANG';
+      case 'GAY_COM':
+        return res.whz.code === 'GAY_COM';
+      case 'GAY_COM_NANG':
+        return res.whz.code === 'GAY_COM_NANG';
+      case 'THUA_CAN':
+        return res.whz.code === 'THUA_CAN' || res.waz.code === 'THUA_CAN';
+      case 'BEO_PHI':
+        return res.whz.code === 'BEO_PHI' || res.waz.code === 'BEO_PHI';
+      default:
+        return true;
+    }
+  };
+
+  const filteredChildren = childrenList.filter(
+    (c) =>
+      (!search.trim() ||
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.nickname.toLowerCase().includes(search.toLowerCase())) &&
+      matchesStatusFilter(c)
+  );
+
+  const whoCategoryCards = getWhoCategoryCards(
+    countMeasured,
+    childrenList.length,
+    countNormal,
+    countThapCoi,
+    countThapCoiNang,
+    countNheCan,
+    countNheCanNang,
+    countGayCom,
+    countGayComNang,
+    countThuaCan,
+    countBeoPhi
+  );
 
   return (
     <div className="space-y-4">
@@ -128,246 +171,74 @@ export const TeacherHealthEntry: React.FC<TeacherHealthEntryProps> = ({
         </button>
       </div>
 
-      {/* Thống kê thể trạng nhanh theo chuẩn WHO */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-2xl p-3 border border-slate-200 text-center shadow-xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Đã có số đo</span>
-          <p className="text-xl font-black text-slate-800 mt-0.5">
-            {countMeasured} / {childrenList.length} bé
-          </p>
-        </div>
-
-        <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 text-center shadow-xs">
-          <span className="text-[10px] font-bold text-emerald-700 uppercase">Bình thường (WHO)</span>
-          <p className="text-xl font-black text-emerald-800 mt-0.5">
-            {countNormal} bé
-          </p>
-        </div>
-
-        <div className="bg-amber-50 rounded-2xl p-3 border border-amber-200 text-center shadow-xs">
-          <span className="text-[10px] font-bold text-amber-700 uppercase">Thấp còi / Nhẹ cân</span>
-          <p className="text-xl font-black text-amber-800 mt-0.5">
-            {countUnderweightOrStunted} bé
-          </p>
-        </div>
-
-        <div className="bg-rose-50 rounded-2xl p-3 border border-rose-200 text-center shadow-xs">
-          <span className="text-[10px] font-bold text-rose-700 uppercase">Thừa cân / Béo phì</span>
-          <p className="text-xl font-black text-rose-800 mt-0.5">
-            {countOverweightOrObese} bé
-          </p>
-        </div>
-      </div>
+      <TeacherHealthCategoryCards
+        cards={whoCategoryCards}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+      />
 
       {/* Hướng dẫn nghiệp vụ */}
       <div className="flex items-center gap-2 rounded-2xl bg-amber-50/80 border border-amber-200 px-4 py-2.5 text-xs text-amber-900 font-medium">
         <Info size={16} className="text-amber-600 shrink-0" />
         <span>
-          <strong>Vai trò giáo viên:</strong> Cô chỉ cần nhập <strong>Cân nặng (kg)</strong> và <strong>Chiều cao (cm)</strong>. Hệ thống Backend sẽ tự động lấy thông tin ngày sinh, giới tính để tính các chỉ số <strong>HAZ, WAZ, WHZ</strong> và đưa ra kết luận chuẩn WHO.
+          <strong>Vai trò giáo viên:</strong> Cô chỉ cần nhập <strong>Cân nặng (kg)</strong> và <strong>Chiều cao (cm)</strong>. Hệ thống sẽ tự động đối chiếu chuẩn <strong>WHO 2006</strong> theo tuổi & giới tính để phân loại đầy đủ: <strong>Đạt chuẩn WHO, Thấp còi, Thấp còi nặng, Nhẹ cân, Nhẹ cân nặng, Gầy còm, Gầy còm nặng, Thừa cân, Béo phì</strong>.
         </span>
       </div>
 
-      {/* Ô tìm kiếm bé */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="relative min-w-[240px] flex-1 max-w-sm">
-          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên bé..."
-            className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none focus:border-orange-400 transition"
-          />
+      {/* Ô tìm kiếm & Bộ lọc trạng thái WHO */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
+          <div className="relative min-w-[220px] flex-1 max-w-sm">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm theo tên bé..."
+              className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none focus:border-orange-400 transition"
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-orange-400 cursor-pointer"
+          >
+            <option value="ALL">Tất cả phân loại WHO ({childrenList.length} bé)</option>
+            <option value="DAT_CHUAN_WHO">1. Đạt chuẩn WHO ({countNormal} bé)</option>
+            <option value="THAP_COI">2. Thấp còi ({countThapCoi} bé)</option>
+            <option value="THAP_COI_NANG">3. Thấp còi nặng ({countThapCoiNang} bé)</option>
+            <option value="NHE_CAN">4. Nhẹ cân ({countNheCan} bé)</option>
+            <option value="NHE_CAN_NANG">5. Nhẹ cân nặng ({countNheCanNang} bé)</option>
+            <option value="GAY_COM">6. Gầy còm ({countGayCom} bé)</option>
+            <option value="GAY_COM_NANG">7. Gầy còm nặng ({countGayComNang} bé)</option>
+            <option value="THUA_CAN">8. Thừa cân ({countThuaCan} bé)</option>
+            <option value="BEO_PHI">9. Béo phì ({countBeoPhi} bé)</option>
+          </select>
+
+          {statusFilter !== 'ALL' && (
+            <button
+              type="button"
+              onClick={() => setStatusFilter('ALL')}
+              className="text-xs font-bold text-orange-600 hover:underline cursor-pointer"
+            >
+              Xóa lọc
+            </button>
+          )}
         </div>
 
         <span className="text-xs font-bold text-slate-500">
-          Hiển thị: <strong>{filteredChildren.length}</strong> học sinh
+          Hiển thị: <strong>{filteredChildren.length}</strong> / {childrenList.length} học sinh
         </span>
       </div>
 
-      {/* Bảng nhập số đo thông minh */}
-      <div className="rounded-3xl border border-orange-100 bg-white overflow-hidden shadow-xs">
-        <div className="overflow-x-auto w-full max-w-full">
-          <table className="w-full min-w-[850px] text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 text-slate-600 bg-orange-50/50">
-                <th className="py-3.5 px-4 font-black">Học sinh</th>
-                <th className="py-3.5 px-4 font-black">Giới tính & Tuổi</th>
-                <th className="py-3.5 px-4 text-center font-black min-w-[130px]">
-                  Cân nặng (kg) <span className="text-rose-500">*</span>
-                </th>
-                <th className="py-3.5 px-4 text-center font-black min-w-[130px]">
-                  Chiều cao (cm) <span className="text-rose-500">*</span>
-                </th>
-                <th className="py-3.5 px-3 text-center font-black">
-                  HAZ (CC/Tuổi)
-                </th>
-                <th className="py-3.5 px-3 text-center font-black">
-                  WAZ (CN/Tuổi)
-                </th>
-                <th className="py-3.5 px-3 text-center font-black">
-                  WHZ (Thể trạng)
-                </th>
-                <th className="py-3.5 px-4 text-right font-black min-w-[160px]">
-                  Đánh giá tổng quát WHO
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredChildren.map((c) => {
-                const w = parseFloat(weightVals[c.id] || '0');
-                const h = parseFloat(heightVals[c.id] || '0');
-                const hasValidData = w > 0 && h > 0;
-                const gender = c.gender === 'F' ? 'Nữ' : 'Nam';
-                const assessment = hasValidData
-                  ? evaluateWhoMetrics(w, h, c.dob, gender)
-                  : null;
-
-                return (
-                  <tr key={c.id} className="hover:bg-orange-50/30 transition">
-                    {/* Cột Học sinh */}
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar initials={c.avatar} id={c.id} size="sm" />
-                        <div>
-                          <p className="font-black text-slate-800">{c.name}</p>
-                          <p className="text-[11px] text-slate-400 font-medium">({c.nickname})</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Cột Giới tính & Ngày sinh */}
-                    <td className="py-3 px-4 text-slate-500 font-medium">
-                      <span
-                        className={`font-bold ${
-                          c.gender === 'F' ? 'text-rose-500' : 'text-blue-500'
-                        }`}
-                      >
-                        {c.gender === 'F' ? '♀ Bé gái' : '♂ Bé trai'}
-                      </span>
-                      {c.dob && (
-                        <div className="text-[10px] text-slate-400">
-                          {c.dob} ({assessment?.ageMonths ?? '--'} tháng)
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Cột Nhập Cân nặng */}
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="5"
-                          max="80"
-                          value={weightVals[c.id] || ''}
-                          onChange={(e) =>
-                            setWeightVals((prev) => ({
-                              ...prev,
-                              [c.id]: e.target.value,
-                            }))
-                          }
-                          placeholder="vd: 16.5"
-                          className="w-24 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-right font-bold text-slate-800 outline-none focus:border-orange-400 focus:bg-white transition"
-                        />
-                        <span className="text-[11px] font-bold text-slate-400">kg</span>
-                      </div>
-                    </td>
-
-                    {/* Cột Nhập Chiều cao */}
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="50"
-                          max="160"
-                          value={heightVals[c.id] || ''}
-                          onChange={(e) =>
-                            setHeightVals((prev) => ({
-                              ...prev,
-                              [c.id]: e.target.value,
-                            }))
-                          }
-                          placeholder="vd: 102.0"
-                          className="w-24 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-right font-bold text-slate-800 outline-none focus:border-orange-400 focus:bg-white transition"
-                        />
-                        <span className="text-[11px] font-bold text-slate-400">cm</span>
-                      </div>
-                    </td>
-
-                    {/* Cột HAZ (Chiều cao / Tuổi) */}
-                    <td className="py-3 px-3 text-center">
-                      {assessment ? (
-                        <div>
-                          <span className="font-mono font-bold text-xs text-slate-800">
-                            {assessment.haz.zScore > 0 ? `+${assessment.haz.zScore}` : assessment.haz.zScore}
-                          </span>
-                          <div className={`text-[10px] font-semibold ${assessment.haz.textClass}`}>
-                            {assessment.haz.label}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-300 italic">—</span>
-                      )}
-                    </td>
-
-                    {/* Cột WAZ (Cân nặng / Tuổi) */}
-                    <td className="py-3 px-3 text-center">
-                      {assessment ? (
-                        <div>
-                          <span className="font-mono font-bold text-xs text-slate-800">
-                            {assessment.waz.zScore > 0 ? `+${assessment.waz.zScore}` : assessment.waz.zScore}
-                          </span>
-                          <div className={`text-[10px] font-semibold ${assessment.waz.textClass}`}>
-                            {assessment.waz.label}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-300 italic">—</span>
-                      )}
-                    </td>
-
-                    {/* Cột WHZ (Thể trạng Cân nặng / Chiều cao) */}
-                    <td className="py-3 px-3 text-center">
-                      {assessment ? (
-                        <div>
-                          <span className="font-mono font-bold text-xs text-slate-800">
-                            {assessment.whz.zScore > 0 ? `+${assessment.whz.zScore}` : assessment.whz.zScore}
-                          </span>
-                          <div className={`text-[10px] font-semibold ${assessment.whz.textClass}`}>
-                            {assessment.whz.label}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-300 italic">—</span>
-                      )}
-                    </td>
-
-                    {/* Cột Phân loại thể trạng WHO tự động */}
-                    <td className="py-3 px-4 text-right">
-                      {assessment ? (
-                        <span
-                          className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black border ${
-                            assessment.canCanThiep
-                              ? 'bg-amber-100 text-amber-800 border-amber-300'
-                              : 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          }`}
-                          title={assessment.loiKhuyen}
-                        >
-                          {assessment.trangThaiTongThe}
-                        </span>
-                      ) : (
-                        <span className="text-slate-300 text-xs italic">Chờ nhập số đo</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <TeacherHealthEntryTable
+        filteredChildren={filteredChildren}
+        weightVals={weightVals}
+        setWeightVals={setWeightVals}
+        heightVals={heightVals}
+        setHeightVals={setHeightVals}
+      />
     </div>
   );
 };
