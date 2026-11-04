@@ -13,7 +13,7 @@ import {
   UserCog,
   LogOut,
 } from "lucide-react";
-import { currentUser, logout } from "@/lib/api";
+import { currentUser, logout } from "@/services";
 import { MenuItem } from "./AdminSidebar";
 
 interface AdminHeaderProps {

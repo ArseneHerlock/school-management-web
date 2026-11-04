@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Plus, Search, Trash2, Edit3, RefreshCw, Loader2, Database, TrendingUp, Layers3 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api } from "@/services";
 import Pagination from '@/app/admin/components/shared/Pagination';
 import { ResourceModal } from './ResourceModal';
 import { ResourceCharts } from './ResourceCharts';

@@ -22,6 +22,7 @@ import {
   ClipboardList,
   Award,
   Sparkles,
+  ShieldAlert,
   Menu,
 } from "lucide-react";
 import { getAccessToken, currentUser } from "@/services";
@@ -38,22 +39,26 @@ const ADMIN_MENU: MenuItem[] = [
   { id: "tuyen-sinh", label: "Tuyển sinh", icon: UserPlus, group: "Trường học" },
   { id: "hoc-sinh", label: "Quản lý học sinh", icon: Users, group: "Trường học" },
   { id: "suc-khoe", label: "Sức khỏe mầm non", icon: Activity, group: "Trường học" },
+  { id: "y-te-dac-biet", label: "Y tế đặc biệt", icon: ShieldAlert, group: "Trường học" },
   { id: "phu-huynh", label: "Quản lý phụ huynh", icon: UserRoundCheck, group: "Trường học" },
   { id: "nhan-su", label: "Quản lý nhân sự", icon: UserCog, group: "Nhân sự" },
-  { id: "diem-danh", label: "Điểm danh (Giám sát)", icon: ClipboardCheck, group: "Học vụ" },
+  { id: "diem-danh", label: "Giám sát chuyên cần", icon: ClipboardCheck, group: "Học vụ" },
   { id: "lich-hoc", label: "Thời khóa biểu", icon: CalendarDays, group: "Học vụ" },
-  { id: "danh-gia", label: "Quản lý sự phát triển", icon: Award, group: "Phát triển" },
+  { id: "good-child", label: "Thi đua bé ngoan", icon: Award, group: "Học vụ" },
+  { id: "khen-thuong", label: "Khen thưởng cuối năm", icon: Award, group: "Học vụ" },
+  { id: "danh-gia", label: "Chuẩn phát triển trẻ", icon: Award, group: "Phát triển" },
+  { id: "fcm-overview", label: "Phân loại trẻ (FCM)", icon: BarChart3, group: "Phát triển" },
   { id: "tin-tuc", label: "Tin tức", icon: Bell, group: "Truyền thông" },
   { id: "lien-lac", label: "Danh bạ liên lạc", icon: MessageCircle, group: "Truyền thông" },
-  { id: "thu-chi", label: "Thu chi & Công nợ", icon: Receipt, group: "Tài chính" },
-  { id: "bao-cao", label: "Báo cáo thống kê", icon: BarChart3, group: "Quản trị" },
+  { id: "thu-chi", label: "Thu chi học phí", icon: Receipt, group: "Tài chính" },
+  { id: "bao-cao", label: "Báo cáo & Tổng hợp", icon: BarChart3, group: "Quản trị" },
   { id: "tai-khoan", label: "Quản lý tài khoản", icon: KeyRound, group: "Quản trị" },
-  { id: "don-nghi", label: "Đơn xin nghỉ học", icon: ClipboardList, group: "Quản trị" },
+  { id: "don-nghi", label: "Đơn xin nghỉ (Giám sát)", icon: ClipboardList, group: "Quản trị" },
 ];
 
 const TITLES: Record<string, string> = {
   ...Object.fromEntries(ADMIN_MENU.map((x) => [x.id, x.label])),
-  "good-child": "Sổ bé ngoan",
+  "good-child": "Theo dõi rèn luyện",
   learning: "Sản phẩm học tập",
 };
 
@@ -121,7 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         user={user}
         mounted={mounted}
       />
-      <div className="flex min-w-0 flex-1 flex-col h-screen overflow-hidden">
+      <div className="flex min-w-0 max-w-full flex-1 flex-col h-screen overflow-hidden">
         <AdminHeader
           pageTitle={TITLES[currentSegment] || "Quản trị nhà trường"}
           menu={ADMIN_MENU}
@@ -129,7 +134,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           user={user}
           mounted={mounted}
         />
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-full w-full min-w-0">
           {children}
         </main>
       </div>

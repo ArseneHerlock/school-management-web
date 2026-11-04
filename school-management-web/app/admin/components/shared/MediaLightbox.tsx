@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, Maximize2 } from 'lucide-react';
-import { getMediaUrl } from '@/lib/api';
+import { getMediaUrl } from "@/services";
 
 interface MediaItem {
   url: string;

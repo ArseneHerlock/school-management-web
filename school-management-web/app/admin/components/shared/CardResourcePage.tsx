@@ -1,7 +1,7 @@
 'use client'
 import {useMemo,useState,type ReactNode} from 'react'
 import {Database,Edit3,Eye,Loader2,Plus,RefreshCw,Save,Search,Trash2,X} from 'lucide-react'
-import {api} from '@/lib/api'
+import {api} from "@/services"
 import type {Field} from './ResourcePage'
 import {useAsyncResource} from '@/lib/hooks/useAsyncResource'
 type Column={key:string;label:string}
