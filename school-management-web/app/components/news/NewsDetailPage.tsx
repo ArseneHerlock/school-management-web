@@ -12,7 +12,7 @@ import {
   FileText,
   ExternalLink,
 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api } from "@/services";
 import { getFullApiUrl } from '@/services/client';
 import { parseNewsImageAndText, extractPdfUrl } from './newsHelper';
 import PdfViewer from './PdfViewer';
@@ -199,7 +199,7 @@ export default function NewsDetailPage({
             </a>
           )}
 
-          {(role === 'admin' || role === 'teacher') && (
+          {role === 'admin' && (
             <>
               {onEdit && (
                 <button
