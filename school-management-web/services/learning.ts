@@ -107,7 +107,8 @@ export async function getLearningProducts(childId?: string): Promise<LearningPro
 }
 
 export async function getAllLearningProducts(pageSize = 100): Promise<LearningProduct[]> {
-  const res = await api.get<any>("learning", `/api/learning/products?pageSize=${pageSize}`);
+  const safeSize = Math.min(100, Math.max(1, pageSize));
+  const res = await api.get<any>("learning", `/api/learning/products?pageSize=${safeSize}`);
   return normalizeList<LearningProduct>(res);
 }
 

@@ -43,17 +43,38 @@ export interface WhoCurvePoint {
   sdPos3: number;
 }
 
+export interface WhoChartPoint {
+  x: number;
+  label: string;
+  sdNeg3: number;
+  sdNeg2: number;
+  sdNeg1: number;
+  median: number;
+  sdPos1: number;
+  sdPos2: number;
+  sdPos3: number;
+  beThucTe?: number;
+  zScore?: number;
+  phanLoai?: string;
+  ngayDo?: string;
+}
+
 export interface WhoGrowthChartData {
   hocSinhId: string;
   tenHocSinh: string;
   ngaySinh?: string;
   gioiTinh: string;
   thangTuoiHienTai: number;
+  hazChartData?: WhoChartPoint[];
+  wazChartData?: WhoChartPoint[];
+  whzChartData?: WhoChartPoint[];
   hazCurve: WhoCurvePoint[];
   wazCurve: WhoCurvePoint[];
   whzCurve: WhoCurvePoint[];
   lichSuDo: HealthRecord[];
   lanDoMoiNhat?: HealthRecord;
+  xuHuongPhatTrien?: string;
+  nhanXetXuHuong?: string;
 }
 
 export interface WhoClassSummary {
@@ -70,8 +91,15 @@ export interface WhoClassSummary {
   danhSachCanCanThiep: HealthRecord[];
 }
 
-export async function getAllHealthRecords(): Promise<HealthRecord[]> {
-  const res = await api.get<any>("health", "/api/SucKhoe").catch(() => []);
+export async function getAllHealthRecords(params?: {
+  thang?: number;
+  nam?: number;
+}): Promise<HealthRecord[]> {
+  const query = new URLSearchParams();
+  if (params?.thang) query.set("thang", String(params.thang));
+  if (params?.nam) query.set("nam", String(params.nam));
+  const qs = query.toString() ? `?${query.toString()}` : "";
+  const res = await api.get<any>("health", `/api/SucKhoe${qs}`).catch(() => []);
   return normalizeList<HealthRecord>(res);
 }
 

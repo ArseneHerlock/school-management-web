@@ -56,10 +56,14 @@ export async function changeUserPassword(
   currentPassword: string,
   newPassword: string,
 ): Promise<any> {
-  return await api.put("auth", `/api/Auth/users/${encodeURIComponent(userId)}/password`, {
-    currentPassword,
-    newPassword,
-  });
+  return await api.put(
+    "auth",
+    `/api/Auth/users/${encodeURIComponent(userId)}/password`,
+    {
+      currentPassword,
+      newPassword,
+    },
+  );
 }
 
 export async function getUsers(): Promise<any[]> {
@@ -71,15 +75,32 @@ export async function createUser(data: CreateUserInput): Promise<any> {
   return await api.post<any>("auth", "/users", data);
 }
 
-export async function updateUserStatus(userId: string, status: number): Promise<any> {
-  return await api.put("auth", `/users/${encodeURIComponent(userId)}/status`, status);
+export async function updateUserStatus(
+  userId: string,
+  status: number,
+): Promise<any> {
+  return await api.put(
+    "auth",
+    `/users/${encodeURIComponent(userId)}/status`,
+    status,
+  );
 }
 
-export async function updateUserRole(userId: string, role: string): Promise<any> {
-  return await api.put("auth", `/users/${encodeURIComponent(userId)}/role`, role);
+export async function updateUserRole(
+  userId: string,
+  role: string,
+): Promise<any> {
+  return await api.put(
+    "auth",
+    `/users/${encodeURIComponent(userId)}/role`,
+    role,
+  );
 }
 
-export async function resetUserPassword(userId: string, newPassword: string): Promise<any> {
+export async function resetUserPassword(
+  userId: string,
+  newPassword: string,
+): Promise<any> {
   return await api.put(
     "auth",
     `/users/${encodeURIComponent(userId)}/reset-password`,

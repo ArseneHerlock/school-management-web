@@ -17,6 +17,10 @@ export * from "./learning";
 export * from "./media";
 export * from "./enrollment";
 export * from "./communication";
+export * from "./medications";
 export * from "./hubs";
+export * from "./fcm";
+export * from "./awards";
+export * from "./classReports";
 
 export { api as default, api } from "./client";

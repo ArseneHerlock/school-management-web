@@ -23,11 +23,30 @@ export interface AttendanceHistoryItem {
 }
 
 /**
- * Lấy toàn bộ danh sách điểm danh
+ * Lấy toàn bộ danh sách điểm danh (hỗ trợ lọc theo tháng/năm hoặc khoảng ngày, không giới hạn 50 bản ghi)
  */
-export async function getAllAttendances(): Promise<AttendanceRecord[]> {
+export async function getAllAttendances(params?: {
+  month?: number;
+  year?: number;
+  from?: string;
+  to?: string;
+  all?: boolean;
+  pageSize?: number;
+}): Promise<AttendanceRecord[]> {
   try {
-    const rawResponse = await api.get<any>("attendance", "/api/DiemDanh");
+    const query = new URLSearchParams();
+    if (params?.month) query.set("month", String(params.month));
+    if (params?.year) query.set("year", String(params.year));
+    if (params?.from) query.set("from", params.from);
+    if (params?.to) query.set("to", params.to);
+    query.set("all", params?.all !== undefined ? String(params.all) : "true");
+    if (params?.pageSize) query.set("pageSize", String(params.pageSize));
+
+    const qs = query.toString();
+    const rawResponse = await api.get<any>(
+      "attendance",
+      `/api/DiemDanh${qs ? `?${qs}` : ""}`
+    );
     return normalizeList<AttendanceRecord>(rawResponse);
   } catch {
     return [];

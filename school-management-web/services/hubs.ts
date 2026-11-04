@@ -9,13 +9,8 @@ export interface RealtimeHubConnection {
   invoke: (methodName: string, ...args: any[]) => Promise<void>;
 }
 
-/**
- * Kết nối thời gian thực hợp nhất qua Server-Sent Events (SSE /api/notifications/stream trên cổng 3000).
- * Thay thế hoàn toàn kết nối WebSocket rời rạc tới các cổng lẻ (5068, 5093, 8080) vốn gây lỗi
- * "WebSocket closed with status code: 1006" trên Mobile WebView và trình duyệt.
- */
 export function createHubConnection(
-  kind: "chat" | "news" | "attendance" = "chat"
+  kind: "chat" | "news" | "attendance" = "chat",
 ): RealtimeHubConnection {
   const listeners = new Map<string, Set<(...args: any[]) => void>>();
   let eventSource: EventSource | null = null;
@@ -87,9 +82,7 @@ export function createHubConnection(
         eventSource = null;
       } catch {}
     },
-    async invoke() {
-      // Không cần invoke qua WebSocket lẻ vì đã đồng bộ qua SSE
-    },
+    async invoke() {},
   };
 
   return conn;

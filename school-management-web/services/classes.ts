@@ -6,10 +6,12 @@ export interface SchoolClass {
   siSo: number;
   namHoc: string;
   giaoVienChuNhiemId: string;
+  giaoVienPhuId?: string;
   khoiId: string;
   siSoThucTe?: number;
   tenKhoi?: string;
   tenGiaoVienChuNhiem?: string;
+  tenGiaoVienPhu?: string;
   phongHoc?: string;
   ghiChu?: string;
 }
@@ -34,6 +36,7 @@ export interface CreateClassInput {
   siSo: number;
   namHoc: string;
   giaoVienChuNhiemId: string;
+  giaoVienPhuId?: string;
   khoiId: string;
   phongHoc?: string;
   ghiChu?: string;
@@ -44,6 +47,7 @@ export interface UpdateClassInput {
   siSo?: number;
   namHoc?: string;
   giaoVienChuNhiemId?: string;
+  giaoVienPhuId?: string;
   khoiId?: string;
   phongHoc?: string;
   ghiChu?: string;

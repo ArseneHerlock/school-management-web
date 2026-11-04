@@ -72,7 +72,13 @@ export function normalizeEndpointPath(service: string, pathSegments: string[]): 
   return incoming;
 }
 
-export function normalizeQueryParams(_service: string, rawSearch: string): string {
+export function normalizeQueryParams(service: string, rawSearch: string): string {
   const searchParams = new URLSearchParams(rawSearch);
+  if (service === "learning" && searchParams.has("pageSize")) {
+    const rawSize = Number(searchParams.get("pageSize"));
+    if (!Number.isNaN(rawSize) && rawSize > 100) {
+      searchParams.set("pageSize", "100");
+    }
+  }
   return searchParams.toString();
 }
