@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceBaseUrl, CORS_HEADERS } from "@/lib/bff/gatewayConfig";
+import { DashboardStatsData } from "./types";
+import { aggregateAttendanceStats } from "./attendanceAggregator";
+import {
+  aggregateKitchenAndTuition,
+  aggregateDemographicsAndHealth,
+} from "./operationsAggregator";
 
-interface DashboardStatsData {
-  studentsCount: number;
-  activeStudentsCount: number;
-  unassignedStudentsCount: number;
-  parentsCount: number;
-  staffCount: number;
-  classesCount: number;
-  activitiesCount: number;
-  criteriaCount: number;
-  assessmentsCount: number;
-  assessedStudentsCount: number;
-  latestNews: Array<{
-    id?: string;
-    tieuDe?: string;
-    title?: string;
-    ngayTao?: string;
-    ngayXuatBan?: string;
-  }>;
-  cachedAt: string;
-}
+export * from "./types";
 
 interface CacheStore {
   timestamp: number;
@@ -28,7 +15,7 @@ interface CacheStore {
 }
 
 let memoryCache: CacheStore | null = null;
-const CACHE_TTL_MS = 30_000; // 30 giây TTL
+const CACHE_TTL_MS = 20_000; // 20s TTL
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
@@ -38,21 +25,19 @@ export async function GET(request: NextRequest) {
   const isForceRefresh = request.nextUrl.searchParams.get("refresh") === "true";
   const now = Date.now();
 
-  // 1. Trả về Cache In-Memory nếu còn hiệu lực (chỉ mất ~1ms)
   if (!isForceRefresh && memoryCache && now - memoryCache.timestamp < CACHE_TTL_MS) {
     return NextResponse.json(
       { ...memoryCache.data, fromCache: true },
       {
         headers: {
           ...CORS_HEADERS,
-          "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+          "Cache-Control": "public, max-age=20, stale-while-revalidate=40",
           "X-BFF-Cache": "HIT",
         },
       }
     );
   }
 
-  // 2. Chuẩn bị headers gọi nội bộ tới microservices
   const authHeader = request.headers.get("authorization");
   const internalHeaders: Record<string, string> = {
     Accept: "application/json",
@@ -91,7 +76,8 @@ export async function GET(request: NextRequest) {
   };
 
   try {
-    // 3. Thực hiện song song từ server-side Next.js tới các dịch vụ cục bộ
+    const todayIsoDate = new Date().toISOString().slice(0, 10);
+
     const [
       studentsRaw,
       parentsRaw,
@@ -101,6 +87,11 @@ export async function GET(request: NextRequest) {
       activitiesRaw,
       criteriaRaw,
       assessmentsRaw,
+      attendanceRaw,
+      billingRaw,
+      leavesRaw,
+      healthRaw,
+      domainsRaw,
     ] = await Promise.all([
       fetchInternal("students", "/api/students"),
       fetchInternal("parents", "/api/parents"),
@@ -110,6 +101,11 @@ export async function GET(request: NextRequest) {
       fetchInternal("activity", "/api/activities?page=1&pageSize=1"),
       fetchInternal("development", "/api/development/criteria?page=1&pageSize=1"),
       fetchInternal("development", "/api/development/assessments?page=1&pageSize=100"),
+      fetchInternal("attendance", `/api/DiemDanh/today/all?date=${todayIsoDate}`),
+      fetchInternal("billing", "/api/billing/invoices"),
+      fetchInternal("leave", "/api/leaves?subjectType=Child"),
+      fetchInternal("health", "/api/SucKhoe"),
+      fetchInternal("development", "/api/development/domains?page=1&pageSize=20"),
     ]);
 
     const studentsList = toList(studentsRaw);
@@ -117,19 +113,59 @@ export async function GET(request: NextRequest) {
     const staffList = toList(staffRaw);
     const classesList = toList(classesRaw);
     const newsList = toList(newsRaw);
+    const attendanceList = toList(attendanceRaw);
+    const billingList = toList(billingRaw);
+    const leavesList = toList(leavesRaw);
+    const healthList = toList(healthRaw);
+    const domainsList = toList(domainsRaw);
+    const assessmentsList = toList(assessmentsRaw);
 
     const activeStudents = studentsList.filter(
-      (s: any) => s.trangThaiHoc === "Đang học" || s.trangThaiHoc === "Active"
+      (s: any) => s.trangThaiHoc === "Đang học" || s.trangThaiHoc === "Active" || !s.trangThaiHoc
     );
     const unassignedStudents = activeStudents.filter((s: any) => !s.lopId);
 
-    const assessmentsList = toList(assessmentsRaw);
     const assessedIds = new Set(assessmentsList.map((x: any) => x.childId));
     const assessedCount = studentsList.filter((s: any) => assessedIds.has(s.id)).length;
 
+    // 1. Attendance & room ratios
+    const {
+      totalEnrolled,
+      presentCount,
+      absentWithNotice,
+      absentWithoutNotice,
+      attendanceRate,
+      roomRatios,
+      classAttendance,
+      weeklyAttendance,
+    } = aggregateAttendanceStats({
+      activeStudents,
+      classesList,
+      attendanceList,
+      leavesList,
+    });
+
+    // 2. Kitchen dispatch & tuition ledger
+    const { kitchenDispatch, tuitionLedger, currentYear } = aggregateKitchenAndTuition({
+      studentsList,
+      classesList,
+      billingList,
+      presentCount,
+    });
+
+    // 3. Demographics, WHO Nutrition & Domain progress
+    const { ageDistribution, whoNutrition, domainProgress } = aggregateDemographicsAndHealth({
+      activeStudents,
+      healthList,
+      domainsList,
+      assessmentsList,
+      totalEnrolled,
+      currentYear,
+    });
+
     const stats: DashboardStatsData = {
       studentsCount: studentsList.length,
-      activeStudentsCount: activeStudents.length,
+      activeStudentsCount: totalEnrolled,
       unassignedStudentsCount: unassignedStudents.length,
       parentsCount: parentsList.length,
       staffCount: staffList.length,
@@ -138,6 +174,22 @@ export async function GET(request: NextRequest) {
       criteriaCount: criteriaRaw?.total ?? (Array.isArray(criteriaRaw) ? criteriaRaw.length : 0),
       assessmentsCount: assessmentsRaw?.total ?? assessmentsList.length,
       assessedStudentsCount: assessedCount,
+
+      attendanceToday: {
+        present: presentCount,
+        absentWithNotice,
+        absentWithoutNotice,
+        attendanceRate,
+      },
+      roomRatios,
+      kitchenDispatch,
+      tuitionLedger,
+      weeklyAttendance,
+      ageDistribution,
+      classAttendance,
+      whoNutrition,
+      domainProgress,
+
       latestNews: newsList.slice(0, 4).map((n: any) => ({
         id: n.id,
         tieuDe: n.tieuDe || n.title,
@@ -148,7 +200,6 @@ export async function GET(request: NextRequest) {
       cachedAt: new Date().toISOString(),
     };
 
-    // 4. Cập nhật In-memory Cache
     memoryCache = {
       timestamp: now,
       data: stats,
@@ -159,7 +210,7 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           ...CORS_HEADERS,
-          "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+          "Cache-Control": "public, max-age=20, stale-while-revalidate=40",
           "X-BFF-Cache": "MISS",
         },
       }
