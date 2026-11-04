@@ -1,17 +1,18 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { Camera, Lock, LogOut, User, Check, AlertCircle, Loader2, X } from 'lucide-react'
-import { ParentProfile } from '../types'
-import { ParentProfileForm } from './ParentProfileForm'
-import { currentUser, logout, uploadMedia, changeUserPassword, saveParentProfile } from '@/services'
+import React, { useEffect, useState, useRef } from 'react';
+import { Camera, Lock, LogOut, User, Check, AlertCircle, Loader2, X } from 'lucide-react';
+import { ParentProfile } from '../types';
+import { ParentProfileForm } from './ParentProfileForm';
+import { currentUser, uploadMedia, saveParentProfile } from '@/services';
+import { ParentPasswordTab } from './profile/ParentPasswordTab';
+import { ParentAccountTab } from './profile/ParentAccountTab';
 
 interface ParentProfileModalProps {
-  isOpen: boolean
-  onClose: () => void
-  parent: ParentProfile
-  onSave: (updated: ParentProfile) => void
+  isOpen: boolean;
+  onClose: () => void;
+  parent: ParentProfile;
+  onSave: (updated: ParentProfile) => void;
 }
 
 export default function ParentProfileModal({
@@ -20,120 +21,77 @@ export default function ParentProfileModal({
   parent,
   onSave,
 }: ParentProfileModalProps) {
-  const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'account'>('profile')
-  const [formData, setFormData] = useState<ParentProfile>(parent)
-  const [isEditing, setIsEditing] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState('')
-  const [errorMsg, setErrorMsg] = useState('')
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-
-  // Password state
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [changingPassword, setChangingPassword] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'account'>('profile');
+  const [formData, setFormData] = useState<ParentProfile>(parent);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    setFormData(parent)
-  }, [parent])
+    setFormData(parent);
+  }, [parent]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setUploadingAvatar(true)
-    setErrorMsg('')
+    setUploadingAvatar(true);
+    setErrorMsg('');
     try {
-      let avatarUrl = ''
+      let avatarUrl = '';
       try {
-        const uploadRes = await uploadMedia(file)
-        avatarUrl = uploadRes?.url || uploadRes?.fileUrl || ''
+        const uploadRes = await uploadMedia(file);
+        avatarUrl = uploadRes?.url || uploadRes?.fileUrl || '';
       } catch {
         avatarUrl = await new Promise((resolve) => {
-          const reader = new FileReader()
-          reader.onloadend = () => resolve(reader.result as string)
-          reader.readAsDataURL(file)
-        })
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
       }
 
-      const user = currentUser()
-      await saveParentProfile({ id: formData.id, taiKhoanId: user?.id, avatar: avatarUrl })
+      const user = currentUser();
+      await saveParentProfile({ id: formData.id, taiKhoanId: user?.id, avatar: avatarUrl });
 
-      const updated = { ...formData, avatar: avatarUrl }
-      setFormData(updated)
-      onSave(updated)
-      setSaveSuccess('Đã cập nhật ảnh đại diện thành công vào CSDL!')
-      setTimeout(() => setSaveSuccess(''), 4000)
+      const updated = { ...formData, avatar: avatarUrl };
+      setFormData(updated);
+      onSave(updated);
+      setSaveSuccess('Đã cập nhật ảnh đại diện thành công vào CSDL!');
+      setTimeout(() => setSaveSuccess(''), 4000);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Lỗi tải ảnh đại diện')
+      setErrorMsg(err.message || 'Lỗi tải ảnh đại diện');
     } finally {
-      setUploadingAvatar(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMsg('')
+    e.preventDefault();
+    setErrorMsg('');
     try {
-      const user = currentUser()
-      await saveParentProfile({ ...formData, taiKhoanId: user?.id })
+      const user = currentUser();
+      await saveParentProfile({ ...formData, taiKhoanId: user?.id });
 
-      onSave(formData)
-      setIsEditing(false)
-      setSaveSuccess('Đã lưu thông tin phụ huynh thành công vào CSDL!')
-      setTimeout(() => setSaveSuccess(''), 4000)
+      onSave(formData);
+      setIsEditing(false);
+      setSaveSuccess('Đã lưu thông tin phụ huynh thành công vào CSDL!');
+      setTimeout(() => setSaveSuccess(''), 4000);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Lỗi khi lưu thông tin')
+      setErrorMsg(err.message || 'Lỗi khi lưu thông tin');
     }
-  }
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMsg('')
-    if (newPassword.length < 6) {
-      setErrorMsg('Mật khẩu mới phải có ít nhất 6 ký tự.')
-      return
-    }
-    if (newPassword !== confirmPassword) {
-      setErrorMsg('Mật khẩu mới và xác nhận mật khẩu không khớp.')
-      return
-    }
-
-    setChangingPassword(true)
-    try {
-      const user = currentUser()
-      if (!user?.id) throw new Error('Không xác định được tài khoản')
-
-      await changeUserPassword(user.id, currentPassword, newPassword)
-
-      setSaveSuccess('Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.')
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
-      setTimeout(() => setSaveSuccess(''), 4000)
-    } catch (err: any) {
-      setErrorMsg(err?.message || 'Không thể đổi mật khẩu. Vui lòng kiểm tra lại mật khẩu hiện tại.')
-    } finally {
-      setChangingPassword(false)
-    }
-  }
-
-  const handleLogout = () => {
-    logout()
-    router.replace('/login')
-  }
+  };
 
   return (
     <div
@@ -282,123 +240,20 @@ export default function ParentProfileModal({
           )}
 
           {activeTab === 'password' && (
-            <form onSubmit={handleChangePassword} className="space-y-4 max-w-md mx-auto py-2">
-              <div className="text-center pb-2">
-                <div className="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                  <Lock size={22} />
-                </div>
-                <h4 className="font-extrabold text-slate-800 text-sm">Đổi mật khẩu tài khoản</h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Mật khẩu mới cần tối thiểu 6 ký tự để đảm bảo an toàn
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">
-                  Mật khẩu hiện tại *
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                  placeholder="Nhập mật khẩu hiện tại"
-                  className="w-full text-xs font-semibold rounded-xl px-3 py-2.5 border border-slate-200 outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">
-                  Mật khẩu mới *
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  placeholder="Tối thiểu 6 ký tự"
-                  className="w-full text-xs font-semibold rounded-xl px-3 py-2.5 border border-slate-200 outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">
-                  Xác nhận mật khẩu mới *
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  placeholder="Nhập lại mật khẩu mới"
-                  className="w-full text-xs font-semibold rounded-xl px-3 py-2.5 border border-slate-200 outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={changingPassword}
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-md transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {changingPassword ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      Đang cập nhật mật khẩu...
-                    </>
-                  ) : (
-                    'Lưu mật khẩu mới'
-                  )}
-                </button>
-              </div>
-            </form>
+            <ParentPasswordTab
+              onSuccess={(msg) => {
+                setSaveSuccess(msg);
+                setTimeout(() => setSaveSuccess(''), 4000);
+              }}
+              onError={setErrorMsg}
+            />
           )}
 
           {activeTab === 'account' && (
-            <div className="space-y-4 max-w-md mx-auto py-4 text-center">
-              <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
-                <LogOut size={26} />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-slate-800 text-base">Thiết lập & Đăng xuất</h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  Bạn có muốn đăng xuất khỏi cổng Sổ liên lạc điện tử của trường?
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200 text-left text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Tên đăng nhập:</span>
-                  <span className="font-bold text-slate-700">{currentUser()?.username || 'phuhuynh'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Phụ huynh:</span>
-                  <span className="font-bold text-slate-700">{formData.hoTen}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Trạng thái:</span>
-                  <span className="font-bold text-emerald-600">Đang hoạt động</span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex gap-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
-                >
-                  Ở lại phiên làm việc
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <LogOut size={14} />
-                  Đăng xuất ngay
-                </button>
-              </div>
-            </div>
+            <ParentAccountTab
+              parentName={formData.hoTen}
+              onClose={onClose}
+            />
           )}
         </div>
 
@@ -414,5 +269,5 @@ export default function ParentProfileModal({
         </div>
       </div>
     </div>
-  )
+  );
 }

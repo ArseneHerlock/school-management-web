@@ -57,6 +57,12 @@ export const MomentCard: React.FC<MomentCardProps> = ({ item, onOpenLightbox, on
 
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
+          {item.activityTitle && (
+            <div className="inline-flex items-center gap-1 text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-2 py-0.5 rounded-lg mb-1.5 max-w-full truncate">
+              <Sparkles size={11} className="shrink-0 text-indigo-600" />
+              <span className="truncate">{item.activityTitle}</span>
+            </div>
+          )}
           <h4 className="font-black text-sm text-slate-800 line-clamp-1 group-hover:text-indigo-600 transition-colors">
             {item.title}
           </h4>

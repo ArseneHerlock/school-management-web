@@ -16,6 +16,7 @@ import {
 import { getHealthRecords, HealthRecord } from "@/services/health";
 import { ChildInfo } from "../types";
 import WhoGrowthChart from "@/app/components/WhoGrowthChart";
+import { evaluateWhoMetrics } from "@/app/teacher/health/components/whoStandards";
 
 function getQuarterInfo(dateStr?: string) {
   if (!dateStr) return { label: "Đợt khám định kỳ", quarter: "Quý --" };
@@ -92,6 +93,7 @@ export default function HealthTab({ child }: { child: ChildInfo }) {
         </div>
       ) : records.length > 0 ? (
         <WhoGrowthChart
+          childId={child.id}
           records={records}
           gender={child.gioiTinh}
           dob={child.ngaySinh}
@@ -137,6 +139,29 @@ export default function HealthTab({ child }: { child: ChildInfo }) {
               <tbody className="divide-y divide-slate-100">
                 {records.map((r, idx) => {
                   const qInfo = getQuarterInfo(r.ngayDo || r.ngayKham);
+                  const dyn =
+                    (r.canNang && r.canNang > 0) || (r.chieuCao && r.chieuCao > 0)
+                      ? evaluateWhoMetrics(
+                          r.canNang,
+                          r.chieuCao,
+                          child.ngaySinh,
+                          child.gioiTinh,
+                          r.ngayDo || r.ngayKham
+                        )
+                      : null;
+
+                  const hazVal = dyn ? dyn.haz.zScore : r.haz;
+                  const hazLabel = dyn ? dyn.haz.label : r.ketLuanHaz;
+
+                  const wazVal = dyn ? dyn.waz.zScore : r.waz;
+                  const wazLabel = dyn ? dyn.waz.label : r.ketLuanWaz;
+
+                  const whzVal = dyn ? dyn.whz.zScore : r.whz;
+                  const whzLabel = dyn ? dyn.whz.label : r.ketLuanWhz;
+
+                  const overallLabel = dyn ? dyn.trangThaiTongThe : r.ketLuanTongThe;
+                  const canCanThiep = dyn ? dyn.canCanThiep : r.canCanThiep;
+
                   return (
                     <tr key={r.id || idx} className="hover:bg-slate-50/80 transition">
                       <td className="py-3.5 px-4 font-bold text-slate-800">
@@ -153,37 +178,37 @@ export default function HealthTab({ child }: { child: ChildInfo }) {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800">
-                          {r.haz != null ? `${r.haz > 0 ? '+' : ''}${r.haz} SD` : '--'}
+                          {hazVal != null ? `${hazVal > 0 ? "+" : ""}${hazVal} SD` : "--"}
                         </div>
                         <div className="text-[10px] text-slate-500">
-                          {r.ketLuanHaz || (r.haz && r.haz < -2 ? 'Thấp còi' : 'Bình thường')}
+                          {hazLabel || "Bình thường"}
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800">
-                          {r.waz != null ? `${r.waz > 0 ? '+' : ''}${r.waz} SD` : '--'}
+                          {wazVal != null ? `${wazVal > 0 ? "+" : ""}${wazVal} SD` : "--"}
                         </div>
                         <div className="text-[10px] text-slate-500">
-                          {r.ketLuanWaz || (r.waz && r.waz < -2 ? 'Nhẹ cân' : 'Bình thường')}
+                          {wazLabel || "Bình thường"}
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800">
-                          {r.whz != null ? `${r.whz > 0 ? '+' : ''}${r.whz} SD` : '--'}
+                          {whzVal != null ? `${whzVal > 0 ? "+" : ""}${whzVal} SD` : "--"}
                         </div>
                         <div className="text-[10px] text-slate-500">
-                          {r.ketLuanWhz || (r.whz && r.whz > 2 ? 'Thừa cân' : 'Cân đối')}
+                          {whzLabel || "Bình thường"}
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <span
                           className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                            r.canCanThiep || (r.haz && r.haz < -2) || (r.waz && r.waz < -2) || (r.whz && (r.whz < -2 || r.whz > 2))
+                            canCanThiep
                               ? "bg-amber-100 text-amber-800 border border-amber-200"
                               : "bg-emerald-100 text-emerald-800 border border-emerald-200"
                           }`}
                         >
-                          {r.ketLuanTongThe || (r.canCanThiep ? "Cần can thiệp" : "Bình thường")}
+                          {overallLabel || (canCanThiep ? "Cần can thiệp" : "Bình thường")}
                         </span>
                       </td>
                     </tr>

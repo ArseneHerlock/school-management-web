@@ -1,25 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { BookOpenCheck, Loader2, Sparkles, Image as ImageIcon, Eye } from 'lucide-react';
-import { getMediaUrl } from '@/lib/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BookOpenCheck, Loader2 } from 'lucide-react';
 import { getLearningProducts } from '@/services/learning';
+import { getActivities, ActivityItem } from '@/services/development';
+import {
+  parseMomentDescription,
+  extractMonthKey,
+  formatMonthLabel,
+  toIsoDateString,
+} from '@/lib/moments';
 import { ChildInfo } from '../types';
-
-interface LearningItem {
-  id: string;
-  childId: string;
-  mediaId: string;
-  title: string;
-  description?: string;
-  createdAtUtc?: string;
-}
+import { LearningItem, EnrichedLearningItem } from './learning/types';
+import { LearningFilterBar } from './learning/LearningFilterBar';
+import { LearningProductCard } from './learning/LearningProductCard';
+import { LearningPreviewModal } from './learning/LearningPreviewModal';
 
 export default function LearningTab({ child }: { child: ChildInfo }) {
   const [rows, setRows] = useState<LearningItem[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activePreview, setActivePreview] = useState<{ url: string; title: string; desc?: string } | null>(null);
+  const [activePreview, setActivePreview] = useState<{
+    url: string;
+    title: string;
+    desc?: string;
+  } | null>(null);
+
+  // Bộ lọc: Tìm kiếm + Hoạt động + Tháng + Lĩnh vực
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedActivityId, setSelectedActivityId] = useState('ALL');
+  const [selectedMonth, setSelectedMonth] = useState('ALL');
+  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
 
   useEffect(() => {
     if (!child?.id) {
@@ -29,11 +41,14 @@ export default function LearningTab({ child }: { child: ChildInfo }) {
     setLoading(true);
     setError('');
 
-    // Gọi API lấy sản phẩm của bé (server proxy clamp pageSize <= 100)
-    getLearningProducts(child.id)
-      .then((res) => {
+    Promise.all([
+      getLearningProducts(child.id),
+      getActivities({ page: 1, pageSize: 100 }).catch(() => ({ items: [] })),
+    ])
+      .then(([res, actRes]) => {
         const list = Array.isArray(res) ? (res as unknown as LearningItem[]) : [];
         setRows(list);
+        setActivities(actRes?.items || []);
       })
       .catch((e) => {
         setError(e instanceof Error ? e.message : 'Không tải được sản phẩm học tập');
@@ -41,24 +56,145 @@ export default function LearningTab({ child }: { child: ChildInfo }) {
       .finally(() => setLoading(false));
   }, [child?.id]);
 
-  const cleanDescription = (raw?: string) => {
-    if (!raw) return '';
-    return raw
-      .replace(/\[CLASS:[^\]]*\]/gi, '')
-      .replace(/\[CHILD:[^\]]*\]/gi, '')
-      .replace(/\[CAT:[^\]]*\]/gi, '')
-      .trim();
-  };
+  // Chuẩn hoá danh sách sản phẩm kèm metadata
+  const enrichedRows: EnrichedLearningItem[] = useMemo(() => {
+    return rows.map((item) => {
+      const meta = parseMomentDescription(item.description, item.childId);
+      const itemDate = meta.date || toIsoDateString(item.createdAtUtc);
+      const monthKey = extractMonthKey(itemDate) || extractMonthKey(item.createdAtUtc);
 
-  const sanitizeTitle = (title?: string, desc?: string, date?: string) => {
-    let t = String(title || '').trim();
-    if (!t || /^\d{6,}$/.test(t) || /^(IMG|VID|image|photo|upload)[_\d-]+$/i.test(t)) {
-      const catMatch = String(desc || '').match(/\[CAT:([^\]]+)\]/i);
-      const cat = catMatch ? catMatch[1].trim() : 'Sản phẩm sáng tạo';
-      const dateStr = String(date || '').slice(0, 10);
-      return `${cat}${dateStr ? ` (${dateStr})` : ''}`;
+      const resolvedActId = meta.activityId || item.activityId || '';
+      let resolvedActTitle = meta.activityTitle || '';
+      if (!resolvedActTitle && resolvedActId) {
+        const matched = activities.find(
+          (a) => String(a.id).toLowerCase() === String(resolvedActId).toLowerCase()
+        );
+        if (matched) resolvedActTitle = matched.name;
+      }
+
+      const category = meta.category || 'Sản phẩm của bé';
+      let displayTitle = String(item.title || '').trim();
+      if (!displayTitle || /^\d{6,}$/.test(displayTitle) || /^(IMG|VID|image|photo|upload)[_\d-]+$/i.test(displayTitle)) {
+        displayTitle = resolvedActTitle || `${category}${itemDate ? ` (${itemDate})` : ''}`;
+      }
+
+      return {
+        ...item,
+        displayTitle,
+        cleanDesc: meta.cleanText,
+        dateStr: itemDate,
+        monthKey,
+        category,
+        resolvedActId,
+        resolvedActTitle,
+      };
+    });
+  }, [rows, activities]);
+
+  // Danh sách Hoạt động để lọc
+  const availableActivities = useMemo(() => {
+    const actMap = new Map<string, { id: string; title: string; count: number }>();
+    enrichedRows.forEach((r) => {
+      if (r.resolvedActTitle) {
+        const normKey = r.resolvedActTitle.trim().toLowerCase();
+        if (!actMap.has(normKey)) {
+          actMap.set(normKey, {
+            id: r.resolvedActId || r.resolvedActTitle,
+            title: r.resolvedActTitle,
+            count: 0,
+          });
+        }
+        actMap.get(normKey)!.count += 1;
+      }
+    });
+    activities.forEach((a) => {
+      const normKey = (a.name || '').trim().toLowerCase();
+      if (normKey && !actMap.has(normKey)) {
+        actMap.set(normKey, { id: a.id, title: a.name, count: 0 });
+      }
+    });
+    return Array.from(actMap.values()).sort((a, b) => b.count - a.count);
+  }, [enrichedRows, activities]);
+
+  // Danh sách Tháng để lọc
+  const availableMonths = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const monthsMap = new Map<string, { key: string; label: string; count: number }>();
+    for (let m = 12; m >= 1; m--) {
+      const monthStr = m < 10 ? `0${m}` : `${m}`;
+      const key = `${currentYear}-${monthStr}`;
+      monthsMap.set(key, { key, label: `Tháng ${monthStr}/${currentYear}`, count: 0 });
     }
-    return t;
+    enrichedRows.forEach((r) => {
+      const key = r.monthKey || extractMonthKey(r.dateStr);
+      if (key) {
+        if (!monthsMap.has(key)) {
+          monthsMap.set(key, { key, label: formatMonthLabel(key), count: 0 });
+        }
+        monthsMap.get(key)!.count += 1;
+      }
+    });
+    return Array.from(monthsMap.values()).sort((a, b) => b.key.localeCompare(a.key));
+  }, [enrichedRows]);
+
+  // Danh sách Lĩnh vực / Chuyên mục
+  const availableCategories = useMemo(() => {
+    const set = new Set<string>(['Tất cả']);
+    enrichedRows.forEach((r) => {
+      if (r.category) set.add(r.category);
+    });
+    return Array.from(set);
+  }, [enrichedRows]);
+
+  const filteredRows = useMemo(() => {
+    return enrichedRows.filter((r) => {
+      if (selectedCategory !== 'Tất cả' && r.category !== selectedCategory) return false;
+
+      if (selectedActivityId !== 'ALL') {
+        const selectedActObj = availableActivities.find((a) => a.id === selectedActivityId);
+        const targetTitle = (selectedActObj?.title || selectedActivityId).trim().toLowerCase();
+        const rActId = String(r.resolvedActId || '').toLowerCase();
+        const rActTitle = String(r.resolvedActTitle || '').trim().toLowerCase();
+        const rTitle = String(r.displayTitle || '').trim().toLowerCase();
+
+        const matchedById = rActId && rActId === selectedActivityId.toLowerCase();
+        const matchedByTitle =
+          targetTitle &&
+          ((rActTitle && (rActTitle.includes(targetTitle) || targetTitle.includes(rActTitle))) ||
+            (rTitle && rTitle.includes(targetTitle)));
+
+        if (!matchedById && !matchedByTitle) return false;
+      }
+
+      if (selectedMonth !== 'ALL') {
+        const mKey = r.monthKey || extractMonthKey(r.dateStr);
+        if (mKey !== selectedMonth && !r.dateStr.startsWith(selectedMonth)) return false;
+      }
+
+      if (searchKeyword.trim()) {
+        const kw = searchKeyword.trim().toLowerCase();
+        const inTitle = r.displayTitle.toLowerCase().includes(kw);
+        const inDesc = (r.cleanDesc || '').toLowerCase().includes(kw);
+        const inAct = (r.resolvedActTitle || '').toLowerCase().includes(kw);
+        const inCat = (r.category || '').toLowerCase().includes(kw);
+        if (!inTitle && !inDesc && !inAct && !inCat) return false;
+      }
+
+      return true;
+    });
+  }, [enrichedRows, selectedCategory, selectedActivityId, selectedMonth, searchKeyword, availableActivities]);
+
+  const hasActiveFilter =
+    selectedCategory !== 'Tất cả' ||
+    selectedActivityId !== 'ALL' ||
+    selectedMonth !== 'ALL' ||
+    Boolean(searchKeyword.trim());
+
+  const resetFilters = () => {
+    setSelectedCategory('Tất cả');
+    setSelectedActivityId('ALL');
+    setSelectedMonth('ALL');
+    setSearchKeyword('');
   };
 
   return (
@@ -78,6 +214,25 @@ export default function LearningTab({ child }: { child: ChildInfo }) {
         </p>
       </div>
 
+      {/* Thanh Đa Bộ Lọc */}
+      <LearningFilterBar
+        searchKeyword={searchKeyword}
+        onSearchChange={setSearchKeyword}
+        selectedActivityId={selectedActivityId}
+        onActivityChange={setSelectedActivityId}
+        availableActivities={availableActivities}
+        selectedMonth={selectedMonth}
+        onMonthChange={setSelectedMonth}
+        availableMonths={availableMonths}
+        totalProductsCount={enrichedRows.length}
+        availableCategories={availableCategories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        enrichedRows={enrichedRows}
+        hasActiveFilter={hasActiveFilter}
+        onResetFilters={resetFilters}
+      />
+
       {/* Nội dung danh sách sản phẩm */}
       {loading ? (
         <div className="flex flex-col items-center justify-center rounded-3xl bg-white p-12 border border-slate-100 shadow-xs">
@@ -88,137 +243,46 @@ export default function LearningTab({ child }: { child: ChildInfo }) {
         <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs font-bold text-rose-700">
           {error}
         </div>
-      ) : rows.length === 0 ? (
+      ) : filteredRows.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-xs">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500">
             <BookOpenCheck size={28} />
           </div>
-          <h3 className="text-sm font-black text-slate-700">Chưa có sản phẩm học tập nào</h3>
+          <h3 className="text-sm font-black text-slate-700">
+            {hasActiveFilter ? 'Không tìm thấy sản phẩm khớp với bộ lọc' : 'Chưa có sản phẩm học tập nào'}
+          </h3>
           <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
-            Khi cô giáo chia sẻ tranh vẽ hoặc bài học của bé {child.hoTen}, hình ảnh và lời nhận xét sẽ xuất hiện tại đây.
+            {hasActiveFilter
+              ? 'Hãy thử đổi tháng, hoạt động hoặc nhấn "Đặt lại bộ lọc" để xem toàn bộ sản phẩm của bé.'
+              : `Khi cô giáo chia sẻ tranh vẽ hoặc bài học của bé ${child.hoTen}, hình ảnh và lời nhận xét sẽ xuất hiện tại đây.`}
           </p>
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition cursor-pointer"
+            >
+              Xem tất cả ({enrichedRows.length})
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((item) => {
-            const mediaUrl = item.mediaId ? getMediaUrl(item.mediaId) : '';
-            const displayTitle = sanitizeTitle(item.title, item.description, item.createdAtUtc);
-            const cleanDesc = cleanDescription(item.description);
-            const dateStr = String(item.createdAtUtc || '').slice(0, 10);
-
-            // Trích xuất chuyên mục
-            const catMatch = String(item.description || '').match(/\[CAT:([^\]]+)\]/i);
-            const category = catMatch ? catMatch[1].trim() : 'Sản phẩm của bé';
-
-            return (
-              <article
-                key={item.id}
-                className="group rounded-3xl border border-slate-200/90 bg-white overflow-hidden shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  {/* Khung ảnh */}
-                  <div
-                    onClick={() => {
-                      if (mediaUrl) {
-                        setActivePreview({ url: mediaUrl, title: displayTitle, desc: cleanDesc });
-                      }
-                    }}
-                    className="relative h-48 w-full bg-slate-100 overflow-hidden cursor-pointer flex items-center justify-center"
-                  >
-                    {mediaUrl ? (
-                      <img
-                        src={mediaUrl}
-                        alt={displayTitle}
-                        className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const parent = e.currentTarget.parentElement;
-                          if (parent && !parent.querySelector('.fallback-badge')) {
-                            const fb = document.createElement('div');
-                            fb.className =
-                              'fallback-badge h-full w-full bg-gradient-to-br from-indigo-50 to-purple-100 flex flex-col items-center justify-center text-indigo-400 p-2 text-center';
-                            fb.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg><span style="font-size: 11px; font-weight: bold; margin-top: 4px; color: #4338ca">Tác phẩm của bé</span>`;
-                            parent.appendChild(fb);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-indigo-50 to-purple-100 flex flex-col items-center justify-center text-indigo-400">
-                        <ImageIcon size={32} />
-                        <span className="text-[11px] font-bold mt-1 text-indigo-600">Tác phẩm của bé</span>
-                      </div>
-                    )}
-
-                    <span className="absolute top-2.5 left-2.5 rounded-xl bg-indigo-900/85 backdrop-blur-md px-2.5 py-1 text-[10px] font-black text-white">
-                      {category}
-                    </span>
-
-                    {mediaUrl && (
-                      <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1 text-white text-xs font-bold">
-                        <Eye size={14} /> Xem to
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Nội dung chi tiết */}
-                  <div className="p-4 space-y-2">
-                    <h3 className="font-black text-sm text-slate-800 line-clamp-1 group-hover:text-indigo-600 transition">
-                      {displayTitle}
-                    </h3>
-                    {cleanDesc ? (
-                      <p className="text-xs text-slate-600 leading-relaxed italic bg-slate-50 p-2.5 rounded-2xl border border-slate-100 line-clamp-3">
-                        &ldquo;{cleanDesc}&rdquo;
-                      </p>
-                    ) : (
-                      <p className="text-[11px] text-slate-400 italic">Cô giáo khen ngợi sự cố gắng và sáng tạo của bé.</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="px-4 pb-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-400">
-                  <span>{dateStr || 'Gần đây'}</span>
-                  <span className="text-indigo-600 font-bold group-hover:underline">Chi tiết →</span>
-                </div>
-              </article>
-            );
-          })}
+          {filteredRows.map((item) => (
+            <LearningProductCard
+              key={item.id}
+              item={item}
+              onPreview={setActivePreview}
+            />
+          ))}
         </div>
       )}
 
-      {/* Lightbox xem ảnh to cho phụ huynh trên mobile */}
-      {activePreview && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-150"
-          onClick={() => setActivePreview(null)}
-        >
-          <div
-            className="relative max-w-lg w-full bg-white rounded-3xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative max-h-[70vh] bg-slate-900 flex items-center justify-center overflow-hidden">
-              <img
-                src={activePreview.url}
-                alt={activePreview.title}
-                className="max-h-[70vh] w-auto max-w-full object-contain"
-              />
-              <button
-                onClick={() => setActivePreview(null)}
-                className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-black text-slate-800">{activePreview.title}</h3>
-              {activePreview.desc && (
-                <p className="mt-2 text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                  {activePreview.desc}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Lightbox xem ảnh to cho phụ huynh */}
+      <LearningPreviewModal
+        activePreview={activePreview}
+        onClose={() => setActivePreview(null)}
+      />
     </section>
   );
 }

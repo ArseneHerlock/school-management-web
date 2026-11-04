@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Sparkles, BarChart3, ListTodo, Activity, Loader2 } from 'lucide-react'
+import { Sparkles, BarChart3, ListTodo, Activity, Loader2, TrendingUp } from 'lucide-react'
 import {
   getChildAssessmentHistory,
   getAssessments,
@@ -12,14 +12,43 @@ import {
   DomainItem,
   ActivityItem,
   AssessmentItem,
-} from '@/lib/development'
+} from "@/services/development"
 import { ChildInfo } from '../types'
 import TabsNav, { TabItem } from '@/app/components/ui/TabsNav'
 import AssessmentDashboard from './assessment/AssessmentDashboard'
 import AssessmentCriteriaList from './assessment/AssessmentCriteriaList'
 import AssessmentActivitiesHistory from './assessment/AssessmentActivitiesHistory'
+import ChildFCMGrowthTimeline from './assessment/ChildFCMGrowthTimeline'
+import ChildDevelopmentClusterHeroCard, { FCMHistoryItem } from './assessment/ChildDevelopmentClusterHeroCard'
 
-type AssessmentSubTab = 'dashboard' | 'criteria_list' | 'activities'
+type AssessmentSubTab = 'dashboard' | 'growth_timeline' | 'criteria_list' | 'activities'
+
+const DOMAIN_FALLBACKS: DomainItem[] = [
+  { id: 'd62c00ba-1aa1-3e6b-4795-b37a42099c76', name: 'Phát triển thể chất', code: 'GDMN-PHYSICAL', isActive: true },
+  { id: 'f12a3fb0-6832-38cf-470d-3b97b70b238f', name: 'Phát triển nhận thức', code: 'GDMN-COGNITION', isActive: true },
+  { id: 'c7e896f7-1630-6b39-a0bb-21554638bc85', name: 'Phát triển ngôn ngữ', code: 'GDMN-LANGUAGE', isActive: true },
+  { id: '8b2f117b-2183-d6f3-0937-e7cd680bfa2b', name: 'Phát triển tình cảm và kỹ năng xã hội', code: 'GDMN-SOCIAL-EMOTIONAL', isActive: true },
+  { id: '65056cb0-8c7a-3fb6-e64b-d62a855ad2dc', name: 'Phát triển thẩm mỹ', code: 'GDMN-AESTHETIC', isActive: true },
+];
+
+function resolveDomainForActivity(act: any, liveDomains: DomainItem[]): DomainItem {
+  const code = (act?.code || '').toUpperCase();
+  let matchedCode = 'GDMN-PHYSICAL';
+  if (code.includes('PTTCXH')) matchedCode = 'GDMN-SOCIAL-EMOTIONAL';
+  else if (code.includes('PTTC')) matchedCode = 'GDMN-PHYSICAL';
+  else if (code.includes('PTNT')) matchedCode = 'GDMN-COGNITION';
+  else if (code.includes('PTNN')) matchedCode = 'GDMN-LANGUAGE';
+  else if (code.includes('PTTM')) matchedCode = 'GDMN-AESTHETIC';
+
+  const fallback = DOMAIN_FALLBACKS.find((f) => f.code === matchedCode)!;
+  const live = liveDomains.find(
+    (d) =>
+      d.id === fallback.id ||
+      d.code === fallback.code ||
+      d.name.toLowerCase().includes(fallback.name.toLowerCase().replace('phát triển ', ''))
+  );
+  return live || fallback;
+}
 
 export default function AssessmentTab({ child }: { child: ChildInfo }) {
   const [loading, setLoading] = useState(true)
@@ -27,6 +56,8 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
   const [criteria, setCriteria] = useState<CriterionItem[]>([])
   const [domains, setDomains] = useState<DomainItem[]>([])
   const [activities, setActivities] = useState<ActivityItem[]>([])
+  const [fcmHistory, setFcmHistory] = useState<FCMHistoryItem[]>([])
+  const [latestFCM, setLatestFCM] = useState<FCMHistoryItem | null>(null)
 
   const [subTab, setSubTab] = useState<AssessmentSubTab>('dashboard')
   const [selectedDomainId, setSelectedDomainId] = useState<string>('ALL')
@@ -35,12 +66,15 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
     if (!child.id) return
     setLoading(true)
     try {
-      const [historyRes, criteriaRes, domainsRes, activitiesRes] = await Promise.allSettled([
-        getChildAssessmentHistory(child.id),
-        getCriteria({ page: 1, pageSize: 500 }),
-        getDomains({ page: 1, pageSize: 100 }),
-        getActivities({ page: 1, pageSize: 200, includeInactive: false }),
-      ])
+      const [historyRes, criteriaRes, domainsRes, activitiesRes, fcmRes, actCritRes] =
+        await Promise.allSettled([
+          getChildAssessmentHistory(child.id),
+          getCriteria({ page: 1, pageSize: 500 }),
+          getDomains({ page: 1, pageSize: 100 }),
+          getActivities({ page: 1, pageSize: 200, includeInactive: false }),
+          fetch(`/api/fcm?childId=${child.id}`).then((r) => (r.ok ? r.json() : null)),
+          fetch('/api/activities-with-criteria').then((r) => (r.ok ? r.json() : [])),
+        ])
 
       let childAssessments = historyRes.status === 'fulfilled' ? historyRes.value : []
       if (childAssessments.length === 0) {
@@ -49,11 +83,47 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
           childAssessments = assRes.items
         } catch {}
       }
-
       setAssessments(childAssessments)
-      if (criteriaRes.status === 'fulfilled') setCriteria(criteriaRes.value.items)
-      if (domainsRes.status === 'fulfilled') setDomains(domainsRes.value.items)
-      if (activitiesRes.status === 'fulfilled') setActivities(activitiesRes.value.items)
+
+      const liveDomains =
+        domainsRes.status === 'fulfilled' && domainsRes.value.items.length > 0
+          ? domainsRes.value.items
+          : DOMAIN_FALLBACKS;
+      setDomains(liveDomains);
+
+      const actWithCrit: any[] =
+        actCritRes.status === 'fulfilled' && Array.isArray(actCritRes.value)
+          ? actCritRes.value
+          : [];
+
+      let allCriteriaItems: CriterionItem[] = [];
+      if (actWithCrit.length > 0) {
+        allCriteriaItems = actWithCrit.flatMap((act: any) => {
+          const matchedDomain = resolveDomainForActivity(act, liveDomains);
+          return (act.criteria || []).map((c: any) => ({
+            id: c.id,
+            code: c.code,
+            name: c.name,
+            description: c.description || c.observationGuide,
+            developmentDomainId: matchedDomain.id,
+            domainName: matchedDomain.name,
+            activityId: act.id,
+            activityName: act.name,
+            isActive: true,
+          }));
+        });
+        setActivities(actWithCrit);
+      } else {
+        if (criteriaRes.status === 'fulfilled') allCriteriaItems = criteriaRes.value.items;
+        if (activitiesRes.status === 'fulfilled') setActivities(activitiesRes.value.items);
+      }
+      setCriteria(allCriteriaItems);
+
+      if (fcmRes.status === 'fulfilled' && fcmRes.value) {
+        const h = fcmRes.value.history || []
+        setFcmHistory(h)
+        setLatestFCM(fcmRes.value.latest || (h.length > 0 ? h[h.length - 1] : null))
+      }
     } finally {
       setLoading(false)
     }
@@ -72,7 +142,9 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
     let totalMastered = 0, totalNeedWork = 0, totalAssessed = 0
 
     const breakdown = domains.map((domain) => {
-      const dCriteria = criteria.filter((c) => c.developmentDomainId === domain.id)
+      const dCriteria = criteria.filter(
+        (c) => c.developmentDomainId === domain.id || (c as any).domainName === domain.name
+      )
       let sumScores = 0, assessedCrit = 0, passInDomain = 0, failInDomain = 0
 
       const criteriaDetails = dCriteria.map((crit) => {
@@ -138,6 +210,7 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
 
   const tabs: TabItem<AssessmentSubTab>[] = [
     { id: 'dashboard', label: 'Tổng quan phát triển', icon: BarChart3 },
+    { id: 'growth_timeline', label: 'Hành trình phát triển theo tháng', icon: TrendingUp },
     { id: 'criteria_list', label: 'Tiêu chí theo lĩnh vực', icon: ListTodo, badge: criteria.length },
     { id: 'activities', label: 'Nhật ký đánh giá của cô', icon: Activity, badge: assessments.length },
   ]
@@ -147,15 +220,27 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <span className="text-xs font-bold text-rose-500 uppercase">Sự phát triển của bé</span>
-          <h2 className="text-xl font-black text-slate-800">Đánh giá & Theo dõi con yêu</h2>
+          <h2 className="text-xl font-black text-slate-800">Đánh giá phát triển con yêu</h2>
         </div>
         {loading && <div className="flex items-center gap-2 text-xs font-bold text-rose-500"><Loader2 size={16} className="animate-spin" /> Đang đồng bộ...</div>}
       </div>
+
+      {/* Hero: Phân nhóm phát triển nổi bật của bé */}
+      <ChildDevelopmentClusterHeroCard
+        childName={child.hoTen || 'Bé'}
+        fcmHistory={fcmHistory}
+        latestFCM={latestFCM}
+        loading={loading}
+      />
 
       <TabsNav tabs={tabs} activeTab={subTab} onChange={setSubTab} />
 
       {subTab === 'dashboard' && (
         <AssessmentDashboard generalStats={generalStats} radarChartData={radarChartData} barChartData={barChartData} domainBreakdown={domainBreakdown} />
+      )}
+
+      {subTab === 'growth_timeline' && (
+        <ChildFCMGrowthTimeline childId={child.id} />
       )}
 
       {subTab === 'criteria_list' && (

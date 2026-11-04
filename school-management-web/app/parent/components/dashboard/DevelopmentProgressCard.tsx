@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Sparkles, ArrowRight } from 'lucide-react'
+import { Sparkles, ArrowRight, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react'
 
 interface DevelopmentStats {
   activitiesCount: number
@@ -15,23 +15,50 @@ interface DevelopmentStats {
 interface DevelopmentProgressCardProps {
   stats: DevelopmentStats
   childName?: string
+  clusterId?: number
+  clusterName?: string
+  trend?: string
   onNavigateDetail: () => void
+}
+
+const CLUSTER_BADGES: Record<number, { text: string; bg: string; textClass: string }> = {
+  1: { text: 'Cụm 1: Nổi trội toàn diện', bg: 'bg-emerald-100', textClass: 'text-emerald-800' },
+  2: { text: 'Cụm 2: Phát triển mức khá', bg: 'bg-blue-100', textClass: 'text-blue-800' },
+  3: { text: 'Cụm 3: Tiệm cận chuẩn', bg: 'bg-amber-100', textClass: 'text-amber-800' },
+  4: { text: 'Cụm 4: Cần can thiệp sớm', bg: 'bg-rose-100', textClass: 'text-rose-800' },
 }
 
 export const DevelopmentProgressCard: React.FC<DevelopmentProgressCardProps> = ({
   stats,
   childName,
+  clusterId,
+  clusterName,
+  trend,
   onNavigateDetail,
 }) => {
+  const badgeInfo = clusterId ? CLUSTER_BADGES[clusterId] : null
+
   return (
     <div className="rounded-2xl sm:rounded-3xl border border-indigo-100 bg-white p-3.5 sm:p-5 lg:p-6 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-indigo-50">
         <div>
-          <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-            <Sparkles size={12} /> KẾT QUẢ ĐÁNH GIÁ PHÁT TRIỂN
-          </span>
-          <h3 className="mt-0.5 sm:mt-1 text-sm sm:text-lg font-black text-slate-800">
-            Hoạt động & Tiêu chí đạt của bé {childName}
+          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+              <Sparkles size={12} /> KẾT QUẢ ĐÁNH GIÁ PHÁT TRIỂN
+            </span>
+            {badgeInfo && (
+              <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full ${badgeInfo.bg} ${badgeInfo.textClass}`}>
+                {badgeInfo.text}
+              </span>
+            )}
+            {trend === 'IMPROVED' && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <TrendingUp size={11} /> Có tiến bộ
+              </span>
+            )}
+          </div>
+          <h3 className="text-sm sm:text-lg font-black text-slate-800">
+            Phát triển & Tiêu chí đạt của bé {childName}
           </h3>
         </div>
 
@@ -39,7 +66,7 @@ export const DevelopmentProgressCard: React.FC<DevelopmentProgressCardProps> = (
           onClick={onNavigateDetail}
           className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer self-start sm:self-auto"
         >
-          <span>Xem chi tiết nhận xét & minh chứng</span>
+          <span>Xem phân nhóm & nhận xét</span>
           <ArrowRight size={14} />
         </button>
       </div>

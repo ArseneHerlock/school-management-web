@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { LayoutGrid, Loader2 } from 'lucide-react'
+import { LayoutGrid, Loader2, Utensils, CheckCircle2 } from 'lucide-react'
 import { ChildInfo } from '../types'
 import {
   FeeItem,
@@ -12,7 +12,7 @@ import {
   getInvoices,
   getBillings,
   createPayment,
-} from '@/lib/billing'
+} from "@/services/billing"
 import TuitionSummaryCards from './tuition/TuitionSummaryCards'
 import TuitionPeriodsTable from './tuition/TuitionPeriodsTable'
 import OtherFeesTable from './tuition/OtherFeesTable'
@@ -41,18 +41,35 @@ export default function TuitionTab({ child }: TuitionTabProps) {
   const [paying, setPaying] = useState(false)
   const [paySuccess, setPaySuccess] = useState(false)
 
+  // Khấu trừ tiền ăn do nghỉ học
+  const [mealDeduction, setMealDeduction] = useState<{
+    absentDaysCount: number;
+    deductionAmount: number;
+    dailyRate: number;
+    finalMealFee: number;
+    absentDetails: any[];
+  } | null>(null)
+
   const fetchBillingData = async () => {
     setLoading(true)
     try {
-      const [feesRes, invoicesRes, billingsRes] = await Promise.allSettled([
+      const [feesRes, invoicesRes, billingsRes, mealRes] = await Promise.allSettled([
         getFees(),
         child?.id ? getInvoices({ childId: child.id }) : getInvoices(),
         child?.id ? getBillings({ childId: child.id }) : getBillings(),
+        child?.id
+          ? fetch(`/api/tuition/meal-deduction?childId=${child.id}`).then((r) =>
+              r.ok ? r.json() : null
+            )
+          : Promise.resolve(null),
       ])
 
       if (feesRes.status === 'fulfilled') setLiveFees(feesRes.value)
       if (invoicesRes.status === 'fulfilled') setLiveInvoices(invoicesRes.value)
       if (billingsRes.status === 'fulfilled') setLiveBillings(billingsRes.value)
+      if (mealRes.status === 'fulfilled' && mealRes.value) {
+        setMealDeduction(mealRes.value)
+      }
     } finally {
       setLoading(false)
     }
@@ -190,7 +207,7 @@ export default function TuitionTab({ child }: TuitionTabProps) {
           <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
             <LayoutGrid size={18} />
           </div>
-          <h2 className="text-lg font-black text-slate-800">Tra cứu công nợ & Học phí</h2>
+          <h2 className="text-lg font-black text-slate-800">Tra cứu công nợ học phí</h2>
           {loading && <Loader2 size={16} className="animate-spin text-rose-500 ml-2" />}
         </div>
 
@@ -202,6 +219,40 @@ export default function TuitionTab({ child }: TuitionTabProps) {
           {semestersList.map((s) => (<option key={s.id} value={s.id}>{s.label}</option>))}
         </select>
       </div>
+
+      {/* Thẻ Khấu trừ tiền ăn do nghỉ học */}
+      {mealDeduction && (
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 rounded-2xl p-4 border border-emerald-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0">
+              <Utensils size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase text-emerald-800">
+                  Khấu trừ tiền ăn do nghỉ học
+                </span>
+                <span className="text-[11px] bg-emerald-200 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <CheckCircle2 size={11} /> Tự động giảm trừ
+                </span>
+              </div>
+              <div className="text-xs text-slate-600 mt-0.5">
+                Bé nghỉ <strong>{mealDeduction.absentDaysCount} ngày</strong> trong tháng • Định mức hoàn trả <strong>{money(mealDeduction.dailyRate)} đ/ngày</strong>
+              </div>
+            </div>
+          </div>
+          <div className="text-left sm:text-right">
+            <div className="text-sm font-black text-emerald-700">
+              {mealDeduction.deductionAmount > 0
+                ? `- ${money(mealDeduction.deductionAmount)} đ`
+                : '0 đ (Đi học đầy đủ)'}
+            </div>
+            <div className="text-[11px] text-slate-500">
+              Tiền ăn thực đóng: <strong>{money(mealDeduction.finalMealFee)} đ</strong>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3 Thẻ Tổng quan */}
       <TuitionSummaryCards totalMucNop={totals.mucNop} totalDaNop={totals.daNop} totalCongNo={totals.congNo} money={money} onOpenPayModal={() => { setPaySuccess(false); setPayModalOpen(true); }} />

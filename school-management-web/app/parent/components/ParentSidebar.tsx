@@ -1,24 +1,28 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChildInfo, ParentProfile } from "../types";
-import { 
-  LayoutDashboard, 
-  GraduationCap, 
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ChildInfo, ParentProfile } from '../types';
+import {
+  LayoutDashboard,
+  GraduationCap,
   CalendarDays,
   Award,
-  HeartPulse, 
-  MessageSquareText, 
-  CalendarOff, 
+  HeartPulse,
+  MessageSquareText,
+  CalendarOff,
   WalletCards,
   Image as ImageIcon,
   Newspaper,
   ClipboardCheck,
   Sparkles,
-  X
-} from "lucide-react";
+  Pill,
+  ChevronDown,
+  X,
+  User,
+  LogOut,
+} from 'lucide-react';
 
 interface ParentSidebarProps {
   activeTab?: string;
@@ -31,12 +35,20 @@ interface ParentSidebarProps {
   unreadMessagesCount?: number;
 }
 
-interface NavItem {
+interface SubNavItem {
+  id: string;
+  label: string;
+  href: string;
+  badge?: string | number;
+  badgeColor?: string;
+}
+
+interface NavGroup {
   id: string;
   label: string;
   icon: React.ReactNode;
-  badge?: string | number;
-  badgeColor?: string;
+  href?: string;
+  subItems?: SubNavItem[];
 }
 
 export default function ParentSidebar({
@@ -49,107 +61,109 @@ export default function ParentSidebar({
 }: ParentSidebarProps) {
   const pathname = usePathname();
 
-  const navItems: NavItem[] = [
+  // Menu 2 cấp chuẩn mực cho Phụ Huynh (Tên riêng biệt, không dùng chữ và hoặc &)
+  const navGroups: NavGroup[] = [
     {
-      id: "dashboard",
-      label: "Tổng quan",
-      icon: <LayoutDashboard size={20} />,
+      id: 'dashboard',
+      label: 'Tổng quan',
+      href: '/parent',
+      icon: <LayoutDashboard size={18} />,
     },
     {
-      id: "attendance",
-      label: "Điểm danh & Chuyên cần",
-      icon: <ClipboardCheck size={20} />,
+      id: 'learning-group',
+      label: 'Học tập',
+      icon: <GraduationCap size={18} />,
+      subItems: [
+        { id: 'schedule', label: 'Thời khóa biểu', href: '/parent/schedule' },
+        { id: 'assessment', label: 'Đánh giá phát triển', href: '/parent/assessment' },
+        { id: 'good-child', label: 'Theo dõi rèn luyện', href: '/parent/good-child' },
+        { id: 'learning', label: 'Góc học tập của bé', href: '/parent/learning' },
+        { id: 'moments', label: 'Khoảnh khắc của con', href: '/parent/moments' },
+      ],
     },
     {
-      id: "assessment",
-      label: "Đánh giá phát triển",
-      icon: <Sparkles size={20} />,
+      id: 'health-group',
+      label: 'Chăm sóc sức khỏe',
+      icon: <HeartPulse size={18} />,
+      subItems: [
+        { id: 'attendance', label: 'Điểm danh chuyên cần', href: '/parent/attendance' },
+        { id: 'pickup', label: 'Người đón bé', href: '/parent/pickup' },
+        { id: 'medications', label: 'Dặn thuốc cho con', href: '/parent/medications' },
+        { id: 'health', label: 'Sức khoẻ định kỳ', href: '/parent/health' },
+        { id: 'absence', label: 'Xin nghỉ học', href: '/parent/absence' },
+      ],
     },
     {
-      id: "learning",
-      label: "Góc học tập của bé",
-      icon: <GraduationCap size={20} />,
-    },
-    {
-      id: "schedule",
-      label: "Lịch học & Sinh hoạt",
-      icon: <CalendarDays size={20} />,
-    },
-    {
-      id: "good-child",
-      label: "Sổ bé ngoan",
-      icon: <Award size={20} />,
-    },
-    {
-      id: "health",
-      label: "Sức khoẻ",
-      icon: <HeartPulse size={20} />,
-    },
-    {
-      id: "messages",
-      label: "Liên lạc",
-      icon: <MessageSquareText size={20} />,
-      badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : undefined,
-      badgeColor: "bg-rose-500",
-    },
-    {
-      id: "absence",
-      label: "Xin nghỉ học",
-      icon: <CalendarOff size={20} />,
-    },
-    {
-      id: "tuition",
-      label: "Thanh toán",
-      icon: <WalletCards size={20} />,
-    },
-    {
-      id: "moments",
-      label: "Khoảnh khắc",
-      icon: <ImageIcon size={20} />,
-    },
-    {
-      id: "news",
-      label: "Tin tức",
-      icon: <Newspaper size={20} />,
+      id: 'communication-group',
+      label: 'Thông tin liên lạc',
+      icon: <MessageSquareText size={18} />,
+      subItems: [
+        {
+          id: 'messages',
+          label: 'Tin nhắn liên lạc',
+          href: '/parent/messages',
+          badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : undefined,
+          badgeColor: 'bg-rose-500',
+        },
+        { id: 'news', label: 'Bản tin nhà trường', href: '/parent/news' },
+        { id: 'tuition', label: 'Học phí', href: '/parent/tuition' },
+      ],
     },
   ];
 
-  const getItemHref = (id: string) => (id === "dashboard" ? "/parent" : `/parent/${id}`);
+  // Trạng thái đóng/mở của các nhóm menu cấp 1
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    'learning-group': true,
+    'health-group': true,
+    'communication-group': true,
+  });
 
-  const checkIsActive = (id: string) => {
-    const href = getItemHref(id);
-    if (id === "dashboard") {
-      return pathname === "/parent";
-    }
-    return pathname === href || pathname?.startsWith(`${href}/`);
+  // Tự động mở nhóm có trang đang hoạt động
+  useEffect(() => {
+    navGroups.forEach((group) => {
+      if (group.subItems?.some((sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`))) {
+        setOpenGroups((prev) => ({ ...prev, [group.id]: true }));
+      }
+    });
+  }, [pathname]);
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
+
+  const isSubActive = (href: string) => {
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 shadow-xl shadow-slate-200/50`}
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col transition-transform duration-200 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 shadow-xl lg:shadow-none font-sans`}
       >
         {/* Brand Header */}
-        <div className="p-4 sm:p-6 flex items-center justify-between">
-          <Link href="/parent" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-              <Sparkles size={20} className="animate-pulse" />
+        <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
+          <Link href="/parent" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm">
+              <Sparkles size={18} />
             </div>
             <div>
-              <h1 className="font-extrabold text-base text-slate-800 leading-tight">
+              <h1 className="font-extrabold text-sm text-slate-800 leading-tight">
                 Mầm Non Tuổi Thơ
               </h1>
-              <p className="text-[11px] font-semibold text-indigo-600">
-                Cổng thông tin Phụ Huynh
+              <p className="text-[10px] font-bold text-indigo-600">
+                Cổng Phụ Huynh
               </p>
             </div>
           </Link>
@@ -157,93 +171,139 @@ export default function ParentSidebar({
             onClick={onClose}
             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 lg:hidden cursor-pointer"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Selected Child Mini-Card */}
-        <div className="px-4 pb-2">
-          <div className="p-3 bg-gradient-to-r from-indigo-50 via-indigo-50/50 to-transparent border border-indigo-100 rounded-2xl flex items-center gap-3 relative overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-white border border-indigo-200 text-indigo-700 flex items-center justify-center font-black text-sm shrink-0 shadow-xs relative z-10">
-              {child.avatar || "BE"}
+        <div className="p-3.5 border-b border-slate-100">
+          <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-indigo-700 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+              {child.avatar || 'BE'}
             </div>
-            <div className="min-w-0 flex-1 relative z-10">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between mb-0.5">
-                <p className="text-sm font-bold text-slate-800 truncate">
-                  {child.hoTen || "Học sinh"}
+                <p className="text-xs font-bold text-slate-800 truncate">
+                  {child.hoTen || 'Học sinh'}
                 </p>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               </div>
-              <p className="text-[11px] font-medium text-slate-500 mb-0.5 flex items-center gap-1">
-                Lớp <span className="font-bold text-indigo-600">{child.lop || "Chưa phân lớp"}</span>
-              </p>
-              <p className="text-[10px] text-slate-400 font-medium font-mono bg-slate-100 inline-block px-1.5 py-0.5 rounded">
-                ID: {child.maHocSinh ? child.maHocSinh.slice(0, 8).toUpperCase() : "--"}
+              <p className="text-[10px] text-slate-500 font-medium">
+                Lớp <strong className="text-indigo-600 font-bold">{child.lop || 'Chưa phân lớp'}</strong>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Navigation List with Next.js Link prefetching */}
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto parent-scroll">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-3">
-            Chức năng chính
-          </div>
-          {navItems.map((item) => {
-            const isActive = checkIsActive(item.id);
-            const href = getItemHref(item.id);
-            return (
-              <Link
-                key={item.id}
-                href={href}
-                onClick={onClose}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
-                  isActive
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                    : "text-slate-600 hover:text-indigo-700 hover:bg-indigo-50"
-                }`}
-              >
-                <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
-                  {item.icon}
-                </div>
-                <span className="tracking-wide">{item.label}</span>
-                {Boolean(item.badge) && (
-                  <span
-                    className={`ml-auto ${item.badgeColor || "bg-indigo-500"} text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm`}
-                  >
-                    {item.badge}
+        {/* Navigation List: Menu 2 Cấp */}
+        <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
+          {navGroups.map((group) => {
+            // Trường hợp Cấp 1 đơn (Ví dụ: Tổng quan)
+            if (group.href) {
+              const isGroupActive = pathname === group.href;
+              return (
+                <Link
+                  key={group.id}
+                  href={group.href}
+                  onClick={onClose}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
+                    isGroupActive
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-700'
+                  }`}
+                >
+                  <span className={isGroupActive ? 'text-white' : 'text-slate-400'}>
+                    {group.icon}
                   </span>
+                  <span>{group.label}</span>
+                </Link>
+              );
+            }
+
+            // Trường hợp Menu Cấp 1 có Sub-items Cấp 2 (Accordion)
+            const isOpen = Boolean(openGroups[group.id]);
+            const hasActiveChild = group.subItems?.some((sub) => isSubActive(sub.href));
+
+            return (
+              <div key={group.id} className="space-y-1">
+                {/* Header Menu Cấp 1 */}
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer select-none ${
+                    hasActiveChild
+                      ? 'bg-indigo-50/70 text-indigo-900 font-extrabold'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={hasActiveChild ? 'text-indigo-600' : 'text-slate-400'}>
+                      {group.icon}
+                    </span>
+                    <span className="truncate">{group.label}</span>
+                  </div>
+                  <ChevronDown
+                    size={14}
+                    className={`text-slate-400 transition-transform duration-200 shrink-0 ${
+                      isOpen ? 'rotate-180 text-indigo-600' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* Sub-items Cấp 2 */}
+                {isOpen && group.subItems && (
+                  <div className="ml-4 pl-3 border-l-2 border-slate-100 space-y-0.5 pt-0.5">
+                    {group.subItems.map((sub) => {
+                      const active = isSubActive(sub.href);
+                      return (
+                        <Link
+                          key={sub.id}
+                          href={sub.href}
+                          onClick={onClose}
+                          className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition ${
+                            active
+                              ? 'bg-indigo-600 text-white font-bold shadow-2xs'
+                              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 font-medium'
+                          }`}
+                        >
+                          <span className="truncate">{sub.label}</span>
+                          {Boolean(sub.badge) && (
+                            <span
+                              className={`ml-2 px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                                active ? 'bg-white/20 text-white' : 'bg-rose-500 text-white'
+                              }`}
+                            >
+                              {sub.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              </Link>
+              </div>
             );
           })}
         </nav>
 
-        {/* Parent Profile Mini-Card at Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+        {/* User Footer Profile */}
+        <div className="p-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold shrink-0">
+              <User size={15} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 truncate">{parent.hoTen || 'Phụ huynh'}</p>
+              <p className="text-[10px] text-slate-400 truncate">{parent.soDienThoai || ''}</p>
+            </div>
+          </div>
+
           <button
             onClick={onOpenProfile}
-            className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md cursor-pointer transition-all group text-left"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+            title="Xem thông tin tài khoản"
           >
-            <div className="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0 overflow-hidden">
-              {parent.avatar ? (
-                <img src={parent.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                parent.hoTen
-                  .split(" ")
-                  .slice(-1)[0]
-                  ?.slice(0, 2)
-                  .toUpperCase() || "PH"
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
-                {parent.hoTen || "Phụ huynh"}
-              </p>
-              <p className="text-[10px] font-medium text-slate-400 truncate">
-                {parent.soDienThoai || parent.moiQuanHe || "Phụ huynh bé"}
-              </p>
-            </div>
+            <User size={15} />
           </button>
         </div>
       </aside>

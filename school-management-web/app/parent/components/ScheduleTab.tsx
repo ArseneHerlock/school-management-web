@@ -1,35 +1,178 @@
-'use client'
+'use client';
 
-import React, { useCallback, useState } from 'react'
-import { CalendarDays, RefreshCw, CheckCircle2, XCircle, HelpCircle, MessageSquare, Clock, MapPin, UserCheck, Sparkles } from 'lucide-react'
-import { ChildInfo } from '../types'
-import WeeklyTimetable, { TimetableScheduleItem } from '@/app/components/schedule/WeeklyTimetable'
-import Modal from '@/app/components/ui/Modal'
-import { getParentSchedules, getSchedules, getEvaluationsForSchedule, ActivityChildEvaluation } from '@/services/schedule'
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { ChildInfo } from '../types';
+import WeeklyTimetable, { TimetableScheduleItem } from '@/app/components/schedule/WeeklyTimetable';
+import { getParentSchedules, getSchedules, getEvaluationsForSchedule, ActivityChildEvaluation } from '@/services/schedule';
+import { getAllLearningProducts } from '@/services/learning';
+import { getMediaUrl } from '@/services';
+import { parseMomentDescription, toIsoDateString } from '@/lib/moments';
+import { MediaItem } from './moments/types';
+import { MomentLightbox } from './moments/MomentLightbox';
+import { normalizeTitleForMatch } from './schedule/types';
+import { ActivityDetailModal } from './schedule/ActivityDetailModal';
 
 export default function ScheduleTab({ child }: { child: ChildInfo }) {
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [selectedItem, setSelectedItem] = useState<TimetableScheduleItem | null>(null)
-  const [childEvaluations, setChildEvaluations] = useState<ActivityChildEvaluation[]>([])
+  const [refreshKey] = useState(0);
+  const [selectedItem, setSelectedItem] = useState<TimetableScheduleItem | null>(null);
+  const [childEvaluations, setChildEvaluations] = useState<ActivityChildEvaluation[]>([]);
 
-  React.useEffect(() => {
+  // Khoảnh khắc của hoạt động được chọn ngay trên Thời khóa biểu
+  const [activityMoments, setActivityMoments] = useState<MediaItem[]>([]);
+  const [loadingMoments, setLoadingMoments] = useState(false);
+  const [momentScopeFilter, setMomentScopeFilter] = useState<'ALL' | 'class' | 'child'>('ALL');
+  const [previewMoment, setPreviewMoment] = useState<MediaItem | null>(null);
+
+  useEffect(() => {
     if (!selectedItem) {
-      setChildEvaluations([])
-      return
+      setChildEvaluations([]);
+      setActivityMoments([]);
+      setMomentScopeFilter('ALL');
+      return;
     }
-    getEvaluationsForSchedule(selectedItem.id).then((evals) => {
-      const filtered = evals.filter(
-        (e: ActivityChildEvaluation) =>
-          String(e.childId) === String(child.id) ||
-          (e.childName &&
-            child.hoTen &&
-            e.childName.trim().toLowerCase() === child.hoTen.trim().toLowerCase())
-      )
-      setChildEvaluations(filtered)
-    }).catch(() => setChildEvaluations([]))
-  }, [selectedItem, child.id, child.hoTen])
 
-  // Fetch parent schedules dynamically from Backend API (strictly real data)
+    // 1. Tải đánh giá của bé trong hoạt động
+    const targetActId = selectedItem.activityId || selectedItem.id;
+    getEvaluationsForSchedule(targetActId)
+      .then((evals) => {
+        const filtered = evals.filter(
+          (e: ActivityChildEvaluation) =>
+            String(e.childId) === String(child.id) ||
+            (e.childName &&
+              child.hoTen &&
+              e.childName.trim().toLowerCase() === child.hoTen.trim().toLowerCase())
+        );
+        setChildEvaluations(filtered);
+      })
+      .catch(() => setChildEvaluations([]));
+
+    // 2. Tải khoảnh khắc của lớp & của bé tại chính hoạt động này
+    let isMounted = true;
+    setLoadingMoments(true);
+    const childId = String(child.id || '').toLowerCase();
+    const classId = String(child.classId || (child as any).lopId || '').toLowerCase();
+    const className = String(child.lop || '').trim().toLowerCase();
+
+    const scheduleId = String(selectedItem.id || '').toLowerCase();
+    const linkedActId = String(selectedItem.activityId || '').toLowerCase();
+    const scheduleTitleRaw = String(selectedItem.title || '').trim().toLowerCase();
+    const scheduleTitleNorm = normalizeTitleForMatch(selectedItem.title);
+    const scheduleDate = String(selectedItem.date || '').slice(0, 10);
+
+    getAllLearningProducts(100)
+      .then((res) => {
+        if (!isMounted) return;
+        const rawList = Array.isArray(res) ? res : [];
+
+        const matched: MediaItem[] = rawList
+          .map((item: any) => {
+            const rawDesc = String(item.description || item.Description || '');
+            const itemChildId = String(item.childId || item.ChildId || '');
+            const meta = parseMomentDescription(rawDesc, itemChildId);
+
+            const mediaId = item.mediaId || item.MediaId || item.url || '';
+            const url = mediaId ? getMediaUrl(mediaId) : '';
+            const rawCreated = item.createdAtUtc || item.CreatedAtUtc || item.createdAt || '';
+            const itemDate = meta.date || toIsoDateString(rawCreated);
+
+            const isClassScope =
+              meta.scope === 'class' || (Boolean(classId) && itemChildId.toLowerCase() === classId);
+
+            return {
+              id: String(item.id || item.Id || ''),
+              url,
+              title: String(item.title || item.Title || meta.activityTitle || selectedItem.title),
+              description: meta.cleanText,
+              date: itemDate,
+              type: String(url).match(/\.(mp4|webm|ogg|mov)$/i) ? ('video' as const) : ('image' as const),
+              category: meta.category || 'Hoạt động học tập',
+              scope: isClassScope ? ('class' as const) : ('child' as const),
+              childId: String(meta.childId || itemChildId || ''),
+              childName: meta.childName || child.hoTen,
+              classId: String(meta.classId || (isClassScope ? itemChildId : '') || ''),
+              activityId: String(meta.activityId || item.activityId || item.ActivityId || ''),
+              activityTitle: meta.activityTitle || '',
+              likes: Number(item.likes || 0),
+              _rawDesc: rawDesc,
+              _itemClassName: (meta.className || '').trim().toLowerCase(),
+            };
+          })
+          .filter((m: any) => {
+            const mClassId = String(m.classId || '').toLowerCase();
+            const mChildId = String(m.childId || '').toLowerCase();
+
+            let belongsToChildOrClass = false;
+            if (m.scope === 'class') {
+              if (classId && (mClassId === classId || mChildId === classId)) belongsToChildOrClass = true;
+              else if (className && (m._itemClassName.includes(className) || m._rawDesc.toLowerCase().includes(className))) belongsToChildOrClass = true;
+            } else {
+              if (childId && (mChildId === childId || m._rawDesc.toLowerCase().includes(`[child:${childId}`))) belongsToChildOrClass = true;
+            }
+
+            if (!belongsToChildOrClass) return false;
+
+            const mActId = String(m.activityId || '').toLowerCase();
+            if (mActId && (mActId === scheduleId || (linkedActId && mActId === linkedActId))) {
+              return true;
+            }
+
+            const mActTitleNorm = normalizeTitleForMatch(m.activityTitle);
+            const mTitleNorm = normalizeTitleForMatch(m.title);
+
+            if (scheduleTitleNorm && scheduleTitleNorm.length >= 3) {
+              if (
+                mActTitleNorm &&
+                (mActTitleNorm.includes(scheduleTitleNorm) || scheduleTitleNorm.includes(mActTitleNorm))
+              ) {
+                return true;
+              }
+              if (
+                mTitleNorm &&
+                (mTitleNorm.includes(scheduleTitleNorm) || scheduleTitleNorm.includes(mTitleNorm))
+              ) {
+                return true;
+              }
+            }
+
+            if (scheduleTitleRaw && m._rawDesc.toLowerCase().includes(scheduleTitleRaw)) {
+              return true;
+            }
+
+            if (scheduleDate && m.date === scheduleDate && !mActId && !m.activityTitle) {
+              return true;
+            }
+
+            return false;
+          });
+
+        setActivityMoments(matched);
+      })
+      .catch(() => {
+        if (isMounted) setActivityMoments([]);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingMoments(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedItem, child.id, child.hoTen, child.classId, child.lop]);
+
+  const classActivityMoments = useMemo(
+    () => activityMoments.filter((m) => m.scope === 'class'),
+    [activityMoments]
+  );
+  const childActivityMoments = useMemo(
+    () => activityMoments.filter((m) => m.scope === 'child'),
+    [activityMoments]
+  );
+  const displayedMoments = useMemo(() => {
+    if (momentScopeFilter === 'class') return classActivityMoments;
+    if (momentScopeFilter === 'child') return childActivityMoments;
+    return activityMoments;
+  }, [activityMoments, classActivityMoments, childActivityMoments, momentScopeFilter]);
+
   const fetchParentSchedules = useCallback(
     async (params: {
       from: string;
@@ -37,65 +180,95 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
       type?: number;
       classId?: string;
     }): Promise<TimetableScheduleItem[]> => {
-      const q = new URLSearchParams()
-      if (params.from) q.set('from', params.from)
-      if (params.to) q.set('to', params.to)
-      if (params.type !== undefined) q.set('type', String(params.type))
-      const targetClass = child.lop || ''
-      if (targetClass) q.set('classId', targetClass)
+      const targetClassId = child.classId || (child as any).lopId || child.lop || '';
+      const q = new URLSearchParams();
+      if (params.from) q.set('from', params.from);
+      if (params.to) q.set('to', params.to);
+      if (params.type !== undefined) q.set('type', String(params.type));
+      if (targetClassId) q.set('classId', targetClassId);
+      if (child.id) q.set('childId', child.id);
 
-      // Call backend parent schedule API, fallback to standard schedule endpoint
-      const scheduleParams = {
-        from: params.from,
-        to: params.to,
-        type: params.type,
-        classId: targetClass || undefined,
+      let fetchedList: any[] = [];
+      try {
+        const localRes = await fetch(`/api/schedule?${q.toString()}`, { cache: 'no-store' });
+        if (localRes.ok) {
+          fetchedList = await localRes.json();
+        }
+      } catch (err) {
+        console.warn('Fallback to microservice schedule:', err);
       }
-      const res = await getParentSchedules(scheduleParams).catch(() =>
-        getSchedules(scheduleParams).catch(() => [])
-      )
 
-      const fetchedList = Array.isArray(res) ? res : []
-      const childClass = (child.lop || '').trim().toLowerCase()
+      if (!Array.isArray(fetchedList) || fetchedList.length === 0) {
+        const scheduleParams = {
+          from: params.from,
+          to: params.to,
+          type: params.type,
+          classId: targetClassId || undefined,
+        };
+        const res = await getParentSchedules(scheduleParams).catch(() =>
+          getSchedules(scheduleParams).catch(() => [])
+        );
+        fetchedList = Array.isArray(res) ? res : [];
+      }
 
-      // Parent only sees their child's class schedules and school-wide events
+      const childClass = (child.lop || '').trim().toLowerCase();
+
       const filtered = fetchedList.filter((x: any) => {
-        if (x.isSchoolWide) return true
-        if (!childClass) return true
-        const itemClass = (x.className || '').trim().toLowerCase()
-        return !itemClass || itemClass === childClass || itemClass === 'toàn trường'
-      })
+        if (x.isSchoolWide) return true;
+        const itemClassId = x.classId || x.lopId;
+        if (targetClassId && itemClassId && String(targetClassId).includes('-')) {
+          return String(itemClassId).toLowerCase() === String(targetClassId).toLowerCase();
+        }
+        if (!childClass) return true;
+        const itemClass = (x.className || x.tenLop || '').trim().toLowerCase();
+        return (
+          !itemClass ||
+          itemClass === childClass ||
+          itemClass === 'toàn trường' ||
+          itemClass.includes(childClass) ||
+          childClass.includes(itemClass)
+        );
+      });
 
-      return filtered.map((x: any) => ({
-        id: String(x.id || ''),
-        title: x.title || x.tieuDe || x.tenSuKien || 'Hoạt động của bé',
-        description: x.description || x.moTa || '',
-        type: Number(x.type ?? x.loai ?? 1),
-        date: String(x.date || x.ngay || new Date().toISOString()).slice(0, 10),
-        startTime: String(x.startTime || x.gioBatDau || '07:30').slice(0, 5),
-        endTime: String(x.endTime || x.gioKetThuc || '09:30').slice(0, 5),
-        location: x.location || x.diaDiem || 'Phòng học',
-        className: x.isSchoolWide ? 'Toàn trường' : child.lop || x.className || 'Lớp của bé',
-        status: x.status || 'Approved',
-        teacherName:
-          x.teacherName ||
-          x.teachers?.[0]?.teacherId ||
-          child.giaoVienChuNhiem ||
-          'Cô giáo phụ trách',
-        teachers: x.teachers,
-        isSchoolWide: Boolean(x.isSchoolWide),
-        isActivity: Boolean(x.isActivity || x.type === 2 || x.type === 4),
-        criteria: x.criteria,
-      }))
+      return filtered.map((x: any) => {
+        const subjectStr = String(x.teachers?.[0]?.subject || '');
+        const linkedActivityId = subjectStr.startsWith('ACT:')
+          ? subjectStr.slice(4)
+          : x.activityId || '';
+
+        return {
+          id: String(x.id || ''),
+          title: x.title || x.tieuDe || x.tenSuKien || 'Hoạt động của bé',
+          description: x.description || x.moTa || '',
+          type: Number(x.type ?? x.loai ?? 1),
+          date: String(x.date || x.ngay || new Date().toISOString()).slice(0, 10),
+          startTime: String(x.startTime || x.gioBatDau || '07:30').slice(0, 5),
+          endTime: String(x.endTime || x.gioKetThuc || '09:30').slice(0, 5),
+          location: x.location || x.diaDiem || 'Phòng học',
+          className: x.isSchoolWide ? 'Toàn trường' : child.lop || x.className || 'Lớp của bé',
+          status: x.status || 'Approved',
+          teacherName:
+            x.teacherName ||
+            x.teachers?.[0]?.teacherId ||
+            child.giaoVienChuNhiem ||
+            'Cô giáo phụ trách',
+          teachers: x.teachers,
+          isSchoolWide: Boolean(x.isSchoolWide),
+          isActivity: Boolean(x.isActivity || x.type === 2 || x.type === 4),
+          activityId: linkedActivityId,
+          criteria: x.criteria,
+        };
+      });
     },
-    [child.id, child.lop, child.giaoVienChuNhiem]
-  )
+    [child.id, child.lop, child.classId, child.giaoVienChuNhiem]
+  );
 
-  const teacherComment = childEvaluations.find((e: ActivityChildEvaluation) => Boolean(e.comment?.trim()))?.comment
+  const teacherComment = childEvaluations.find(
+    (e: ActivityChildEvaluation) => Boolean(e.comment?.trim())
+  )?.comment;
 
   return (
     <section className="space-y-4">
-      {/* Proposed Weekly Timetable Layout */}
       <WeeklyTimetable
         key={refreshKey}
         userRole="parent"
@@ -123,141 +296,29 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
         }
       />
 
-      {/* Parent Activity Detail & Evaluation Modal */}
-      {selectedItem && (
-        <Modal
-          isOpen={Boolean(selectedItem)}
-          onClose={() => setSelectedItem(null)}
-          title={`Chi tiết hoạt động: ${selectedItem.title}`}
-          subtitle={`${selectedItem.isSchoolWide ? 'Hoạt động toàn trường' : selectedItem.className} • Ngày ${selectedItem.date}`}
-          maxWidth="lg"
-        >
-          <div className="space-y-5 font-sans">
-            {/* Meta badges */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex items-center gap-2 rounded-xl bg-slate-50 p-2.5 border border-slate-100">
-                <Clock size={15} className="text-sky-600" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-medium">Thời gian</p>
-                  <p className="font-bold text-slate-700">
-                    {selectedItem.startTime} - {selectedItem.endTime}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 rounded-xl bg-slate-50 p-2.5 border border-slate-100">
-                <MapPin size={15} className="text-rose-500" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-medium">Địa điểm</p>
-                  <p className="font-bold text-slate-700">{selectedItem.location || 'Phòng học'}</p>
-                </div>
-              </div>
-            </div>
+      {/* Parent Activity Detail Modal */}
+      <ActivityDetailModal
+        selectedItem={selectedItem}
+        onClose={() => setSelectedItem(null)}
+        childName={child.hoTen}
+        activityMoments={activityMoments}
+        classActivityMoments={classActivityMoments}
+        childActivityMoments={childActivityMoments}
+        displayedMoments={displayedMoments}
+        loadingMoments={loadingMoments}
+        momentScopeFilter={momentScopeFilter}
+        setMomentScopeFilter={setMomentScopeFilter}
+        onPreviewMoment={setPreviewMoment}
+        childEvaluations={childEvaluations}
+        teacherComment={teacherComment}
+      />
 
-            {selectedItem.description && (
-              <div className="text-xs text-slate-600 bg-amber-50/50 p-3 rounded-xl border border-amber-100">
-                <span className="font-bold text-amber-900 block mb-1">Mô tả hoạt động:</span>
-                <p className="leading-relaxed">{selectedItem.description}</p>
-              </div>
-            )}
-
-            {/* Child Evaluation & Indicators */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                  <UserCheck size={15} className="text-emerald-600" />
-                  Kết quả rèn luyện của bé: <span className="text-sky-700">{child.hoTen}</span>
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    childEvaluations.length > 0
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-slate-100 text-slate-500'
-                  }`}
-                >
-                  {childEvaluations.length > 0 ? 'Đã ghi nhận' : 'Đang tiến hành'}
-                </span>
-              </div>
-
-              {childEvaluations.length > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    Các chỉ số tiêu chí đã đánh giá:
-                  </p>
-                  <div className="grid gap-2">
-                    {childEvaluations.map((ev: ActivityChildEvaluation, idx: number) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 border border-slate-100"
-                      >
-                        <span className="text-xs font-semibold text-slate-700">
-                          {ev.criterionId === 'crit_participate'
-                            ? 'Tham gia & Tương tác'
-                            : ev.criterionId === 'crit_skill'
-                            ? 'Kỹ năng thực hiện'
-                            : `Tiêu chí phát triển #${idx + 1}`}
-                        </span>
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold ${
-                            ev.result
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-rose-100 text-rose-800'
-                          }`}
-                        >
-                          {ev.result ? (
-                            <>
-                              <CheckCircle2 size={13} /> Đạt
-                            </>
-                          ) : (
-                            <>
-                              <XCircle size={13} /> Cần rèn luyện
-                            </>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-xl bg-slate-50 p-3.5 text-center text-xs text-slate-500 border border-dashed border-slate-200">
-                  <HelpCircle size={18} className="mx-auto text-slate-400 mb-1" />
-                  <p className="font-medium">Hoạt động đang diễn ra hoặc chưa có đánh giá riêng.</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Cô giáo sẽ cập nhật đánh giá và nhận xét của bé sau khi hoàn thành hoạt động.
-                  </p>
-                </div>
-              )}
-
-              {/* Teacher's comment for this activity */}
-              <div className="pt-2 border-t border-slate-100">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mb-1.5">
-                  <MessageSquare size={13} className="text-amber-500" />
-                  Nhận xét của cô về bé trong hoạt động:
-                </span>
-                {teacherComment ? (
-                  <div className="rounded-xl bg-amber-50/70 p-3 border border-amber-200/70 text-xs text-amber-950 italic leading-relaxed">
-                    “{teacherComment}”
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 italic">
-                    Chưa có nhận xét riêng từ cô giáo cho hoạt động này.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Modal action */}
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setSelectedItem(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition cursor-pointer"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      {/* Lightbox phóng to ảnh khoảnh khắc */}
+      <MomentLightbox
+        item={previewMoment}
+        isOpen={Boolean(previewMoment)}
+        onClose={() => setPreviewMoment(null)}
+      />
     </section>
-  )
+  );
 }

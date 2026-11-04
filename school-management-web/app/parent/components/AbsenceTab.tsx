@@ -1,12 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { CalendarOff, Send, Clock, CheckCircle2, XCircle, FileText, Loader2 } from "lucide-react";
 import { getLeavesByChild, submitLeave } from "@/services/leave";
 import { ChildInfo } from "../types";
 
+const parentLeaveSchema = z
+  .object({
+    fromDate: z.string().min(1, "Vui lòng chọn ngày bắt đầu nghỉ."),
+    toDate: z.string().min(1, "Vui lòng chọn ngày kết thúc nghỉ."),
+    reason: z.string().trim().min(3, "Lý do xin nghỉ tối thiểu 3 ký tự.").max(200, "Lý do tối đa 200 ký tự."),
+    note: z.string().max(500, "Ghi chú tối đa 500 ký tự.").optional(),
+  })
+  .refine((data) => new Date(data.fromDate) <= new Date(data.toDate), {
+    message: "Ngày kết thúc nghỉ không được trước ngày bắt đầu nghỉ.",
+    path: ["toDate"],
+  });
+
 export default function AbsenceTab({ child }: { child: ChildInfo }) {
   const [rows, setRows] = useState<any[]>([]);
+  const [historyStatusFilter, setHistoryStatusFilter] = useState<string>("ALL");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -30,14 +44,16 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
   }, [child.id]);
 
   const submit = async () => {
-    if (!form.reason.trim()) {
-      setMsg("Vui lòng nhập lý do nghỉ.");
+    const val = parentLeaveSchema.safeParse(form);
+    if (!val.success) {
+      setMsg(val.error.issues[0]?.message || "Thông tin đơn nghỉ không hợp lệ.");
       return;
     }
+
     setSubmitting(true);
     setMsg("");
     try {
-      await submitLeave({ subjectType: "Child", childId: child.id, ...form });
+      await submitLeave({ subjectType: "Child", childId: child.id, ...val.data });
       setMsg("Đã gửi đơn xin nghỉ thành công!");
       setForm({ ...form, note: "" });
       load();
@@ -145,9 +161,26 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
       {/* Danh sách đơn */}
       <div className="lg:w-7/12">
         <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
-          <h3 className="font-extrabold text-lg text-slate-800 mb-6 flex items-center gap-2">
-            <FileText size={20} className="text-slate-400" /> Lịch sử đơn từ
-          </h3>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-100">
+            <h3 className="font-extrabold text-lg text-slate-800 flex items-center gap-2">
+              <FileText size={20} className="text-slate-400" />
+              <span>Lịch sử đơn từ</span>
+            </h3>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">Lọc theo:</span>
+              <select
+                value={historyStatusFilter}
+                onChange={(e) => setHistoryStatusFilter(e.target.value)}
+                className="text-xs font-bold border border-slate-200 rounded-xl px-2.5 py-1.5 bg-slate-50 text-slate-700 outline-none"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã chấp thuận</option>
+                <option value="rejected">Từ chối</option>
+              </select>
+            </div>
+          </div>
 
           {loading ? (
             <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-indigo-500" /></div>
@@ -158,7 +191,16 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
             </div>
           ) : (
             <div className="space-y-4">
-              {rows.map((x) => {
+              {rows
+                .filter((r) => {
+                  if (historyStatusFilter === "ALL") return true;
+                  const st = String(r.status ?? "").toLowerCase();
+                  if (historyStatusFilter === "pending") return st === "0" || st === "pending";
+                  if (historyStatusFilter === "approved") return st === "1" || st === "approved";
+                  if (historyStatusFilter === "rejected") return st === "2" || st === "rejected";
+                  return true;
+                })
+                .map((x) => {
                 const status = getStatusDisplay(x.status);
                 return (
                   <div key={x.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

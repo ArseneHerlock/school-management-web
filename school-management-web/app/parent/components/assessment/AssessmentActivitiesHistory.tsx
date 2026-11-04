@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Calendar, CheckCircle2, XCircle, MessageSquare } from 'lucide-react'
-import { AssessmentItem } from '@/lib/development'
+import { AssessmentItem } from "@/services/development"
 
 interface AssessmentActivitiesHistoryProps {
   assessments: AssessmentItem[]

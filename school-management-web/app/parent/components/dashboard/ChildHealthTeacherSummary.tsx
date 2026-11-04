@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { HeartPulse, UserRound } from 'lucide-react'
-import { calculateBmi, classifyWhoBmi } from '@/app/teacher/health/components/whoStandards'
+import { evaluateWhoMetrics } from '@/app/teacher/health/components/whoStandards'
 
 interface ChildHealthTeacherSummaryProps {
   healthRecord: any
@@ -21,9 +21,18 @@ export const ChildHealthTeacherSummary: React.FC<ChildHealthTeacherSummaryProps>
   onNavigateHealth,
   onNavigateMessages,
 }) => {
-  const computedBmi =
-    healthRecord?.bmi ?? calculateBmi(healthRecord?.canNang, healthRecord?.chieuCao)
-  const whoClass = classifyWhoBmi(computedBmi)
+  const who = healthRecord?.canNang && healthRecord?.chieuCao
+    ? evaluateWhoMetrics(
+        healthRecord.canNang,
+        healthRecord.chieuCao,
+        healthRecord.ngaySinh,
+        healthRecord.gioiTinh,
+        healthRecord.ngayDo || healthRecord.ngayKham
+      )
+    : null;
+
+  const displayStatus = healthRecord?.ketLuanTongThe || who?.trangThaiTongThe || (healthRecord?.canNang ? 'Bình thường' : 'Chưa có số đo');
+  const isAlert = who?.canCanThiep || (healthRecord?.haz && healthRecord.haz < -2) || (healthRecord?.waz && healthRecord.waz < -2) || (healthRecord?.whz && (healthRecord.whz < -2 || healthRecord.whz > 2));
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -34,11 +43,15 @@ export const ChildHealthTeacherSummary: React.FC<ChildHealthTeacherSummaryProps>
               <HeartPulse size={16} className="text-rose-500" />
               <span>Sức khỏe thể chất gần nhất</span>
             </h4>
-            {computedBmi ? (
+            {healthRecord?.canNang ? (
               <span
-                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${whoClass.badgeBg} ${whoClass.textClass} ${whoClass.borderClass}`}
+                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                  isAlert
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                }`}
               >
-                {whoClass.shortLabel}
+                Chuẩn WHO 2006
               </span>
             ) : null}
           </div>
@@ -50,33 +63,27 @@ export const ChildHealthTeacherSummary: React.FC<ChildHealthTeacherSummaryProps>
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-xl bg-slate-50 p-3">
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Chiều cao</p>
-            <p className="mt-1 text-lg font-black text-slate-800">
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3 text-center min-w-0">
+          <div className="rounded-xl bg-slate-50 p-2.5 sm:p-3 min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">Chiều cao</p>
+            <p className="mt-1 text-base sm:text-lg font-black text-slate-800 truncate">
               {healthRecord?.chieuCao ? `${healthRecord.chieuCao} cm` : '—'}
             </p>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3">
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Cân nặng</p>
-            <p className="mt-1 text-lg font-black text-slate-800">
+          <div className="rounded-xl bg-slate-50 p-2.5 sm:p-3 min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">Cân nặng</p>
+            <p className="mt-1 text-base sm:text-lg font-black text-slate-800 truncate">
               {healthRecord?.canNang ? `${healthRecord.canNang} kg` : '—'}
             </p>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3">
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Chỉ số BMI</p>
+          <div className="rounded-xl bg-slate-50 p-2.5 sm:p-3 min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">Thể trạng WHO</p>
             <p
-              className={`mt-1 text-lg font-black ${
-                whoClass.code === 'BINH_THUONG'
-                  ? 'text-emerald-600'
-                  : whoClass.code === 'CAN_NANG_THAP'
-                  ? 'text-amber-600'
-                  : whoClass.code === 'TIEN_BEO_PHI'
-                  ? 'text-orange-600'
-                  : 'text-rose-600'
+              className={`mt-1 text-xs font-black truncate ${
+                isAlert ? 'text-amber-600' : 'text-emerald-600'
               }`}
             >
-              {computedBmi ? Number(computedBmi).toFixed(1) : '—'}
+              {displayStatus}
             </p>
           </div>
         </div>

@@ -12,8 +12,8 @@ export default function NewsTab({ newsList }: NewsTabProps) {
     <section className="space-y-4">
       <NewsListView
         role="parent"
-        pageTitle="Tin tức & Sự kiện Nhà trường"
-        pageSubtitle="Cập nhật tin tức, sự kiện và thông báo chính thức từ Trường Mầm non Bé Ngoan."
+        pageTitle="Tin tức & Thông báo Nhà trường"
+        pageSubtitle="Cập nhật tin tức và thông báo chính thức từ Trường Mầm non Bé Ngoan."
       />
     </section>
   );

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MessageCircle, Phone, Wifi, WifiOff, X } from 'lucide-react'
-import { currentUser, createHubConnection } from '@/lib/api'
+import { currentUser, createHubConnection, getStaff } from "@/services"
 import {
   getMyConversations,
   getOrCreateConversation,
@@ -81,13 +81,32 @@ export default function MessagesTab({
   const openTeacher = async (t: Teacher) => {
     try {
       setError('')
-      let c = conversations.find((x) => users(x).includes(t.accountId))
+      let accountId = t.accountId
+      if (!accountId) {
+        const staffList = await getStaff().catch(() => [])
+        const matched = staffList.find((s) => {
+          const sName = String(s.fullName || (s as any).FullName || '').trim().toLowerCase()
+          const tName = t.name.trim().toLowerCase()
+          return (
+            sName &&
+            tName &&
+            (sName === tName ||
+              sName.replace(/^(cô|thầy)\s+/i, '') === tName.replace(/^(cô|thầy)\s+/i, ''))
+          )
+        })
+        if (matched?.userId) {
+          accountId = String(matched.userId).toLowerCase().trim()
+          t.accountId = accountId
+        }
+      }
+
+      let c = conversations.find((x) => users(x).includes(accountId))
       if (!c) {
-        if (!t.accountId) {
+        if (!accountId) {
           setError('Giáo viên chưa có tài khoản liên lạc.')
           return
         }
-        c = await getOrCreateConversation(t.accountId)
+        c = await getOrCreateConversation(accountId)
         setConversations((x) => [...x, c!])
       }
       setTeacher(t)

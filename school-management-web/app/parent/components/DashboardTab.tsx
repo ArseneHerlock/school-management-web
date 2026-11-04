@@ -1,16 +1,8 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
-import {
-  CalendarDays,
-  Sparkles,
-  Loader2,
-  BellRing,
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-} from 'lucide-react'
-import { getChildAttendanceHistory, getParentSchedules, getHealthRecords } from '@/services'
+import React, { useEffect, useMemo, useState } from 'react';
+import { Loader2, Sparkles, Award, HeartPulse } from 'lucide-react';
+import { getChildAttendanceHistory, getParentSchedules, getHealthRecords } from '@/services';
 import {
   getChildAssessmentHistory,
   getAssessments,
@@ -19,48 +11,54 @@ import {
   CriterionItem,
   ActivityItem,
   AssessmentItem,
-} from '@/lib/development'
+} from '@/services/development';
 import {
   fetchParentNotifications,
   AppNotification,
   REALTIME_NOTIFICATION_EVENT,
-} from '@/services/notifications'
-import { ChildInfo, ParentProfile } from '../types'
-import { AttendanceStatCards } from './dashboard/AttendanceStatCards'
-import { DevelopmentProgressCard } from './dashboard/DevelopmentProgressCard'
-import { ChildHealthTeacherSummary } from './dashboard/ChildHealthTeacherSummary'
+} from '@/services/notifications';
+import { ChildInfo, ParentProfile } from '../types';
+import { AttendanceStatCards } from './dashboard/AttendanceStatCards';
+import { DevelopmentProgressCard } from './dashboard/DevelopmentProgressCard';
+import { ChildHealthTeacherSummary } from './dashboard/ChildHealthTeacherSummary';
+import { ParentQuickActionsDock } from './dashboard/ParentQuickActionsDock';
+import { ChildDailyStoryFeed } from './dashboard/ChildDailyStoryFeed';
+import { DashboardHeroBanner } from './dashboard/DashboardHeroBanner';
+import { DashboardChildSelector } from './dashboard/DashboardChildSelector';
+import { ChildAlertsBanner } from './dashboard/ChildAlertsBanner';
 
 export default function DashboardTab({
   childrenData,
   parent,
   onNavigateTab,
 }: {
-  childrenData: ChildInfo[]
-  parent: ParentProfile
-  onNavigateTab: (tab: string) => void
+  childrenData: ChildInfo[];
+  parent: ParentProfile;
+  onNavigateTab: (tab: string) => void;
 }) {
-  const [selectedChildId, setSelectedChildId] = useState<string>(childrenData[0]?.id || '')
-  const [loading, setLoading] = useState(false)
+  const [selectedChildId, setSelectedChildId] = useState<string>(childrenData[0]?.id || '');
+  const [loading, setLoading] = useState(false);
 
-  const [attendanceRecords, setAttendanceRecords] = useState<any[]>([])
-  const [classSchedules, setClassSchedules] = useState<any[]>([])
-  const [childAssessments, setChildAssessments] = useState<AssessmentItem[]>([])
-  const [systemCriteria, setSystemCriteria] = useState<CriterionItem[]>([])
-  const [systemActivities, setSystemActivities] = useState<ActivityItem[]>([])
-  const [healthRecord, setHealthRecord] = useState<any>(null)
-  const [childAlerts, setChildAlerts] = useState<AppNotification[]>([])
+  const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
+  const [classSchedules, setClassSchedules] = useState<any[]>([]);
+  const [childAssessments, setChildAssessments] = useState<AssessmentItem[]>([]);
+  const [systemCriteria, setSystemCriteria] = useState<CriterionItem[]>([]);
+  const [systemActivities, setSystemActivities] = useState<ActivityItem[]>([]);
+  const [healthRecord, setHealthRecord] = useState<any>(null);
+  const [childAlerts, setChildAlerts] = useState<AppNotification[]>([]);
+  const [fcmLatest, setFcmLatest] = useState<any>(null);
 
   const activeChild = useMemo(() => {
-    return childrenData.find((c) => c.id === selectedChildId) || childrenData[0]
-  }, [childrenData, selectedChildId])
+    return childrenData.find((c) => c.id === selectedChildId) || childrenData[0];
+  }, [childrenData, selectedChildId]);
 
   useEffect(() => {
-    if (!activeChild?.id) return
-    setLoading(true)
+    if (!activeChild?.id) return;
+    setLoading(true);
 
     const fetchChildDetails = async () => {
       try {
-        const [attRes, schRes, hisRes, criRes, actRes, heaRes] = await Promise.allSettled([
+        const [attRes, schRes, hisRes, criRes, actRes, heaRes, fcmRes, actCritRes] = await Promise.allSettled([
           getChildAttendanceHistory(activeChild.id),
           getParentSchedules({
             classId: activeChild.classId || '',
@@ -71,288 +69,297 @@ export default function DashboardTab({
           getCriteria({ page: 1, pageSize: 500 }),
           getActivities({ page: 1, pageSize: 200 }),
           getHealthRecords(activeChild.id),
-        ])
+          fetch(`/api/fcm?childId=${activeChild.id}`).then((r) => (r.ok ? r.json() : null)),
+          fetch('/api/activities-with-criteria').then((r) => (r.ok ? r.json() : [])),
+        ]);
+
+        if (fcmRes.status === 'fulfilled' && fcmRes.value) {
+          const fcmData = fcmRes.value;
+          setFcmLatest(
+            fcmData.latest ||
+              (fcmData.history?.length ? fcmData.history[fcmData.history.length - 1] : null)
+          );
+        } else {
+          setFcmLatest(null);
+        }
 
         if (attRes.status === 'fulfilled') {
-          const attendancePayload: any = attRes.value
-          const list = attendancePayload?.data || attendancePayload || []
-          setAttendanceRecords(Array.isArray(list) ? list : [])
+          const attendancePayload: any = attRes.value;
+          const list = attendancePayload?.data || attendancePayload || [];
+          setAttendanceRecords(Array.isArray(list) ? list : []);
         }
 
         if (schRes.status === 'fulfilled') {
-          setClassSchedules(Array.isArray(schRes.value) ? schRes.value : [])
+          setClassSchedules(Array.isArray(schRes.value) ? schRes.value : []);
         }
 
         if (hisRes.status === 'fulfilled') {
-          let assList = hisRes.value
+          let assList = hisRes.value;
           if (assList.length === 0) {
             try {
-              const fallback = await getAssessments({ childId: activeChild.id, page: 1, pageSize: 200 })
-              assList = fallback.items
+              const fallback = await getAssessments({
+                childId: activeChild.id,
+                page: 1,
+                pageSize: 200,
+              });
+              assList = fallback.items;
             } catch {}
           }
-          setChildAssessments(assList)
+          setChildAssessments(assList);
         }
 
-        if (criRes.status === 'fulfilled') setSystemCriteria(criRes.value.items)
-        if (actRes.status === 'fulfilled') setSystemActivities(actRes.value.items)
+        if (
+          actCritRes.status === 'fulfilled' &&
+          Array.isArray(actCritRes.value) &&
+          actCritRes.value.length > 0
+        ) {
+          const actCrits = actCritRes.value;
+          setSystemActivities(actCrits);
+          const allActivityCriteria = actCrits.flatMap((a: any) =>
+            (a.criteria || []).map((c: any) => ({
+              ...c,
+              activityId: a.id,
+              activityName: a.name,
+            }))
+          );
+          if (allActivityCriteria.length > 0) {
+            setSystemCriteria(allActivityCriteria);
+          } else if (criRes.status === 'fulfilled') {
+            setSystemCriteria(criRes.value.items);
+          }
+        } else {
+          if (criRes.status === 'fulfilled') setSystemCriteria(criRes.value.items);
+          if (actRes.status === 'fulfilled') setSystemActivities(actRes.value.items);
+        }
         if (heaRes.status === 'fulfilled' && Array.isArray(heaRes.value) && heaRes.value.length > 0) {
-          setHealthRecord(heaRes.value[0])
+          setHealthRecord(heaRes.value[0]);
         }
 
-        const alerts = await fetchParentNotifications([activeChild]).catch(() => [])
-        setChildAlerts(alerts)
+        const alerts = await fetchParentNotifications([activeChild]).catch(() => []);
+        setChildAlerts(alerts);
       } catch {
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    void fetchChildDetails()
+    void fetchChildDetails();
 
     const handleRealtimeRefresh = () => {
-      if (!activeChild?.id) return
+      if (!activeChild?.id) return;
       fetchParentNotifications([activeChild])
         .then((alerts) => setChildAlerts(alerts))
-        .catch(() => {})
+        .catch(() => {});
       getChildAttendanceHistory(activeChild.id)
         .then((res) => {
-          const list = res || []
-          if (Array.isArray(list)) setAttendanceRecords(list)
+          const list = res || [];
+          if (Array.isArray(list)) setAttendanceRecords(list);
         })
-        .catch(() => {})
-    }
+        .catch(() => {});
+    };
 
-    window.addEventListener(REALTIME_NOTIFICATION_EVENT, handleRealtimeRefresh)
+    window.addEventListener(REALTIME_NOTIFICATION_EVENT, handleRealtimeRefresh);
     return () => {
-      window.removeEventListener(REALTIME_NOTIFICATION_EVENT, handleRealtimeRefresh)
-    }
-  }, [activeChild?.id, activeChild?.classId])
+      window.removeEventListener(REALTIME_NOTIFICATION_EVENT, handleRealtimeRefresh);
+    };
+  }, [activeChild?.id, activeChild?.classId]);
 
   const attendanceStats = useMemo(() => {
-    let present = 0
-    let late = 0
-    let absent = 0
+    let present = 0;
+    let late = 0;
+    let absent = 0;
 
     attendanceRecords.forEach((r) => {
       if (r.trangThai === 'Có mặt') {
-        present++
-        if (r.gioDen && r.gioDen > '08:30:00') late++
+        present++;
+        if (r.gioDen && r.gioDen > '08:30:00') late++;
       } else {
-        absent++
+        absent++;
       }
-    })
+    });
 
-    const totalScheduled = classSchedules.length > 0 ? classSchedules.length : attendanceRecords.length
-    const rate = totalScheduled > 0 ? Math.min(100, Math.round((present / totalScheduled) * 100)) : 100
+    const totalScheduled =
+      classSchedules.length > 0 ? classSchedules.length : attendanceRecords.length;
+    const rate =
+      totalScheduled > 0 ? Math.min(100, Math.round((present / totalScheduled) * 100)) : 100;
 
-    return { present, late, absent, totalScheduled, rate }
-  }, [attendanceRecords, classSchedules])
+    return { present, late, absent, totalScheduled, rate };
+  }, [attendanceRecords, classSchedules]);
 
   const developmentStats = useMemo(() => {
     const activityIds = new Set(
-      childAssessments.filter((a) => Boolean(a.activityId)).map((a) => a.activityId as string)
-    )
-    const activitiesCount = activityIds.size
+      childAssessments
+        .filter((a) => Boolean(a.activityId))
+        .map((a) => a.activityId as string)
+    );
+    const activitiesCount =
+      activityIds.size || (systemActivities.length > 0 ? systemActivities.length : 15);
 
-    const criteriaMap = new Map<string, boolean>()
+    const criteriaMap = new Map<string, boolean>();
     childAssessments.forEach((a) => {
-      criteriaMap.set(a.developmentCriterionId, a.result)
-    })
+      criteriaMap.set(a.developmentCriterionId, a.result);
+    });
 
-    let passCount = 0
-    let failCount = 0
+    let passCount = 0;
+    let failCount = 0;
     criteriaMap.forEach((res) => {
-      if (res) passCount++
-      else failCount++
-    })
+      if (res) passCount++;
+      else failCount++;
+    });
 
-    const totalCrit = systemCriteria.length
-    const unassessedCount = Math.max(0, totalCrit - (passCount + failCount))
-    const passRate = passCount + failCount > 0 ? Math.round((passCount / (passCount + failCount)) * 100) : 0
+    const totalCrit =
+      systemCriteria.length > 0 ? systemCriteria.length : passCount + failCount || 60;
+    const unassessedCount = Math.max(0, totalCrit - (passCount + failCount));
+    const passRate =
+      passCount + failCount > 0
+        ? Math.round((passCount / (passCount + failCount)) * 100)
+        : 0;
 
-    return { activitiesCount, passCount, failCount, unassessedCount, totalCrit, passRate }
-  }, [childAssessments, systemCriteria])
+    return { activitiesCount, passCount, failCount, unassessedCount, totalCrit, passRate };
+  }, [childAssessments, systemCriteria, systemActivities]);
+
+  const [activeTab, setActiveTab] = useState<'today' | 'assessment' | 'health'>('today');
+
+  const parentTabs = [
+    {
+      id: 'today' as const,
+      label: 'Hôm nay của bé',
+      mobileLabel: 'Hôm nay',
+      icon: Sparkles,
+      badge: childAlerts.length > 0 ? `${childAlerts.length}` : undefined,
+    },
+    {
+      id: 'assessment' as const,
+      label: 'Đánh giá 5 lĩnh vực',
+      mobileLabel: 'Đánh giá',
+      icon: Award,
+    },
+    {
+      id: 'health' as const,
+      label: 'Sức khỏe WHO & Cô',
+      mobileLabel: 'Sức khỏe',
+      icon: HeartPulse,
+    },
+  ];
 
   return (
-    <section className="space-y-4 sm:space-y-6">
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-700 p-4 sm:p-6 lg:p-8 text-white shadow-lg shadow-blue-500/15">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-white/10 blur-3xl mix-blend-overlay"></div>
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-400/20 blur-3xl mix-blend-overlay"></div>
+    <section className="space-y-4 sm:space-y-6 max-w-full min-w-0">
+      {/* 1. Header Chào mừng Phụ huynh */}
+      <DashboardHeroBanner
+        parentName={parent.hoTen}
+        onNavigateTab={onNavigateTab}
+      />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
-          <div>
-            <p className="text-blue-200 font-bold tracking-wide uppercase text-[10px] sm:text-xs mb-1">
-              CỔNG THÔNG TIN PHỤ HUYNH
-            </p>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
-              Xin chào, {parent.hoTen || 'Phụ huynh'}!
-            </h2>
-            <p className="text-blue-100 mt-1 sm:mt-2 text-xs sm:text-sm max-w-lg leading-relaxed">
-              Theo dõi toàn diện quá trình điểm danh chuyên cần, lịch học và các đánh giá phát triển của con tại trường mầm non.
-            </p>
-          </div>
+      {/* 2. Bộ chọn Bé (nếu gia đình có nhiều trẻ theo học) */}
+      <DashboardChildSelector
+        childrenData={childrenData}
+        selectedChildId={activeChild?.id}
+        onSelectChild={setSelectedChildId}
+      />
 
-          <div className="flex flex-wrap gap-2">
+      {/* 3. Bàn Tiện Ích Phụ Huynh 1-Chạm (8 Icons: Nghỉ học, Dặn thuốc, Đón hộ, Học phí...) */}
+      <ParentQuickActionsDock onNavigateTab={onNavigateTab} />
+
+      {/* 4. Bộ Chuyển Chuyên Mục Thông Minh (Segmented Tabs - Co giãn hoàn hảo trên mọi kích thước màn hình) */}
+      <div className="grid grid-cols-3 gap-1 sm:gap-2 p-1.5 bg-blue-100/60 rounded-2xl max-w-full">
+        {parentTabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
             <button
-              onClick={() => onNavigateTab('attendance')}
-              className="flex items-center gap-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold transition shadow-xs cursor-pointer"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`inline-flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1 sm:px-3 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap min-w-0 ${
+                isActive
+                  ? 'bg-white text-blue-700 shadow-sm shadow-blue-300/40'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+              }`}
             >
-              <CalendarDays size={15} />
-              <span>Xem Điểm danh</span>
+              <Icon size={14} className={`shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+              <span className="truncate">
+                <span className="sm:hidden">{tab.mobileLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+              </span>
+              {tab.badge && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0 ${
+                  isActive ? 'bg-rose-100 text-rose-700' : 'bg-blue-200 text-blue-800'
+                }`}>
+                  {tab.badge}
+                </span>
+              )}
             </button>
-            <button
-              onClick={() => onNavigateTab('assessment')}
-              className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-50 transition shadow-xs cursor-pointer"
-            >
-              <Sparkles size={15} />
-              <span>Đánh giá của con</span>
-            </button>
-          </div>
-        </div>
+          );
+        })}
       </div>
-
-      {childrenData.length > 1 && (
-        <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-blue-100 shadow-xs overflow-x-auto">
-          <span className="text-xs font-bold text-slate-500 shrink-0 ml-1">Chọn bé theo dõi:</span>
-          <div className="flex gap-2">
-            {childrenData.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedChildId(c.id)}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-extrabold transition-all cursor-pointer ${
-                  c.id === activeChild?.id
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                    : 'bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-700'
-                }`}
-              >
-                <div
-                  className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] ${
-                    c.id === activeChild?.id ? 'bg-white text-blue-600' : 'bg-slate-200 text-slate-600'
-                  }`}
-                >
-                  {c.avatar}
-                </div>
-                <span>{c.hoTen}</span>
-                <span className="text-[10px] opacity-80">({c.lop})</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-xs border border-blue-50">
           <Loader2 className="animate-spin text-blue-500 mb-3" size={36} />
-          <p className="text-slate-500 font-bold text-sm">Đang tổng hợp dữ liệu của bé {activeChild?.hoTen}...</p>
+          <p className="text-slate-500 font-bold text-sm">
+            Đang tổng hợp dữ liệu của bé {activeChild?.hoTen}...
+          </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Bảng Cảnh báo & Thông báo quan trọng theo thời gian thực của bé */}
-          {childAlerts.length > 0 && (
-            <div className="rounded-3xl border border-indigo-100 bg-white p-4 sm:p-5 shadow-xs">
-              <div className="mb-3.5 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-200">
-                    <BellRing size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-800">
-                      Cảnh báo & Thông báo mới của bé {activeChild?.hoTen}
-                    </h3>
-                    <p className="text-[11px] text-slate-500">
-                      Cập nhật trực tiếp từ điểm danh, đánh giá hoạt động, sức khỏe và học phí
-                    </p>
-                  </div>
-                </div>
-                <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-extrabold text-indigo-700">
-                  {childAlerts.length} thông báo
-                </span>
-              </div>
+        <div className="space-y-4 sm:space-y-6">
+          {activeTab === 'today' && (
+            <>
+              {/* Cảnh báo & Thông báo quan trọng */}
+              <ChildAlertsBanner
+                childAlerts={childAlerts}
+                childName={activeChild?.hoTen}
+                onNavigateTab={onNavigateTab}
+              />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                {childAlerts.slice(0, 6).map((alertItem) => {
-                  const isDanger = alertItem.severity === 'danger'
-                  const isWarning = alertItem.severity === 'warning'
-                  const isSuccess = alertItem.severity === 'success'
+              {/* Nhật ký Hôm nay ở trường của con */}
+              <ChildDailyStoryFeed
+                childName={activeChild?.hoTen || 'Bé'}
+                className={activeChild?.lop}
+                todayAttendance={attendanceRecords.find(
+                  (r) =>
+                    String(r.ngay || '').slice(0, 10) === new Date().toISOString().slice(0, 10)
+                )}
+                todaySchedules={classSchedules}
+              />
 
-                  const boxClass = isDanger
-                    ? 'border-rose-200 bg-rose-50/70 hover:bg-rose-50'
-                    : isWarning
-                    ? 'border-amber-200 bg-amber-50/70 hover:bg-amber-50'
-                    : isSuccess
-                    ? 'border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50'
-                    : 'border-slate-200 bg-slate-50/70 hover:bg-slate-100/70'
-
-                  const badgeClass = isDanger
-                    ? 'bg-rose-600 text-white'
-                    : isWarning
-                    ? 'bg-amber-500 text-white'
-                    : isSuccess
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-blue-600 text-white'
-
-                  return (
-                    <div
-                      key={alertItem.id}
-                      onClick={() => {
-                        if (alertItem.targetTab) onNavigateTab(alertItem.targetTab)
-                      }}
-                      className={`group flex items-start justify-between gap-3 rounded-2xl border p-3.5 transition cursor-pointer ${boxClass}`}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          {alertItem.badgeText && (
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase ${badgeClass}`}
-                            >
-                              {(isDanger || isWarning) && <AlertTriangle size={10} />}
-                              {isSuccess && <CheckCircle2 size={10} />}
-                              <span>{alertItem.badgeText}</span>
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs font-extrabold text-slate-800 line-clamp-1">
-                          {alertItem.title}
-                        </p>
-                        <p className="mt-1 text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                          {alertItem.message}
-                        </p>
-                      </div>
-                      <ChevronRight
-                        size={16}
-                        className="mt-1 shrink-0 text-slate-400 group-hover:translate-x-0.5 group-hover:text-slate-700 transition"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+              {/* Thống kê Chuyên cần & Điểm danh */}
+              <AttendanceStatCards
+                stats={attendanceStats}
+                childName={activeChild?.hoTen}
+                className={activeChild?.lop}
+                onNavigateDetail={() => onNavigateTab('attendance')}
+              />
+            </>
           )}
 
-          <AttendanceStatCards
-            stats={attendanceStats}
-            childName={activeChild?.hoTen}
-            className={activeChild?.lop}
-            onNavigateDetail={() => onNavigateTab('attendance')}
-          />
+          {activeTab === 'assessment' && (
+            <>
+              {/* Tiến trình Phát triển 5 Lĩnh vực */}
+              <DevelopmentProgressCard
+                stats={developmentStats}
+                childName={activeChild?.hoTen}
+                clusterId={fcmLatest?.ClusterId || fcmLatest?.clusterId}
+                clusterName={fcmLatest?.ClusterName || fcmLatest?.clusterName}
+                trend={fcmLatest?.Trend || fcmLatest?.trend}
+                onNavigateDetail={() => onNavigateTab('assessment')}
+              />
+            </>
+          )}
 
-          <DevelopmentProgressCard
-            stats={developmentStats}
-            childName={activeChild?.hoTen}
-            onNavigateDetail={() => onNavigateTab('assessment')}
-          />
-
-          <ChildHealthTeacherSummary
-            healthRecord={healthRecord}
-            teacherName={activeChild?.giaoVienChuNhiem}
-            teacherPhone={activeChild?.sdtGiaoVien}
-            className={activeChild?.lop}
-            onNavigateHealth={() => onNavigateTab('health')}
-            onNavigateMessages={() => onNavigateTab('messages')}
-          />
+          {activeTab === 'health' && (
+            <>
+              {/* Tóm tắt Sức khỏe WHO & Thông tin Giáo viên Chủ nhiệm */}
+              <ChildHealthTeacherSummary
+                healthRecord={healthRecord}
+                teacherName={activeChild?.giaoVienChuNhiem}
+                teacherPhone={activeChild?.sdtGiaoVien}
+                className={activeChild?.lop}
+                onNavigateHealth={() => onNavigateTab('health')}
+                onNavigateMessages={() => onNavigateTab('messages')}
+              />
+            </>
+          )}
         </div>
       )}
     </section>
-  )
+  );
 }
