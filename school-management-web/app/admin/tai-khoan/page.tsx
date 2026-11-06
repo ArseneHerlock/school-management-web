@@ -7,12 +7,12 @@ import {
   updateUserRole,
   resetUserPassword,
 } from "@/services";
-import LoadingScreen from "@/app/components/LoadingScreen";
 import { UserAccount } from "./types";
 import { loadAllUserAccounts } from "./accountLoaders";
 import { TaiKhoanToolbar } from "./components/TaiKhoanToolbar";
 import { TaiKhoanTable } from "./components/TaiKhoanTable";
 import TaiKhoanStats from "./components/TaiKhoanStats";
+import TaiKhoanSkeleton from "./components/TaiKhoanSkeleton";
 
 export default function TaiKhoanPage() {
   const [userAccountsList, setUserAccountsList] = useState<UserAccount[]>([]);
@@ -222,16 +222,6 @@ export default function TaiKhoanPage() {
     }
   }
 
-  if (isLoading && userAccountsList.length === 0) {
-    return (
-      <LoadingScreen
-        message="Đang tải danh sách tài khoản..."
-        subMessage="Đang đồng bộ dữ liệu người dùng"
-        theme="rose"
-      />
-    );
-  }
-
   return (
     <section className="space-y-5">
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
@@ -241,12 +231,18 @@ export default function TaiKhoanPage() {
         </div>
         <button
           onClick={loadUserAccountsData}
-          className="admin-btn admin-btn-secondary cursor-pointer"
+          disabled={isLoading}
+          className="admin-btn admin-btn-secondary cursor-pointer disabled:opacity-70"
         >
           <RotateCcw size={16} className={isLoading ? "animate-spin" : ""} />{" "}
           Làm mới danh sách
         </button>
       </header>
+
+      {/* Progress bar during background refresh */}
+      {isLoading && userAccountsList.length > 0 && (
+        <div className="h-0.5 w-full bg-gradient-to-r from-rose-500 via-pink-400 to-rose-500 animate-pulse rounded-full" />
+      )}
 
       {notificationMessage && (
         <div className="admin-alert flex items-center justify-between">
@@ -260,38 +256,44 @@ export default function TaiKhoanPage() {
         </div>
       )}
 
-      <TaiKhoanStats accounts={userAccountsList} />
+      {isLoading && userAccountsList.length === 0 ? (
+        <TaiKhoanSkeleton />
+      ) : (
+        <>
+          <TaiKhoanStats accounts={userAccountsList} />
 
-      <TaiKhoanToolbar
-        q={searchKeyword}
-        setQ={setSearchKeyword}
-        role={selectedRoleFilter}
-        setRole={setSelectedRoleFilter}
-        status={selectedStatusFilter}
-        setStatus={setSelectedStatusFilter}
-        filteredCount={filteredAccounts.length}
-        selectedCount={selectedAccountIds.length}
-        onBulkUnlock={() => handleBulkAction("unlock")}
-        onBulkLock={() => handleBulkAction("lock")}
-        onBulkReset={() => handleBulkAction("reset")}
-      />
+          <TaiKhoanToolbar
+            q={searchKeyword}
+            setQ={setSearchKeyword}
+            role={selectedRoleFilter}
+            setRole={setSelectedRoleFilter}
+            status={selectedStatusFilter}
+            setStatus={setSelectedStatusFilter}
+            filteredCount={filteredAccounts.length}
+            selectedCount={selectedAccountIds.length}
+            onBulkUnlock={() => handleBulkAction("unlock")}
+            onBulkLock={() => handleBulkAction("lock")}
+            onBulkReset={() => handleBulkAction("reset")}
+          />
 
-      <TaiKhoanTable
-        rows={paginatedAccounts}
-        totalItems={filteredAccounts.length}
-        selected={selectedAccountIds}
-        allOnPage={isAllSelectedOnCurrentPage}
-        page={currentPage}
-        pageSize={pageSize}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={setPageSize}
-        onToggle={handleToggleAccountSelection}
-        onToggleAll={handleToggleAllOnPage}
-        onChangeRole={handleChangeAccountRole}
-        onChangeStatus={handleChangeAccountStatus}
-        onResetPassword={handleResetAccountPassword}
-      />
+          <TaiKhoanTable
+            rows={paginatedAccounts}
+            totalItems={filteredAccounts.length}
+            selected={selectedAccountIds}
+            allOnPage={isAllSelectedOnCurrentPage}
+            page={currentPage}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            onToggle={handleToggleAccountSelection}
+            onToggleAll={handleToggleAllOnPage}
+            onChangeRole={handleChangeAccountRole}
+            onChangeStatus={handleChangeAccountStatus}
+            onResetPassword={handleResetAccountPassword}
+          />
+        </>
+      )}
 
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-xs text-emerald-800">
         <Shield size={15} className="mr-2 inline text-emerald-600" />

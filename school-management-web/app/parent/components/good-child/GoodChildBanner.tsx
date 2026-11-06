@@ -33,7 +33,7 @@ export function GoodChildBanner({
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-black tracking-[.2em] text-amber-300 uppercase">
-                THEO DÕI RÈN LUYỆN NỀ NẾP
+                BẢNG VÀNG BÉ NGOAN
               </p>
               <button
                 onClick={onRefresh}
@@ -44,10 +44,10 @@ export function GoodChildBanner({
               </button>
             </div>
             <h2 className="mt-2 text-2xl font-black sm:text-3xl">
-              Theo dõi rèn luyện của {child.hoTen || 'Bé'}
+              Sổ theo dõi thi đua & Phiếu bé ngoan của {child.hoTen || 'Bé'}
             </h2>
             <p className="mt-2 text-sm text-slate-300">
-              Sổ ghi nhận chuyên cần, thói quen nề nếp, phiếu khen thứ 6, sao tháng, khen thưởng thi đua cuối năm
+              Tổng hợp cờ bé ngoan tuần, cờ thi đua tháng và khen thưởng thi đua cuối năm học
             </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
               <span className="rounded-full bg-white/10 px-3 py-1.5">
@@ -61,14 +61,14 @@ export function GoodChildBanner({
         </div>
         <div className="grid grid-cols-2 gap-3 sm:w-80">
           <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-            <p className="text-xs text-slate-300">Hoa nhỏ thứ 6</p>
+            <p className="text-xs text-slate-300">Cờ bé ngoan tuần</p>
             <p className="mt-1 text-3xl font-black text-rose-300">{totalDaily}</p>
-            <p className="mt-1 text-[11px] text-slate-400">Các tuần trong kỳ</p>
+            <p className="mt-1 text-[11px] text-slate-400">Đạt được trong tháng</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-            <p className="text-xs text-slate-300">Sao rèn luyện tháng</p>
+            <p className="text-xs text-slate-300">Bé ngoan xuất sắc</p>
             <p className="mt-1 text-3xl font-black text-amber-300">{totalBonus}</p>
-            <p className="mt-1 text-[11px] text-slate-400">Mốc 4/4 hoa nhỏ</p>
+            <p className="mt-1 text-[11px] text-slate-400">Đạt trọn vẹn 4 tuần</p>
           </div>
         </div>
       </div>

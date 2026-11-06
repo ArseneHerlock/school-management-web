@@ -26,10 +26,10 @@ export function ChildAlertsBanner({
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-extrabold text-slate-800">
-              Cảnh báo & Thông báo mới của bé {childName}
+              Lời nhắc & Thông báo dành cho bé {childName}
             </h3>
             <p className="text-[11px] text-slate-500">
-              Cập nhật trực tiếp từ điểm danh, đánh giá hoạt động, sức khỏe và học phí
+              Thông tin cập nhật từ giáo viên và nhà trường về sinh hoạt, sức khỏe và học phí của bé
             </p>
           </div>
         </div>

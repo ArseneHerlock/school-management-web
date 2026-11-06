@@ -66,6 +66,10 @@ export async function getStaff(filterOptions?: { search?: string; forceRefresh?:
   const isSearch = Boolean(filterOptions?.search && filterOptions.search.trim().length > 0);
   const now = Date.now();
 
+  if (filterOptions?.forceRefresh) {
+    staffCache = null;
+  }
+
   if (!isSearch && !filterOptions?.forceRefresh && staffCache && now - staffCache.timestamp < STAFF_CACHE_TTL_MS) {
     return staffCache.data;
   }
@@ -130,7 +134,13 @@ export async function getStaffByUserId(userId: string): Promise<Staff | null> {
  * Thêm mới một nhân sự vào hệ thống
  */
 export async function createStaff(staffData: CreateStaffInput): Promise<Staff> {
-  return await api.post<Staff>("staff", "/api/Staff", staffData);
+  invalidateStaffCache();
+  try {
+    const result = await api.post<Staff>("staff", "/api/Staff", staffData);
+    return result;
+  } finally {
+    invalidateStaffCache();
+  }
 }
 
 /**
@@ -140,14 +150,25 @@ export async function updateStaff(
   staffId: string,
   updatedData: UpdateStaffInput
 ): Promise<Staff> {
-  return await api.put<Staff>("staff", `/api/Staff/${staffId}`, updatedData);
+  invalidateStaffCache();
+  try {
+    const result = await api.put<Staff>("staff", `/api/Staff/${staffId}`, updatedData);
+    return result;
+  } finally {
+    invalidateStaffCache();
+  }
 }
 
 /**
  * Xóa một nhân sự theo ID
  */
 export async function deleteStaff(staffId: string): Promise<void> {
-  await api.delete("staff", `/api/Staff/${staffId}`);
+  invalidateStaffCache();
+  try {
+    await api.delete("staff", `/api/Staff/${staffId}`);
+  } finally {
+    invalidateStaffCache();
+  }
 }
 
 /**
@@ -170,12 +191,23 @@ export async function getAssignments(): Promise<StaffAssignment[]> {
  * Tạo mới phân công lớp học cho nhân sự
  */
 export async function createAssignment(data: Partial<StaffAssignment>): Promise<StaffAssignment> {
-  return await api.post<StaffAssignment>("staff", "/api/Assignment", data);
+  invalidateStaffCache();
+  try {
+    const result = await api.post<StaffAssignment>("staff", "/api/Assignment", data);
+    return result;
+  } finally {
+    invalidateStaffCache();
+  }
 }
 
 /**
  * Xóa phân công lớp học
  */
 export async function deleteAssignment(assignmentId: string): Promise<void> {
-  await api.delete("staff", `/api/Assignment/${encodeURIComponent(assignmentId)}`);
+  invalidateStaffCache();
+  try {
+    await api.delete("staff", `/api/Assignment/${encodeURIComponent(assignmentId)}`);
+  } finally {
+    invalidateStaffCache();
+  }
 }

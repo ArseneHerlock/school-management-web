@@ -6,6 +6,7 @@ import {
   createClass,
   updateClass,
   deleteClass,
+  invalidateClassesCache,
 } from "@/services/classes";
 import { getGrades } from "@/services/grades";
 import { getStaff } from "@/services/staff";
@@ -73,6 +74,7 @@ export default function LopPage() {
   }, [searchKeyword]);
 
   const loadClassesData = async () => {
+    invalidateClassesCache();
     await Promise.all([classesQuery.refetch(), gradesQuery.refetch()]);
   };
 

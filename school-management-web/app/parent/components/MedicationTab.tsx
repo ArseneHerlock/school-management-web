@@ -166,10 +166,10 @@ export default function MedicationTab({ child }: MedicationTabProps) {
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-800">
-            Dặn Thuốc Cho Bé {child.hoTen || ''}
+            Sổ Dặn Thuốc & Y Tế Của Bé {child.hoTen || ''}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Gửi đơn dặn thuốc chi tiết đến giáo viên chủ nhiệm và nhận thông báo xác nhận ngay khi bé được cho uống.
+            Gửi đơn nhờ cô cho bé uống thuốc theo giờ quy định và theo dõi xác nhận thực tế từ giáo viên chủ nhiệm.
           </p>
         </div>
 
@@ -179,7 +179,7 @@ export default function MedicationTab({ child }: MedicationTabProps) {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50/70 text-rose-700 hover:bg-rose-100 text-xs font-bold transition cursor-pointer"
           >
             <ShieldAlert size={15} />
-            <span>Khai báo bệnh nền & Dị ứng</span>
+            <span>Hồ sơ dị ứng & Bệnh lý đặc biệt</span>
           </button>
 
           <button
@@ -187,7 +187,7 @@ export default function MedicationTab({ child }: MedicationTabProps) {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
           >
             <Plus size={16} />
-            <span>Tạo đơn dặn thuốc</span>
+            <span>Gửi đơn dặn thuốc</span>
           </button>
         </div>
       </div>
@@ -196,8 +196,8 @@ export default function MedicationTab({ child }: MedicationTabProps) {
       <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-900 leading-relaxed shadow-2xs">
         <Info size={18} className="text-amber-600 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold">Quy định y tế trường học:</span> Phụ huynh vui lòng chuẩn bị thuốc sẵn và{' '}
-          <span className="font-bold">bàn giao trực tiếp cho cô giáo lúc đưa bé đến lớp</span> vào buổi sáng. Nhà trường tuyệt đối không tự ý mua thuốc ngoài hoặc thay đổi liều lượng đã dặn.
+          <span className="font-bold">Lưu ý an toàn y tế mầm non:</span> Phụ huynh vui lòng chuẩn bị thuốc theo liều, dán nhãn tên bé và{' '}
+          <span className="font-bold">bàn giao trực tiếp cho giáo viên đón trẻ</span> vào đầu giờ sáng. Nhà trường chỉ cho bé uống đúng liều và thời gian phụ huynh đã đăng ký.
         </div>
       </div>
 

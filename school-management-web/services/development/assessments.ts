@@ -25,13 +25,47 @@ export async function getAssessments(params?: {
   pageSize: number;
   items: AssessmentItem[];
 }> {
-  const q = new URLSearchParams();
   const trimmedChildId = toValidGuidOrNull(params?.childId);
+  const trimmedCriterionId = toValidGuidOrNull(params?.criterionId);
+
+  // Khi tải danh sách đánh giá toàn trường (hoặc pageSize lớn), ưu tiên gọi batch endpoint để lấy đầy đủ dữ liệu 8 tháng
+  if (!trimmedChildId && !trimmedCriterionId) {
+    try {
+      const batchRes = await api.get<any>("development", "/api/development/assessment-batch");
+      const batchItems = Array.isArray(batchRes?.items) ? batchRes.items : (Array.isArray(batchRes) ? batchRes : []);
+      if (batchItems.length > 0) {
+        return {
+          total: batchRes?.total ?? batchItems.length,
+          page: 1,
+          pageSize: batchItems.length,
+          items: batchItems,
+        };
+      }
+    } catch {
+      try {
+        const localRes = await fetch("/api/assessment/batch", { cache: "no-store" });
+        if (localRes.ok) {
+          const localData = await localRes.json();
+          const localItems = Array.isArray(localData?.items) ? localData.items : [];
+          if (localItems.length > 0) {
+            return {
+              total: localData?.total ?? localItems.length,
+              page: 1,
+              pageSize: localItems.length,
+              items: localItems,
+            };
+          }
+        }
+      } catch {}
+    }
+  }
+
+  const q = new URLSearchParams();
   if (trimmedChildId) {
     q.set("childId", trimmedChildId);
   }
-  if (params?.criterionId && toValidGuidOrNull(params.criterionId)) {
-    q.set("criterionId", params.criterionId.trim());
+  if (trimmedCriterionId) {
+    q.set("criterionId", trimmedCriterionId);
   }
   if (params?.page) q.set("page", String(params.page));
   if (params?.pageSize) q.set("pageSize", String(params.pageSize));

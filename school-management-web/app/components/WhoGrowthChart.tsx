@@ -18,7 +18,6 @@ import {
 } from "./who/whoChartTypes";
 import WhoSummaryCards from "./who/WhoSummaryCards";
 import WhoChartArea from "./who/WhoChartArea";
-import WhoReferenceTable from "./who/WhoReferenceTable";
 
 export type { WhoGrowthChartProps };
 export { WHO_TABLES };
@@ -150,9 +149,6 @@ export const WhoGrowthChart: React.FC<WhoGrowthChartProps> = ({
         height={height}
         lanDo={lanDo}
       />
-
-      {/* Bảng Ngưỡng Phân Loại Z-Score Chuẩn WHO 2006 */}
-      <WhoReferenceTable />
     </div>
   );
 };

@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Bell,
   CheckCheck,
   RefreshCw,
   AlertTriangle,
   X,
+  Sparkles,
 } from "lucide-react";
 import { AppNotification } from "@/services/notifications";
 import NotificationItemCard from "./NotificationItemCard";
@@ -42,144 +43,165 @@ export default function NotificationDropdown({
   onClose,
   onSelectNotification,
 }: NotificationDropdownProps) {
-  const themeAccent =
-    role === "teacher"
-      ? "bg-orange-500 text-white hover:bg-orange-600"
-      : "bg-indigo-600 text-white hover:bg-indigo-700";
+  // Desktop keyboard: Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-x-2 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 z-50 w-auto sm:w-[420px] max-h-[82vh] flex flex-col rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-        <div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Trung tâm thông báo"
+      className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 z-50 w-auto sm:w-[450px] max-h-[85vh] flex flex-col rounded-2xl border border-slate-200/90 bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+    >
+      {/* Desktop Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/90 px-4 py-3 shrink-0">
+        <div className="min-w-0 flex-1 pr-2">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-black text-slate-800">
-              Thông báo & Cảnh báo
+            <h3 className="text-sm font-extrabold text-slate-800 tracking-tight">
+              Thông báo & Lời nhắc
             </h3>
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
                 liveConnected
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-slate-200 text-slate-600"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-slate-100 text-slate-600 border border-slate-200"
               }`}
               title={
                 liveConnected
-                  ? "Đang kết nối trực tuyến thời gian thực (SSE + SignalR)"
+                  ? "Đang kết nối thời gian thực"
                   : "Đang đồng bộ định kỳ"
               }
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
-                  liveConnected ? "bg-emerald-500 animate-ping" : "bg-slate-400"
+                  liveConnected ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
                 }`}
               />
               <span>{liveConnected ? "Trực tuyến" : "Đồng bộ"}</span>
             </span>
             {unreadCount > 0 && (
-              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-extrabold text-rose-700">
+              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-extrabold text-rose-700 border border-rose-200">
                 {unreadCount} mới
               </span>
             )}
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-slate-400 truncate mt-0.5">
             {role === "teacher"
-              ? "Tin nhắn PH, đơn xin nghỉ, lịch dạy & thông báo trường"
-              : "Điểm danh, sức khỏe, đánh giá hoạt động, học phí & tin tức"}
+              ? "Tin nhắn PH, đơn nghỉ phép, hoạt động & lịch dạy"
+              : "Điểm danh, sức khỏe, học phí & thông báo lớp học"}
           </p>
         </div>
 
-        <div className="flex items-center gap-1">
+        {/* Action Buttons for Mouse Users */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={onRefresh}
-            className="rounded-xl p-1.5 text-slate-500 hover:bg-slate-200/60 hover:text-slate-800 transition cursor-pointer"
-            title="Làm mới dữ liệu"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200/60 hover:text-slate-800 transition cursor-pointer"
+            title="Làm mới (F5)"
           >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </button>
+
           {unreadCount > 0 && (
             <button
               onClick={onMarkAllRead}
-              className="flex items-center gap-1 rounded-xl bg-white border border-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-              title="Đánh dấu tất cả đã đọc"
+              className="flex items-center gap-1 rounded-lg bg-white border border-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer shadow-2xs"
+              title="Đánh dấu tất cả là đã đọc"
             >
-              <CheckCheck size={13} />
+              <CheckCheck size={13} className="text-emerald-600" />
               <span>Đã đọc hết</span>
             </button>
           )}
+
           <button
             onClick={onClose}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 sm:hidden cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 transition cursor-pointer"
+            title="Đóng (Phím Esc)"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-slate-100 px-3 py-2 overflow-x-auto no-scrollbar bg-white">
-        <button
-          onClick={() => setActiveFilter("all")}
-          className={`rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition cursor-pointer ${
-            activeFilter === "all"
-              ? themeAccent
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
-        >
-          Tất cả ({totalNotifications})
-        </button>
-        <button
-          onClick={() => setActiveFilter("urgent")}
-          className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition cursor-pointer ${
-            activeFilter === "urgent"
-              ? "bg-rose-600 text-white"
-              : "bg-rose-50 text-rose-700 hover:bg-rose-100"
-          }`}
-        >
-          <AlertTriangle size={12} />
-          <span>Cần chú ý ({urgentCount})</span>
-        </button>
-        {role === "parent" && (
+      {/* Desktop Segmented Tab Controls (Zero horizontal scrolling!) */}
+      <div className="p-2 border-b border-slate-100 bg-slate-50/50 shrink-0">
+        <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-200/70 p-1 text-xs">
+          <button
+            onClick={() => setActiveFilter("all")}
+            className={`rounded-lg py-1 px-1 text-center font-bold transition-all cursor-pointer truncate ${
+              activeFilter === "all"
+                ? "bg-white text-slate-800 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+            title="Tất cả thông báo"
+          >
+            Tất cả {totalNotifications > 0 ? `(${totalNotifications})` : ""}
+          </button>
+
+          <button
+            onClick={() => setActiveFilter("urgent")}
+            className={`flex items-center justify-center gap-1 rounded-lg py-1 px-1 font-bold transition-all cursor-pointer truncate ${
+              activeFilter === "urgent"
+                ? "bg-white text-rose-700 shadow-xs"
+                : "text-rose-600 hover:text-rose-700"
+            }`}
+            title="Cần chú ý / Khẩn cấp"
+          >
+            <AlertTriangle size={11} className="shrink-0" />
+            <span className="truncate">Cần chú ý {urgentCount > 0 ? `(${urgentCount})` : ""}</span>
+          </button>
+
           <button
             onClick={() => setActiveFilter("activity")}
-            className={`rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition cursor-pointer ${
+            className={`rounded-lg py-1 px-1 text-center font-bold transition-all cursor-pointer truncate ${
               activeFilter === "activity"
-                ? themeAccent
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-white text-slate-800 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
+            title={role === "parent" ? "Điểm danh, Sức khỏe, Đánh giá, Bé ngoan" : "Hoạt động & Chuyên môn"}
           >
-            Điểm danh • Đánh giá • Sức khỏe
+            Hoạt động
           </button>
-        )}
-        <button
-          onClick={() => setActiveFilter("contact")}
-          className={`rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition cursor-pointer ${
-            activeFilter === "contact"
-              ? themeAccent
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
-        >
-          Tin nhắn • Lịch • Trường
-        </button>
+
+          <button
+            onClick={() => setActiveFilter("contact")}
+            className={`rounded-lg py-1 px-1 text-center font-bold transition-all cursor-pointer truncate ${
+              activeFilter === "contact"
+                ? "bg-white text-slate-800 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+            title="Tin nhắn, Lịch sinh hoạt, Tin tức"
+          >
+            Tin tức & Lịch
+          </button>
+        </div>
       </div>
 
-      {/* Notifications List */}
-      <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[60vh]">
+      {/* Notifications List - Desktop Scrollable */}
+      <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[480px] [scrollbar-width:thin]">
         {loading && totalNotifications === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-            <RefreshCw size={24} className="animate-spin mb-2 text-slate-400" />
-            <p className="text-xs font-bold">Đang đồng bộ thông báo từ hệ thống...</p>
+            <RefreshCw size={22} className="animate-spin mb-2 text-indigo-500" />
+            <p className="text-xs font-bold text-slate-600">Đang đồng bộ thông báo...</p>
           </div>
         ) : filteredList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-2.5">
-              <Bell size={22} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-2">
+              <Bell size={20} />
             </div>
-            <p className="text-xs font-bold text-slate-600">
+            <p className="text-xs font-bold text-slate-700">
               Không có thông báo nào trong mục này
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Khi có thay đổi về điểm danh, tin nhắn, lịch học hoặc đánh giá, hệ
-              thống sẽ hiển thị ngay tại đây.
+            <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
+              Các thông tin cập nhật về điểm danh, sức khỏe, học phí và tin nhắn sẽ tự động xuất hiện tại đây.
             </p>
           </div>
         ) : (
@@ -195,4 +217,5 @@ export default function NotificationDropdown({
     </div>
   );
 }
+
 export { NotificationDropdown };

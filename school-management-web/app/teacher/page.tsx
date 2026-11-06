@@ -46,18 +46,18 @@ export default function TeacherDashboard() {
   if (isLoading) {
     return (
       <LoadingScreen
-        message="Đang tải dữ liệu bàn làm việc..."
-        subMessage="Đang đồng bộ lớp học, sĩ số trẻ và nề nếp giảng dạy"
+        message="Đang tải thông tin lớp học..."
+        subMessage="Đồng bộ danh sách học sinh, điểm danh và lịch sinh hoạt trong ngày"
         theme="orange"
       />
     );
   }
 
   const teacherTabs = [
-    { id: 'today' as TeacherTab, label: 'Lịch & An toàn', icon: CalendarDays, badge: safetyItems.length > 0 ? `${safetyItems.length}` : undefined },
-    { id: 'students' as TeacherTab, label: `Sĩ số lớp (${totalStudents})`, icon: Users },
-    { id: 'assessment' as TeacherTab, label: 'Đánh giá HĐ', icon: Award },
-    { id: 'alerts' as TeacherTab, label: 'Thông báo', icon: Bell, badge: teacherAlerts.length > 0 ? `${teacherAlerts.length}` : undefined },
+    { id: 'today' as TeacherTab, label: 'Nhật ký & An toàn', icon: CalendarDays, badge: safetyItems.length > 0 ? `${safetyItems.length}` : undefined },
+    { id: 'students' as TeacherTab, label: `Danh sách lớp (${totalStudents})`, icon: Users },
+    { id: 'assessment' as TeacherTab, label: 'Đánh giá trẻ', icon: Award },
+    { id: 'alerts' as TeacherTab, label: 'Lời nhắc & Tin báo', icon: Bell, badge: teacherAlerts.length > 0 ? `${teacherAlerts.length}` : undefined },
   ];
 
   return (
@@ -69,7 +69,7 @@ export default function TeacherDashboard() {
         classInfo={assignedClassInfo}
       />
 
-      {/* 2. Phím Tắt Nghiệp Vụ 1-Chạm Chuẩn Mobile App (8 Icons: Đón, Trả, Thuốc, Đánh giá...) */}
+      {/* 2. Nghiệp vụ sư phạm hàng ngày */}
       <TeacherQuickActions onNavigate={(targetPath) => router.push(targetPath)} />
 
       {/* 3. Bộ Chuyển Chuyên Mục Thông Minh (Segmented Tabs - Nằm ngay trong màn hình đầu, không cuộn) */}

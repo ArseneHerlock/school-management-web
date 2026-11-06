@@ -19,14 +19,14 @@ interface ParentQuickActionsDockProps {
 }
 
 const PARENT_APPS = [
-  { label: 'Xin nghỉ học', icon: FileText, path: 'absence', color: 'bg-orange-50 text-orange-600 border-orange-200' },
-  { label: 'Dặn thuốc', icon: Pill, path: 'absence', color: 'bg-rose-50 text-rose-600 border-rose-200' },
-  { label: 'Đón hộ', icon: UserCheck, path: 'pickup', color: 'bg-blue-50 text-blue-600 border-blue-200' },
-  { label: 'Học phí', icon: CreditCard, path: 'tuition', color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
-  { label: 'Điểm danh', icon: CalendarDays, path: 'attendance', color: 'bg-teal-50 text-teal-600 border-teal-200' },
-  { label: 'Sức khỏe', icon: HeartPulse, path: 'health', color: 'bg-pink-50 text-pink-600 border-pink-200' },
-  { label: 'Khoảnh khắc', icon: Camera, path: 'moments', color: 'bg-purple-50 text-purple-600 border-purple-200' },
-  { label: 'Chat cô giáo', icon: MessageCircle, path: 'messages', color: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
+  { label: 'Đơn xin nghỉ', icon: FileText, path: 'absence', color: 'bg-orange-50 text-orange-600 border-orange-200' },
+  { label: 'Dặn thuốc y tế', icon: Pill, path: 'medications', color: 'bg-rose-50 text-rose-600 border-rose-200' },
+  { label: 'Người đón hộ', icon: UserCheck, path: 'pickup', color: 'bg-blue-50 text-blue-600 border-blue-200' },
+  { label: 'Học phí & Tiền ăn', icon: CreditCard, path: 'tuition', color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+  { label: 'Nhật ký đến lớp', icon: CalendarDays, path: 'attendance', color: 'bg-teal-50 text-teal-600 border-teal-200' },
+  { label: 'Sức khỏe & Y tế', icon: HeartPulse, path: 'health', color: 'bg-pink-50 text-pink-600 border-pink-200' },
+  { label: 'Ảnh hoạt động', icon: Camera, path: 'moments', color: 'bg-purple-50 text-purple-600 border-purple-200' },
+  { label: 'Trao đổi cô giáo', icon: MessageCircle, path: 'messages', color: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
 ];
 
 export const ParentQuickActionsDock: React.FC<ParentQuickActionsDockProps> = ({
@@ -36,10 +36,10 @@ export const ParentQuickActionsDock: React.FC<ParentQuickActionsDockProps> = ({
     <div className="bg-white rounded-3xl p-3.5 sm:p-5 border border-blue-50 shadow-xs max-w-full min-w-0">
       <div className="flex items-center justify-between mb-3 px-1">
         <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-          Tiện ích phụ huynh 1-chạm
+          Chức năng thường dùng
         </span>
         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
-          8 Tiện ích
+          Phím tắt nhanh
         </span>
       </div>
 

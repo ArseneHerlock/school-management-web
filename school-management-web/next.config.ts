@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["app.kindergarteny26.online"],
   images: {
     unoptimized: true,
   },

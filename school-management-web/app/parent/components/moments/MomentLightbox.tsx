@@ -40,7 +40,7 @@ export const MomentLightbox: React.FC<MomentLightboxProps> = ({ item, isOpen, on
         <div className="p-5 bg-white">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {item.scope === 'class' ? 'Khoảnh khắc lớp' : 'Khoảnh khắc của bé'} · {item.category}
+              {item.scope === 'class' ? 'Album chung của lớp' : 'Ảnh riêng của bé'} · {item.category}
             </span>
             <span className="text-xs text-slate-400">{item.date}</span>
           </div>

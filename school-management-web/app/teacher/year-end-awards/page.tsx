@@ -3,7 +3,6 @@
 import React from 'react';
 import { useYearEndAwards } from './useYearEndAwards';
 import { YearEndAwardsHeader } from './components/YearEndAwardsHeader';
-import { YearEndAwardsCriteriaTable } from './components/YearEndAwardsCriteriaTable';
 import { YearEndAwardsActionBar } from './components/YearEndAwardsActionBar';
 import { YearEndAwardsTable } from './components/YearEndAwardsTable';
 
@@ -37,8 +36,6 @@ export default function TeacherYearEndAwardsPage() {
         setSemester={setSemester}
         successToast={successToast}
       />
-
-      <YearEndAwardsCriteriaTable />
 
       <YearEndAwardsActionBar
         isApproved={isApproved}

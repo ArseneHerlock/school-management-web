@@ -49,14 +49,56 @@ export function buildDomainChartData(
   domains: DomainItem[],
   criteria: CriterionItem[],
   assessments: AssessmentItem[],
+  activities?: ActivityItem[],
 ): DomainChartItem[] {
   return domains.map((d) => {
-    const dCritIds = criteria
-      .filter((c) => c.developmentDomainId === d.id)
-      .map((c) => c.id);
-    const dAss = assessments.filter((a) =>
-      dCritIds.includes(a.developmentCriterionId),
+    const dCode = (d.code || "").toUpperCase();
+    const dName = (d.name || "").toLowerCase();
+
+    const dCritIds = new Set(
+      criteria
+        .filter((c) => c.developmentDomainId === d.id)
+        .map((c) => c.id)
     );
+
+    const matchingActivityIds = new Set<string>();
+    (activities || []).forEach((act) => {
+      const code = (act.code || "").toUpperCase();
+      if (
+        (dCode.includes("PHYSICAL") || dName.includes("thể chất")) &&
+        code.includes("PTTC") &&
+        !code.includes("PTTCXH")
+      ) {
+        matchingActivityIds.add(act.id);
+      } else if (
+        (dCode.includes("COGNITION") || dName.includes("nhận thức")) &&
+        code.includes("PTNT")
+      ) {
+        matchingActivityIds.add(act.id);
+      } else if (
+        (dCode.includes("LANGUAGE") || dName.includes("ngôn ngữ")) &&
+        code.includes("PTNN")
+      ) {
+        matchingActivityIds.add(act.id);
+      } else if (
+        (dCode.includes("SOCIAL") || dName.includes("tình cảm") || dName.includes("xã hội")) &&
+        code.includes("PTTCXH")
+      ) {
+        matchingActivityIds.add(act.id);
+      } else if (
+        (dCode.includes("AESTHETIC") || dName.includes("thẩm m")) &&
+        code.includes("PTTM")
+      ) {
+        matchingActivityIds.add(act.id);
+      }
+    });
+
+    const dAss = assessments.filter((a) => {
+      if (dCritIds.has(a.developmentCriterionId)) return true;
+      if (a.activityId && matchingActivityIds.has(a.activityId)) return true;
+      return false;
+    });
+
     return {
       name: d.name,
       pass: dAss.filter((a) => a.result).length,

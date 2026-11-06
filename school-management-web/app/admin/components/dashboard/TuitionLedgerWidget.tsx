@@ -44,7 +44,7 @@ export const TuitionLedgerWidget: React.FC<TuitionLedgerWidgetProps> = ({
             </h2>
           </div>
           <p className="mt-1 text-xs text-slate-500 truncate">
-            Giám sát dòng tiền, học phí chính khóa, tiền ăn và dịch vụ
+            Giám sát tiền ăn bán trú, dịch vụ hỗ trợ giáo dục theo NQ HĐND (Miễn 100% học phí theo NĐ 238)
           </p>
         </div>
 

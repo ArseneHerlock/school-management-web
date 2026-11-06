@@ -54,10 +54,10 @@ export const LearningProductForm: React.FC<LearningProductFormProps> = ({
             activeTab === 'class' ? 'bg-orange-100 text-orange-700' : 'bg-indigo-100 text-indigo-700'
           }`}
         >
-          {activeTab === 'class' ? 'ĐĂNG ẢNH LỚP' : 'ĐĂNG ẢNH BÉ'}
+          {activeTab === 'class' ? 'HOẠT ĐỘNG CHUNG CỦA LỚP' : 'SẢN PHẨM RIÊNG CỦA BÉ'}
         </span>
         <h2 className="text-lg font-black text-slate-800 mt-1">
-          {activeTab === 'class' ? 'Thêm khoảnh khắc lớp' : 'Thêm khoảnh khắc cho bé'}
+          {activeTab === 'class' ? 'Thêm hình ảnh hoạt động lớp' : 'Thêm sản phẩm / hình ảnh cho bé'}
         </h2>
       </div>
 
@@ -76,11 +76,11 @@ export const LearningProductForm: React.FC<LearningProductFormProps> = ({
         <div>
           {activeTab === 'class' ? (
             <span>
-              Khoảnh khắc này sẽ được lưu cho <b>{className}</b>. Toàn thể phụ huynh của lớp có thể xem chung.
+              Hình ảnh hoạt động này sẽ được chia sẻ chung tới toàn thể phụ huynh lớp <b>{className}</b>.
             </span>
           ) : (
             <span>
-              Khoảnh khắc này là <b>riêng tư</b>. Chỉ phụ huynh của học sinh được chọn mới có thể xem được trong mục &quot;Khoảnh khắc con mình&quot;.
+              Hình ảnh/sản phẩm này được lưu riêng cho bé. Chỉ phụ huynh của học sinh được chọn mới có thể xem được trong mục &quot;Ảnh hoạt động riêng của bé&quot;.
             </span>
           )}
         </div>
@@ -218,7 +218,7 @@ export const LearningProductForm: React.FC<LearningProductFormProps> = ({
             <>
               <Plus size={16} />
               <span>
-                {activeTab === 'class' ? 'Đăng khoảnh khắc lớp' : 'Lưu khoảnh khắc cho bé'}
+                {activeTab === 'class' ? 'Đăng ảnh hoạt động lớp' : 'Lưu sản phẩm cho bé'}
               </span>
             </>
           )}

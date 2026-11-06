@@ -181,7 +181,7 @@ export const TeacherHealthEntry: React.FC<TeacherHealthEntryProps> = ({
       <div className="flex items-center gap-2 rounded-2xl bg-amber-50/80 border border-amber-200 px-4 py-2.5 text-xs text-amber-900 font-medium">
         <Info size={16} className="text-amber-600 shrink-0" />
         <span>
-          <strong>Vai trò giáo viên:</strong> Cô chỉ cần nhập <strong>Cân nặng (kg)</strong> và <strong>Chiều cao (cm)</strong>. Hệ thống sẽ tự động đối chiếu chuẩn <strong>WHO 2006</strong> theo tuổi & giới tính để phân loại đầy đủ: <strong>Đạt chuẩn WHO, Thấp còi, Thấp còi nặng, Nhẹ cân, Nhẹ cân nặng, Gầy còm, Gầy còm nặng, Thừa cân, Béo phì</strong>.
+          <strong>Lưu ý:</strong> Giáo viên nhập <strong>Cân nặng (kg)</strong> và <strong>Chiều cao (cm)</strong> theo đợt cân đo. Hệ thống sẽ tự động cập nhật phân loại thể trạng của từng bé vào sổ y tế.
         </span>
       </div>
 

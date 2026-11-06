@@ -1,20 +1,36 @@
 "use client";
 
 import React from "react";
-import { Phone } from "lucide-react";
+import { Phone, RotateCcw } from "lucide-react";
 import { SpecialConditionItem } from "@/services/medications";
 
 interface ConditionsTableProps {
   conditions: SpecialConditionItem[];
+  hasFilter?: boolean;
+  onResetFilter?: () => void;
 }
 
 export default function ConditionsTable({
   conditions,
+  hasFilter = false,
+  onResetFilter,
 }: ConditionsTableProps) {
   if (conditions.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-400 text-xs">
-        Không tìm thấy trường hợp bệnh lý nào theo bộ lọc hiện tại.
+      <div className="text-center py-12 text-slate-500 text-xs space-y-3">
+        <p className="font-semibold text-slate-700">
+          Không tìm thấy hồ sơ bệnh lý hoặc dị ứng nào theo lớp / từ khóa hiện tại.
+        </p>
+        {hasFilter && onResetFilter && (
+          <button
+            type="button"
+            onClick={onResetFilter}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition cursor-pointer"
+          >
+            <RotateCcw size={12} />
+            Xem tất cả các lớp
+          </button>
+        )}
       </div>
     );
   }
@@ -39,7 +55,7 @@ export default function ConditionsTable({
                 <strong className="block text-slate-900 font-bold text-xs">
                   {cond.TenHocSinh}
                 </strong>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-0.5">
                   {cond.TenLop || "Lớp Mầm 1"}
                 </span>
               </td>
@@ -64,41 +80,48 @@ export default function ConditionsTable({
                   {cond.MucDoNguyHiem === 3
                     ? "Nguy hiểm"
                     : cond.MucDoNguyHiem === 2
-                    ? "Cần chú ý"
-                    : "Nhẹ"}
+                    ? "Cần lưu ý"
+                    : "Theo dõi nhẹ"}
                 </span>
               </td>
 
-              <td className="py-3 px-4 max-w-xs text-slate-600 space-y-1">
+              <td className="py-3 px-4 text-slate-600 max-w-xs leading-relaxed">
                 {cond.LuuYVanDong && (
                   <div>
-                    <span className="font-bold text-slate-700">Vận động:</span>{" "}
-                    {cond.LuuYVanDong}
+                    <strong>Vận động:</strong> {cond.LuuYVanDong}
                   </div>
                 )}
                 {cond.LuuYAnUong && (
-                  <div className="text-amber-800 font-medium">
-                    <span className="font-bold">Kiêng ăn:</span>{" "}
-                    {cond.LuuYAnUong}
+                  <div className="text-rose-700 font-semibold mt-1">
+                    <strong>Kiêng ăn:</strong> {cond.LuuYAnUong}
                   </div>
+                )}
+                {!cond.LuuYVanDong && !cond.LuuYAnUong && (
+                  <span className="text-slate-400 italic">
+                    Chưa có ghi chú đặc biệt
+                  </span>
                 )}
               </td>
 
-              <td className="py-3 px-4 max-w-xs text-rose-900 bg-rose-50/20 font-medium leading-relaxed">
-                {cond.PhacDoSoCuu || "Chưa cập nhật phác đồ"}
+              <td className="py-3 px-4 text-slate-700 max-w-xs leading-relaxed">
+                {cond.PhacDoSoCuu || (
+                  <span className="text-slate-400 italic">
+                    Theo dõi sinh hiệu cơ bản
+                  </span>
+                )}
               </td>
 
               <td className="py-3 px-4 whitespace-nowrap">
                 {cond.SoDienThoaiKhanCap ? (
-                  <a
-                    href={`tel:${cond.SoDienThoaiKhanCap.replace(/\D/g, "")}`}
-                    className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline"
+                  <span
+                    className="inline-flex items-center gap-1.5 font-bold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200"
+                    title="Số điện thoại liên hệ khẩn cấp"
                   >
-                    <Phone size={11} />
-                    <span>{cond.SoDienThoaiKhanCap}</span>
-                  </a>
+                    <span className="text-slate-400 font-medium">SĐT:</span>
+                    <span className="font-mono">{cond.SoDienThoaiKhanCap}</span>
+                  </span>
                 ) : (
-                  <span className="text-slate-400">--</span>
+                  <span className="text-slate-300 italic">Chưa cập nhật</span>
                 )}
               </td>
             </tr>

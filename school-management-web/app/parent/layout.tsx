@@ -23,7 +23,6 @@ import {
 import { ParentContext } from './ParentContext';
 import ParentSidebar from './components/ParentSidebar';
 import ParentHeader from './components/ParentHeader';
-import CallModal from './components/CallModal';
 import LightboxModal from './components/LightboxModal';
 import ParentProfileModal from './components/ParentProfileModal';
 import LoadingScreen from '@/app/components/LoadingScreen';
@@ -39,7 +38,6 @@ export default function ParentLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [call, setCall] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [selected, setSelected] = useState<MomentItem | null>(null);
 
@@ -217,7 +215,7 @@ export default function ParentLayout({
       news,
       fees,
       navigateTab,
-      openCallModal: () => setCall(true),
+      openCallModal: () => {},
       selectMoment: setSelected,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -257,7 +255,6 @@ export default function ParentLayout({
                 : `Đang xem: ${child.hoTen || 'Chưa chọn trẻ'}`
             }
             onToggleSidebar={() => setOpen(true)}
-            onOpenCall={() => setCall(true)}
             onNavigateNotificationTab={(targetTab, targetChildId) => {
               if (targetChildId) setChildId(targetChildId);
               navigateTab(targetTab);
@@ -288,13 +285,6 @@ export default function ParentLayout({
           onOpenMenu={() => setOpen(true)}
         />
 
-        <CallModal
-          isOpen={call}
-          onClose={() => setCall(false)}
-          teacherName={child.giaoVienChuNhiem}
-          teacherRole={`Giáo viên · Lớp ${child.lop}`}
-          teacherPhone={child.sdtGiaoVien}
-        />
         <LightboxModal
           moment={selected}
           onClose={() => setSelected(null)}

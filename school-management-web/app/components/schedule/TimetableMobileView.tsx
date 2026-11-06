@@ -41,9 +41,10 @@ export default function TimetableMobileView({
 }: TimetableMobileViewProps) {
   const morningEvents = getEventsForCell(selectedMobileDay, "morning");
   const afternoonEvents = getEventsForCell(selectedMobileDay, "afternoon");
+  const eveningEvents = getEventsForCell(selectedMobileDay, "evening");
 
   return (
-    <div className="block md:hidden space-y-3.5">
+    <div className="block md:hidden space-y-3.5 font-sans">
       {/* Horizontal Day Selector */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
         {currentWeekDays.map((day) => {
@@ -91,10 +92,10 @@ export default function TimetableMobileView({
       {/* Selected Day Event List */}
       <div className="space-y-3">
         {/* Morning Session */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <span className="flex items-center gap-1.5 text-xs font-black text-[#785412] bg-[#fef9c3] px-2.5 py-1 rounded-xl">
-              🌅 Ca sáng
+            <span className="flex items-center gap-1.5 text-xs font-black text-amber-900 bg-amber-100 px-2.5 py-1 rounded-lg">
+              🌅 Ca sáng (07:00 - 11:30)
             </span>
             <span className="text-[11px] font-semibold text-slate-400">
               {morningEvents.length} hoạt động
@@ -102,7 +103,7 @@ export default function TimetableMobileView({
           </div>
           {morningEvents.length === 0 ? (
             <p className="text-xs text-slate-400 italic py-2 text-center">
-              Không có lịch học/hoạt động buổi sáng
+              Không có lịch hoạt động buổi sáng
             </p>
           ) : (
             <div className="space-y-2">
@@ -123,10 +124,10 @@ export default function TimetableMobileView({
         </div>
 
         {/* Afternoon Session */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <span className="flex items-center gap-1.5 text-xs font-black text-[#785412] bg-[#fef9c3] px-2.5 py-1 rounded-xl">
-              🌇 Ca chiều
+            <span className="flex items-center gap-1.5 text-xs font-black text-sky-900 bg-sky-100 px-2.5 py-1 rounded-lg">
+              🌇 Ca chiều (11:30 - 17:00)
             </span>
             <span className="text-[11px] font-semibold text-slate-400">
               {afternoonEvents.length} hoạt động
@@ -134,7 +135,7 @@ export default function TimetableMobileView({
           </div>
           {afternoonEvents.length === 0 ? (
             <p className="text-xs text-slate-400 italic py-2 text-center">
-              Không có lịch học/hoạt động buổi chiều
+              Không có lịch hoạt động buổi chiều
             </p>
           ) : (
             <div className="space-y-2">
@@ -153,6 +154,34 @@ export default function TimetableMobileView({
             </div>
           )}
         </div>
+
+        {/* Evening Session */}
+        {eveningEvents.length > 0 && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span className="flex items-center gap-1.5 text-xs font-black text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded-lg">
+                🌙 Ca tối / Trả muộn (17:00 - 19:00)
+              </span>
+              <span className="text-[11px] font-semibold text-slate-400">
+                {eveningEvents.length} hoạt động
+              </span>
+            </div>
+            <div className="space-y-2">
+              {eveningEvents.map((item) => (
+                <TimetableCard
+                  key={item.id}
+                  item={item}
+                  periodLabel={getPeriodLabel(item)}
+                  styleConfig={getCardStyle(item)}
+                  userRole={userRole}
+                  onEdit={onEditSchedule}
+                  onDelete={onDeleteSchedule}
+                  onClick={() => handleCardClick(item)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

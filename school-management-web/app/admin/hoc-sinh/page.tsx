@@ -140,16 +140,22 @@ export default function HocSinhPage() {
 
   async function handleConfirmDeleteStudent(): Promise<void> {
     if (!studentToDelete) return;
+    const targetId = studentToDelete.id;
+    const targetName = studentToDelete.tenHocSinh;
+
+    // Cập nhật Optimistic UI: Lập tức gỡ học sinh khỏi danh sách
+    setStudentsList((prev) => prev.filter((s) => s.id !== targetId));
 
     try {
       setIsDeletingLoading(true);
-      await deleteStudent(studentToDelete.id);
+      await deleteStudent(targetId);
       setNotificationMessage(
-        `Đã xóa học sinh ${studentToDelete.tenHocSinh} thành công.`
+        `Đã xóa học sinh ${targetName} thành công.`
       );
       setStudentToDelete(null);
       await fetchStudentsAndClasses();
     } catch (error) {
+      await fetchStudentsAndClasses();
       setNotificationMessage(
         error instanceof Error ? error.message : "Xóa học sinh thất bại"
       );

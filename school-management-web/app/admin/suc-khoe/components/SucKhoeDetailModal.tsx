@@ -102,9 +102,9 @@ export const SucKhoeDetailModal: React.FC<SucKhoeDetailModalProps> = ({
                     <th>Ngày đo</th>
                     <th>Chiều cao</th>
                     <th>Cân nặng</th>
-                    <th>HAZ (CC/Tuổi)</th>
-                    <th>WAZ (CN/Tuổi)</th>
-                    <th>WHZ (Thể trạng)</th>
+                    <th>Chiều cao / Tuổi</th>
+                    <th>Cân nặng / Tuổi</th>
+                    <th>Thể trạng</th>
                     <th className="text-right">Xóa</th>
                   </tr>
                 </thead>
@@ -122,24 +122,18 @@ export const SucKhoeDetailModal: React.FC<SucKhoeDetailModalProps> = ({
                           <b>{x.canNang ?? "—"}</b> kg
                         </td>
                         <td>
-                          <span className="text-xs font-bold text-blue-700">
-                            {x.haz != null
-                              ? `${x.haz > 0 ? "+" : ""}${x.haz} SD`
-                              : "—"}
+                          <span className="text-xs font-semibold text-slate-800">
+                            {x.ketLuanHaz || (x.haz != null ? (x.haz < -2 ? "Thấp còi" : "Đạt chuẩn") : "—")}
                           </span>
                         </td>
                         <td>
-                          <span className="text-xs font-bold text-emerald-700">
-                            {x.waz != null
-                              ? `${x.waz > 0 ? "+" : ""}${x.waz} SD`
-                              : "—"}
+                          <span className="text-xs font-semibold text-slate-800">
+                            {x.ketLuanWaz || (x.waz != null ? (x.waz < -2 ? "Nhẹ cân" : "Đạt chuẩn") : "—")}
                           </span>
                         </td>
                         <td>
-                          <span className="text-xs font-bold text-amber-700">
-                            {x.whz != null
-                              ? `${x.whz > 0 ? "+" : ""}${x.whz} SD`
-                              : "—"}
+                          <span className="text-xs font-semibold text-slate-800">
+                            {x.ketLuanWhz || (x.whz != null ? (x.whz < -2 ? "Gầy còm" : "Cân đối") : "—")}
                           </span>
                         </td>
                         <td className="text-right">

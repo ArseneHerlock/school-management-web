@@ -29,8 +29,8 @@ export function ReportHeader({
   onDownloadPdf,
   selectedCount,
 }: {
-  viewMode: "class-reports" | "batch" | "detail";
-  onViewModeChange: (m: "class-reports" | "batch" | "detail") => void;
+  viewMode: "admin-school" | "teacher-classes" | "detail" | "class-reports" | "batch";
+  onViewModeChange: (m: "admin-school" | "teacher-classes" | "detail") => void;
   loading: boolean;
   onRefresh: () => void;
   onOpenPreview: () => void;
@@ -40,48 +40,54 @@ export function ReportHeader({
   return (
     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
       <div>
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase mb-1.5 border border-blue-100">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold uppercase mb-1.5 border border-indigo-100">
           <FileCheck size={13} />
-          <span>Báo Cáo Nghiệp Vụ Mầm Non</span>
+          <span>Hệ Thống Báo Cáo Quản Trị Mầm Non</span>
         </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          Trung Tâm Báo Cáo Định Kỳ & Bán Trú Học Đường
+          Báo Cáo Nghiệp Vụ & Quyết Toán Bán Trú Học Đường
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Tiếp nhận báo cáo các lớp, tổng hợp số liệu cấp trường và xuất in văn bản hành chính mầm non.
+          Báo cáo quản trị toàn trường của Ban Giám Hiệu, tiếp nhận duyệt báo cáo các lớp từ giáo viên và xuất in hồ sơ sư phạm.
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
           <button
             type="button"
-            onClick={() => onViewModeChange("class-reports")}
+            onClick={() => onViewModeChange("admin-school")}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
-              viewMode === "class-reports" ? "bg-white text-indigo-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              viewMode === "admin-school" || viewMode === "batch"
+                ? "bg-white text-indigo-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <Building size={13} />
-            <span>Báo cáo từ Giáo viên</span>
+            <span>Báo cáo Toàn trường (Admin)</span>
           </button>
           <button
             type="button"
-            onClick={() => onViewModeChange("batch")}
+            onClick={() => onViewModeChange("teacher-classes")}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
-              viewMode === "batch" ? "bg-white text-blue-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              viewMode === "teacher-classes" || viewMode === "class-reports"
+                ? "bg-white text-blue-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <Layers size={13} />
-            <span>Báo cáo Toàn trường</span>
+            <span>Báo cáo từ Giáo viên</span>
           </button>
           <button
             type="button"
             onClick={() => onViewModeChange("detail")}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
-              viewMode === "detail" ? "bg-white text-blue-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              viewMode === "detail"
+                ? "bg-white text-emerald-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <FileSpreadsheet size={13} />
-            <span>Chi tiết số liệu</span>
+            <span>Tra cứu đa tiêu chí</span>
           </button>
         </div>
         <button

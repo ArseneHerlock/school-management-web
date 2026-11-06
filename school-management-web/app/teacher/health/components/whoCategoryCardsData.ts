@@ -26,7 +26,7 @@ export function getWhoCategoryCards(
     {
       key: 'DAT_CHUAN_WHO',
       label: 'Đạt chuẩn WHO',
-      sub: '-2 SD ≤ Z ≤ +2 SD',
+      sub: 'Phát triển cân đối',
       count: `${countNormal} bé`,
       bg: 'bg-emerald-50 border-emerald-200 text-emerald-800',
       activeBg: 'bg-emerald-600 border-emerald-700 text-white',
@@ -35,7 +35,7 @@ export function getWhoCategoryCards(
     {
       key: 'THAP_COI',
       label: 'Thấp còi',
-      sub: 'HAZ: -3 ≤ Z < -2 SD',
+      sub: 'Chiều cao dưới chuẩn',
       count: `${countThapCoi} bé`,
       bg: 'bg-blue-50 border-blue-200 text-blue-800',
       activeBg: 'bg-blue-600 border-blue-700 text-white',
@@ -44,7 +44,7 @@ export function getWhoCategoryCards(
     {
       key: 'THAP_COI_NANG',
       label: 'Thấp còi nặng',
-      sub: 'HAZ: Z < -3 SD',
+      sub: 'Cần can thiệp chiều cao',
       count: `${countThapCoiNang} bé`,
       bg: 'bg-indigo-50 border-indigo-200 text-indigo-800',
       activeBg: 'bg-indigo-600 border-indigo-700 text-white',
@@ -53,7 +53,7 @@ export function getWhoCategoryCards(
     {
       key: 'NHE_CAN',
       label: 'Nhẹ cân',
-      sub: 'WAZ: -3 ≤ Z < -2 SD',
+      sub: 'Cân nặng dưới chuẩn',
       count: `${countNheCan} bé`,
       bg: 'bg-amber-50 border-amber-200 text-amber-800',
       activeBg: 'bg-amber-500 border-amber-600 text-white',
@@ -62,7 +62,7 @@ export function getWhoCategoryCards(
     {
       key: 'NHE_CAN_NANG',
       label: 'Nhẹ cân nặng',
-      sub: 'WAZ: Z < -3 SD',
+      sub: 'Cần can thiệp dinh dưỡng',
       count: `${countNheCanNang} bé`,
       bg: 'bg-orange-50 border-orange-200 text-orange-800',
       activeBg: 'bg-orange-600 border-orange-700 text-white',
@@ -71,7 +71,7 @@ export function getWhoCategoryCards(
     {
       key: 'GAY_COM',
       label: 'Gầy còm',
-      sub: 'WHZ: -3 ≤ Z < -2 SD',
+      sub: 'Thiếu cân so với chiều cao',
       count: `${countGayCom} bé`,
       bg: 'bg-rose-50 border-rose-200 text-rose-800',
       activeBg: 'bg-rose-500 border-rose-600 text-white',
@@ -80,7 +80,7 @@ export function getWhoCategoryCards(
     {
       key: 'GAY_COM_NANG',
       label: 'Gầy còm nặng',
-      sub: 'WHZ: Z < -3 SD',
+      sub: 'Cần phục hồi thể trạng',
       count: `${countGayComNang} bé`,
       bg: 'bg-red-50 border-red-200 text-red-800',
       activeBg: 'bg-red-600 border-red-700 text-white',
@@ -89,7 +89,7 @@ export function getWhoCategoryCards(
     {
       key: 'THUA_CAN',
       label: 'Thừa cân',
-      sub: '+2 SD < Z ≤ +3 SD',
+      sub: 'Cân nặng vượt chuẩn',
       count: `${countThuaCan} bé`,
       bg: 'bg-yellow-50 border-yellow-200 text-yellow-800',
       activeBg: 'bg-yellow-500 border-yellow-600 text-white',
@@ -98,7 +98,7 @@ export function getWhoCategoryCards(
     {
       key: 'BEO_PHI',
       label: 'Béo phì',
-      sub: 'Z > +3 SD',
+      sub: 'Cần cân bằng năng lượng',
       count: `${countBeoPhi} bé`,
       bg: 'bg-purple-50 border-purple-200 text-purple-800',
       activeBg: 'bg-purple-600 border-purple-700 text-white',

@@ -1,5 +1,5 @@
 "use client";
-import { Menu, Phone, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { ChildInfo, ParentProfile } from "../types";
 import NotificationCenter from "@/app/components/NotificationCenter";
 
@@ -17,7 +17,7 @@ export default function ParentHeader({
   title: string;
   subtitle: string;
   onToggleSidebar: () => void;
-  onOpenCall: () => void;
+  onOpenCall?: () => void;
   onNavigateNotificationTab: (tab: string, childId?: string) => void;
   onOpenProfile: () => void;
   parent: ParentProfile;
@@ -64,14 +64,6 @@ export default function ParentHeader({
           onCountsChange={onNotificationCountsChange}
         />
 
-        <button
-          onClick={onOpenCall}
-          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-2.5 py-1.5 sm:px-3 sm:py-1.5 text-white font-bold text-xs shadow-xs hover:from-emerald-600 hover:to-emerald-700 transition-all active:scale-95 shrink-0 cursor-pointer"
-          title="Gọi giáo viên"
-        >
-          <Phone size={14} />
-          <span className="hidden sm:inline">Gọi GV</span>
-        </button>
         <button
           onClick={onOpenProfile}
           className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 font-bold text-xs text-indigo-700 border border-indigo-200 hover:shadow-xs transition-all active:scale-95 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"

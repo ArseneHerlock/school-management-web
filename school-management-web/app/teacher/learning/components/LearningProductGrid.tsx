@@ -37,8 +37,8 @@ export const LearningProductGrid: React.FC<LearningProductGridProps> = ({
         <div>
           <h2 className="text-lg font-black text-slate-800">
             {activeTab === 'class'
-              ? `Khoảnh khắc lớp ${className} (${displayedMoments.length})`
-              : `Khoảnh khắc riêng các bé (${displayedMoments.length})`}
+              ? `Hình ảnh hoạt động lớp ${className} (${displayedMoments.length})`
+              : `Sản phẩm & Ảnh riêng từng bé (${displayedMoments.length})`}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             {activeTab === 'class'

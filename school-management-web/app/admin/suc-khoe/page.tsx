@@ -35,20 +35,28 @@ export default function SucKhoePage() {
   const [latestHealthRecordsMap, setLatestHealthRecordsMap] = useState<
     Record<string, RecordRow | undefined>
   >({});
+  const [recordsByQuarterAndStudent, setRecordsByQuarterAndStudent] = useState<
+    Record<string, Record<string, RecordRow | undefined>>
+  >({});
+  const [availableQuarters, setAvailableQuarters] = useState<string[]>([]);
 
-  const [selectedQuarterFilter, setSelectedQuarterFilter] = useState("Quý 4/2026");
+  // Mặc định chọn "" (Tất cả đợt khám - Số đo mới nhất) để hiển thị đầy đủ học sinh
+  const [selectedQuarterFilter, setSelectedQuarterFilter] = useState("");
   const [selectedCategoryFilter, setSelectedCategoryFilter] =
     useState<HealthCategoryFilter>("ALL");
   const [selectedStudentDetail, setSelectedStudentDetail] =
     useState<Student | null>(null);
   const [studentHistoryLogs, setStudentHistoryLogs] = useState<RecordRow[]>([]);
 
+  const currentYear = new Date().getFullYear();
+  const currentQuarter = Math.ceil((new Date().getMonth() + 1) / 3);
+
   const [healthFormData, setHealthFormData] = useState({
     height: "",
     weight: "",
     note: "",
     checkupDate: new Date().toISOString().slice(0, 10),
-    quarterName: "Đợt khám Quý 4/2026",
+    quarterName: `Đợt khám Quý ${currentQuarter}/${currentYear}`,
   });
 
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -69,6 +77,8 @@ export default function SucKhoePage() {
       setClassesList(data.classes);
       setGradesList(data.grades);
       setLatestHealthRecordsMap(data.latestMap);
+      setRecordsByQuarterAndStudent(data.recordsByQuarterAndStudent);
+      setAvailableQuarters(data.availableQuarters);
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Không tải được dữ liệu sức khỏe",
@@ -86,14 +96,22 @@ export default function SucKhoePage() {
     setCurrentPage(1);
   }, [searchKeyword, classFilter, selectedQuarterFilter, selectedCategoryFilter]);
 
+  // Xác định nguồn bản ghi sức khỏe theo quý được chọn (hoặc bản ghi mới nhất)
+  const activeRecordsMap = useMemo(() => {
+    if (selectedQuarterFilter && recordsByQuarterAndStudent[selectedQuarterFilter]) {
+      return recordsByQuarterAndStudent[selectedQuarterFilter];
+    }
+    return latestHealthRecordsMap;
+  }, [selectedQuarterFilter, recordsByQuarterAndStudent, latestHealthRecordsMap]);
+
   const healthStudentRows = useMemo(() => {
     return buildHealthStudentRows(
       studentsList,
-      latestHealthRecordsMap,
+      activeRecordsMap,
       classesList,
       gradesList,
     );
-  }, [studentsList, latestHealthRecordsMap, classesList, gradesList]);
+  }, [studentsList, activeRecordsMap, classesList, gradesList]);
 
   const filteredRows = useMemo(() => {
     return filterHealthStudentRows(
@@ -121,8 +139,6 @@ export default function SucKhoePage() {
       const historyList = Array.isArray(rawHistory) ? rawHistory : [];
       setStudentHistoryLogs(historyList as unknown as RecordRow[]);
       const latestHistoryItem = historyList[0];
-      const currentYear = new Date().getFullYear();
-      const currentQuarter = Math.ceil((new Date().getMonth() + 1) / 3);
       const now = new Date();
       const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
         .toISOString()
@@ -148,6 +164,7 @@ export default function SucKhoePage() {
     try {
       setIsSubmitting(true);
       setErrorMessage("");
+
       let noteContent = `${healthFormData.quarterName} - Khám sức khỏe định kỳ (Chuẩn WHO)`;
       if (healthFormData.note && healthFormData.note.trim().length > 0) {
         noteContent = `[${healthFormData.quarterName}] ${healthFormData.note.trim()}`;
@@ -193,6 +210,7 @@ export default function SucKhoePage() {
     }
   }
 
+  // Tổng hợp dữ liệu biểu đồ và thống kê theo 9 nhóm WHO
   const schoolPieData = useMemo(() => aggregateSchoolPie(healthStudentRows), [healthStudentRows]);
   const healthByGradeData = useMemo(() => aggregateHealthByGrade(healthStudentRows), [healthStudentRows]);
   const healthByClassData = useMemo(() => aggregateHealthByClass(healthStudentRows), [healthStudentRows]);
@@ -224,6 +242,7 @@ export default function SucKhoePage() {
         errorMessage={errorMessage}
       />
 
+      {/* 9 Thẻ KPI tương ứng 9 nhóm thể trạng chuẩn WHO */}
       <SucKhoeKpiCards
         totalStudents={studentsList.length}
         measuredCount={kpiCounts.totalMeasured}
@@ -240,16 +259,21 @@ export default function SucKhoePage() {
         onSelectCategory={setSelectedCategoryFilter}
       />
 
+      {/* Biểu đồ Donut & Cột chồng hiển thị đầy đủ 9 nhóm thể trạng */}
       <SucKhoeCharts
         schoolPie={schoolPieData}
         byGrade={healthByGradeData}
         byClass={healthByClassData}
+        selectedCategory={selectedCategoryFilter}
+        onSelectCategory={setSelectedCategoryFilter}
       />
 
+      {/* Bảng danh sách học sinh với bộ lọc chính xác */}
       <SucKhoeTable
         filtered={filteredRows}
         paginated={paginatedRows}
         classes={classesList}
+        availableQuarters={availableQuarters}
         q={searchKeyword}
         setQ={setSearchKeyword}
         quarterFilter={selectedQuarterFilter}

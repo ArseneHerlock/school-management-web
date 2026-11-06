@@ -15,13 +15,14 @@ import {
   ReportPreviewModal,
 } from "./components/ReportExport";
 import { AdminClassReportsCentral } from "./components/AdminClassReportsCentral";
+import { AdminSchoolExecutiveReport } from "./components/AdminSchoolExecutiveReport";
 
 export default function BaoCaoPage() {
   const [selectedReports, setSelectedReports] = useState<string[]>(() =>
     REPORT_DEFINITIONS.filter((r) => r.defaultChecked).map((r) => r.id),
   );
 
-  const [viewMode, setViewMode] = useState<"class-reports" | "batch" | "detail">("class-reports");
+  const [viewMode, setViewMode] = useState<"admin-school" | "teacher-classes" | "detail">("admin-school");
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const [filters, setFilters] = useState<ReportFilterState>({
@@ -82,7 +83,11 @@ export default function BaoCaoPage() {
         selectedCount={selectedReports.length}
       />
 
-      {viewMode === "class-reports" ? (
+      {viewMode === "admin-school" ? (
+        <AdminSchoolExecutiveReport
+          onSwitchToClassesManagement={() => setViewMode("teacher-classes")}
+        />
+      ) : viewMode === "teacher-classes" ? (
         <AdminClassReportsCentral />
       ) : (
         <>
@@ -96,25 +101,12 @@ export default function BaoCaoPage() {
 
           <ReportKpiCards metrics={metrics} />
 
-          {viewMode === "batch" ? (
-            <ReportBatchSelector
-              selectedReports={selectedReports}
-              onToggleReport={handleToggleReport}
-              onSelectAll={() => setSelectedReports(REPORT_DEFINITIONS.map((r) => r.id))}
-              onDeselectAll={() => setSelectedReports([])}
-              onOpenPreview={() => setPreviewOpen(true)}
-              onDownloadPdf={handleDownloadPdf}
-              selectedMonth={filters.selectedMonth}
-              selectedYear={filters.selectedYear}
-            />
-          ) : (
-            <ReportDetailTables
-              metrics={metrics}
-              data={data}
-              selectedMonth={filters.selectedMonth}
-              selectedYear={filters.selectedYear}
-            />
-          )}
+          <ReportDetailTables
+            metrics={metrics}
+            data={data}
+            selectedMonth={filters.selectedMonth}
+            selectedYear={filters.selectedYear}
+          />
         </>
       )}
 

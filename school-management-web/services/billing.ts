@@ -9,20 +9,30 @@ export enum ChargeType {
   OtherService = 6,
 }
 
-export const ChargeTypeLabels: Record<number, string> = {
-  1: "Học phí chính khóa",
-  2: "Tiền ăn bán trú",
-  3: "Xe đưa đón",
-  4: "Trông muộn / Ngoại khóa",
-  5: "Hoạt động dã ngoại / sự kiện",
-  6: "Khoản thu khác (Bảo hiểm, Đồng phục...)",
+export const ChargeTypeLabels: Record<number | string, string> = {
+  1: "Học phí mầm non (Miễn 100% theo NĐ 238/2025/NĐ-CP)",
+  2: "Tiền ăn bán trú mầm non (Bữa chính & xế)",
+  3: "Dịch vụ xe đưa đón học sinh (Tự nguyện)",
+  4: "Dịch vụ chăm sóc & nuôi dưỡng bán trú",
+  5: "Ngoại khóa năng khiếu & Kỹ năng sống (Tự nguyện)",
+  6: "Học phẩm & Trang thiết bị bán trú",
+  Tuition: "Học phí mầm non (Miễn 100% theo NĐ 238/2025/NĐ-CP)",
+  Meal: "Tiền ăn bán trú mầm non (Bữa chính & xế)",
+  Transportation: "Dịch vụ xe đưa đón học sinh (Tự nguyện)",
+  ExtendedCare: "Dịch vụ chăm sóc & nuôi dưỡng bán trú",
+  Activity: "Ngoại khóa năng khiếu & Kỹ năng sống (Tự nguyện)",
+  OtherService: "Học phẩm & Trang thiết bị bán trú",
 };
+
+export function isTuitionCharge(chargeType: any): boolean {
+  return chargeType === ChargeType.Tuition || chargeType === 1 || chargeType === "Tuition";
+}
 
 export interface FeeItem {
   id: string;
   name: string;
   description?: string | null;
-  chargeType: number;
+  chargeType: number | string;
   amount: number;
   unit: string;
   schoolYear: string;
@@ -308,12 +318,12 @@ export async function createBilling(periodData: {
 }): Promise<BillingPeriodItem> {
   return await api.post<BillingPeriodItem>("billing", "/api/billing", periodData);
 }
-
-/**
- * Lấy toàn bộ biểu phí (không lọc theo năm học)
- */
-export async function getAllFees(): Promise<FeeItem[]> {
-  const rawResponse = await api.get<any>("billing", "/api/billing/fees");
-  return normalizeList<FeeItem>(rawResponse);
-}
-
+
+/**
+ * Lấy toàn bộ biểu phí (không lọc theo năm học)
+ */
+export async function getAllFees(): Promise<FeeItem[]> {
+  const rawResponse = await api.get<any>("billing", "/api/billing/fees");
+  return normalizeList<FeeItem>(rawResponse);
+}
+

@@ -30,8 +30,8 @@ interface ActionItem {
 const ACTION_ITEMS: ActionItem[] = [
   {
     icon: ClipboardCheck,
-    label: 'Điểm danh 1 chạm',
-    sublabel: 'Chấm đón trẻ, đi muộn, vắng',
+    label: 'Điểm danh lớp',
+    sublabel: 'Đón trẻ, vắng mặt, đi muộn',
     path: '/teacher/attendance',
     colorClass: 'text-emerald-700',
     bgClass: 'bg-emerald-50 hover:bg-emerald-100/90 border-emerald-200/80',
@@ -39,8 +39,8 @@ const ACTION_ITEMS: ActionItem[] = [
   },
   {
     icon: Soup,
-    label: 'Báo ăn & Chốt suất',
-    sublabel: 'Gửi danh sách suất ăn tới bếp',
+    label: 'Báo ăn bán trú',
+    sublabel: 'Chốt số lượng suất ăn nhà bếp',
     path: '/teacher/attendance',
     colorClass: 'text-amber-700',
     bgClass: 'bg-amber-50 hover:bg-amber-100/90 border-amber-200/80',
@@ -48,8 +48,8 @@ const ACTION_ITEMS: ActionItem[] = [
   },
   {
     icon: Pill,
-    label: 'Sổ dặn thuốc',
-    sublabel: 'Xem đơn thuốc PH gửi & ký nhận',
+    label: 'Sổ dặn thuốc uống',
+    sublabel: 'Đơn dặn thuốc phụ huynh gửi',
     path: '/teacher/leave',
     colorClass: 'text-rose-700',
     bgClass: 'bg-rose-50 hover:bg-rose-100/90 border-rose-200/80',
@@ -58,7 +58,7 @@ const ACTION_ITEMS: ActionItem[] = [
   {
     icon: Moon,
     label: 'Nề nếp ngủ trưa',
-    sublabel: 'Ghi nhận giờ ngủ & chất lượng giấc',
+    sublabel: 'Ghi nhận giờ ngủ & nề nếp',
     path: '/teacher/attendance',
     colorClass: 'text-indigo-700',
     bgClass: 'bg-indigo-50 hover:bg-indigo-100/90 border-indigo-200/80',
@@ -66,7 +66,7 @@ const ACTION_ITEMS: ActionItem[] = [
   },
   {
     icon: Flower2,
-    label: 'Tặng hoa bé ngoan',
+    label: 'Bình cờ bé ngoan',
     sublabel: 'Khen thưởng chuyên cần & nề nếp',
     path: '/teacher/flower-awards',
     colorClass: 'text-pink-700',
@@ -75,7 +75,7 @@ const ACTION_ITEMS: ActionItem[] = [
   },
   {
     icon: FileCheck2,
-    label: 'Duyệt nghỉ học',
+    label: 'Duyệt đơn nghỉ',
     sublabel: 'Xác nhận đơn xin phép từ phụ huynh',
     path: '/teacher/leave',
     colorClass: 'text-orange-700',
@@ -83,16 +83,16 @@ const ACTION_ITEMS: ActionItem[] = [
   },
   {
     icon: Images,
-    label: 'Khoảnh khắc lớp',
-    sublabel: 'Đăng ảnh hoạt động học & vui chơi',
+    label: 'Album ảnh lớp',
+    sublabel: 'Hình ảnh hoạt động học & vui chơi',
     path: '/teacher/album',
     colorClass: 'text-sky-700',
     bgClass: 'bg-sky-50 hover:bg-sky-100/90 border-sky-200/80',
   },
   {
     icon: MessageSquare,
-    label: 'Sổ trao đổi gia đình',
-    sublabel: 'Tin nhắn trực tuyến cùng phụ huynh',
+    label: 'Liên lạc phụ huynh',
+    sublabel: 'Sổ liên lạc & trao đổi trực tuyến',
     path: '/teacher/messages',
     colorClass: 'text-purple-700',
     bgClass: 'bg-purple-50 hover:bg-purple-100/90 border-purple-200/80',
@@ -108,10 +108,10 @@ export const TeacherQuickActions: React.FC<TeacherQuickActionsProps> = ({ onNavi
     <div className="bg-white rounded-3xl p-3.5 sm:p-5 border border-slate-100 shadow-xs max-w-full min-w-0">
       <div className="flex items-center justify-between mb-3 px-1">
         <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-          Nghiệp vụ giáo viên 1-chạm
+          Nghiệp vụ sư phạm hàng ngày
         </span>
         <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200/60">
-          8 Công tác
+          Thao tác nhanh
         </span>
       </div>
 

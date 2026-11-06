@@ -46,33 +46,33 @@ export default function WhoSummaryCards({ lanDo }: WhoSummaryCardsProps) {
     return [
       {
         id: "HAZ",
-        label: "Chiều cao theo tuổi (HAZ)",
+        label: "Chiều cao theo tuổi",
         icon: Ruler,
         val: lanDo.chieuCao,
         unit: "cm",
         z: lanDo.haz,
-        conclusion: lanDo.ketLuanHaz || "Bình thường",
+        conclusion: lanDo.ketLuanHaz || "Đạt chuẩn",
         theme: getTheme(lanDo.haz),
       },
       {
         id: "WAZ",
-        label: "Cân nặng theo tuổi (WAZ)",
+        label: "Cân nặng theo tuổi",
         icon: Scale,
         val: lanDo.canNang,
         unit: "kg",
         z: lanDo.waz,
-        conclusion: lanDo.ketLuanWaz || "Bình thường",
+        conclusion: lanDo.ketLuanWaz || "Đạt chuẩn",
         isExtreme: lanDo.waz != null && Math.abs(lanDo.waz) > 5,
         theme: getTheme(lanDo.waz),
       },
       {
         id: "WHZ",
-        label: "Cân nặng / Chiều cao (WHZ)",
+        label: "Thể trạng phát triển",
         icon: Activity,
         val: lanDo.trangThaiTheTrang || "CÂN ĐỐI",
         unit: "",
         z: lanDo.whz,
-        conclusion: lanDo.ketLuanWhz || "Bình thường",
+        conclusion: lanDo.ketLuanWhz || "Cân đối",
         theme: getTheme(lanDo.whz),
       },
     ];
@@ -96,9 +96,9 @@ export default function WhoSummaryCards({ lanDo }: WhoSummaryCardsProps) {
                 <Icon size={16} /> {c.label}
               </span>
               <span
-                className={`text-xs px-2 py-0.5 rounded-full font-bold border shadow-2xs ${c.theme.badge}`}
+                className={`text-xs px-2.5 py-0.5 rounded-full font-bold border shadow-2xs ${c.theme.badge}`}
               >
-                {c.z != null ? `${c.z > 0 ? "+" : ""}${c.z} SD` : "Chưa tính"}
+                {c.conclusion}
               </span>
             </div>
             <div className="mt-2 text-2xl font-black text-slate-800">
@@ -109,13 +109,9 @@ export default function WhoSummaryCards({ lanDo }: WhoSummaryCardsProps) {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-xs font-bold leading-snug text-slate-700">
-              {c.conclusion}
-            </p>
             {c.isExtreme && (
               <p className="mt-1 text-[10px] text-rose-600 font-semibold italic">
-                * Cảnh báo: Vượt ngưỡng sinh học (&gt; 5 SD). Cần kiểm tra lại số
-                đo.
+                * Cảnh báo: Số đo có dấu hiệu bất thường. Cần kiểm tra lại số đo.
               </p>
             )}
           </div>

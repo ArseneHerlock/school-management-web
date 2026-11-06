@@ -147,11 +147,15 @@ export default function KhoiPage() {
     );
     if (!isConfirmed) return;
 
+    // Cập nhật Optimistic UI: Lập tức gỡ khối khỏi danh sách
+    setGradesList((prev) => prev.filter((g) => g.id !== targetGrade.id));
+
     try {
       await deleteGrade(targetGrade.id);
       setSuccessMessage(`Đã xóa khối "${targetGrade.tenKhoi}".`);
       await fetchGradesData();
     } catch (error) {
+      await fetchGradesData();
       const displayError =
         error instanceof Error ? error.message : "Không thể xóa khối.";
       setErrorMessage(displayError);

@@ -173,6 +173,9 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
     return activityMoments;
   }, [activityMoments, classActivityMoments, childActivityMoments, momentScopeFilter]);
 
+  const childRef = React.useRef(child);
+  childRef.current = child;
+
   const fetchParentSchedules = useCallback(
     async (params: {
       from: string;
@@ -180,13 +183,14 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
       type?: number;
       classId?: string;
     }): Promise<TimetableScheduleItem[]> => {
-      const targetClassId = child.classId || (child as any).lopId || child.lop || '';
+      const currentChild = childRef.current;
+      const targetClassId = currentChild.classId || (currentChild as any).lopId || currentChild.lop || '';
       const q = new URLSearchParams();
       if (params.from) q.set('from', params.from);
       if (params.to) q.set('to', params.to);
       if (params.type !== undefined) q.set('type', String(params.type));
       if (targetClassId) q.set('classId', targetClassId);
-      if (child.id) q.set('childId', child.id);
+      if (currentChild.id) q.set('childId', currentChild.id);
 
       let fetchedList: any[] = [];
       try {
@@ -211,7 +215,7 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
         fetchedList = Array.isArray(res) ? res : [];
       }
 
-      const childClass = (child.lop || '').trim().toLowerCase();
+      const childClass = (currentChild.lop || '').trim().toLowerCase();
 
       const filtered = fetchedList.filter((x: any) => {
         if (x.isSchoolWide) return true;
@@ -245,12 +249,12 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
           startTime: String(x.startTime || x.gioBatDau || '07:30').slice(0, 5),
           endTime: String(x.endTime || x.gioKetThuc || '09:30').slice(0, 5),
           location: x.location || x.diaDiem || 'Phòng học',
-          className: x.isSchoolWide ? 'Toàn trường' : child.lop || x.className || 'Lớp của bé',
+          className: x.isSchoolWide ? 'Toàn trường' : currentChild.lop || x.className || 'Lớp của bé',
           status: x.status || 'Approved',
           teacherName:
             x.teacherName ||
             x.teachers?.[0]?.teacherId ||
-            child.giaoVienChuNhiem ||
+            currentChild.giaoVienChuNhiem ||
             'Cô giáo phụ trách',
           teachers: x.teachers,
           isSchoolWide: Boolean(x.isSchoolWide),
@@ -260,7 +264,7 @@ export default function ScheduleTab({ child }: { child: ChildInfo }) {
         };
       });
     },
-    [child.id, child.lop, child.classId, child.giaoVienChuNhiem]
+    []
   );
 
   const teacherComment = childEvaluations.find(

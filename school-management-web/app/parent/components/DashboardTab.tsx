@@ -236,7 +236,7 @@ export default function DashboardTab({
     },
     {
       id: 'health' as const,
-      label: 'Sức khỏe WHO & Cô',
+      label: 'Sức khỏe & Giáo viên',
       mobileLabel: 'Sức khỏe',
       icon: HeartPulse,
     },
@@ -257,7 +257,7 @@ export default function DashboardTab({
         onSelectChild={setSelectedChildId}
       />
 
-      {/* 3. Bàn Tiện Ích Phụ Huynh 1-Chạm (8 Icons: Nghỉ học, Dặn thuốc, Đón hộ, Học phí...) */}
+      {/* 3. Chức năng thường dùng của phụ huynh */}
       <ParentQuickActionsDock onNavigateTab={onNavigateTab} />
 
       {/* 4. Bộ Chuyển Chuyên Mục Thông Minh (Segmented Tabs - Co giãn hoàn hảo trên mọi kích thước màn hình) */}
@@ -296,7 +296,7 @@ export default function DashboardTab({
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-xs border border-blue-50">
           <Loader2 className="animate-spin text-blue-500 mb-3" size={36} />
           <p className="text-slate-500 font-bold text-sm">
-            Đang tổng hợp dữ liệu của bé {activeChild?.hoTen}...
+            Đang tải thông tin của bé {activeChild?.hoTen}...
           </p>
         </div>
       ) : (

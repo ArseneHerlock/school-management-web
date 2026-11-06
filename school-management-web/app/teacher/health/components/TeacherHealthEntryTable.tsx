@@ -33,16 +33,16 @@ export function TeacherHealthEntryTable({
                 Chiều cao (cm) <span className="text-rose-500">*</span>
               </th>
               <th className="py-3.5 px-3 text-center font-black">
-                HAZ (CC/Tuổi)
+                Chiều cao / Tuổi
               </th>
               <th className="py-3.5 px-3 text-center font-black">
-                WAZ (CN/Tuổi)
+                Cân nặng / Tuổi
               </th>
               <th className="py-3.5 px-3 text-center font-black">
-                WHZ (Thể trạng)
+                Thể trạng
               </th>
               <th className="py-3.5 px-4 text-right font-black min-w-[160px]">
-                Đánh giá tổng quát WHO
+                Kết luận thể trạng
               </th>
             </tr>
           </thead>
@@ -129,55 +129,40 @@ export function TeacherHealthEntryTable({
                     </div>
                   </td>
 
-                  {/* Cột HAZ (Chiều cao / Tuổi) */}
+                  {/* Cột Chiều cao / Tuổi */}
                   <td className="py-3 px-3 text-center">
                     {assessment ? (
-                      <div>
-                        <span className="font-mono font-bold text-xs text-slate-800">
-                          {assessment.haz.zScore > 0 ? `+${assessment.haz.zScore}` : assessment.haz.zScore}
-                        </span>
-                        <div className={`text-[10px] font-semibold ${assessment.haz.textClass}`}>
-                          {assessment.haz.code === 'BINH_THUONG' ? 'Đạt chuẩn WHO' : assessment.haz.label}
-                        </div>
-                      </div>
+                      <span className={`text-[11px] font-bold ${assessment.haz.textClass}`}>
+                        {assessment.haz.code === 'BINH_THUONG' ? 'Đạt chuẩn' : assessment.haz.label}
+                      </span>
                     ) : (
                       <span className="text-slate-300 italic">—</span>
                     )}
                   </td>
 
-                  {/* Cột WAZ (Cân nặng / Tuổi) */}
+                  {/* Cột Cân nặng / Tuổi */}
                   <td className="py-3 px-3 text-center">
                     {assessment ? (
-                      <div>
-                        <span className="font-mono font-bold text-xs text-slate-800">
-                          {assessment.waz.zScore > 0 ? `+${assessment.waz.zScore}` : assessment.waz.zScore}
-                        </span>
-                        <div className={`text-[10px] font-semibold ${assessment.waz.textClass}`}>
-                          {assessment.waz.code === 'BINH_THUONG' ? 'Đạt chuẩn WHO' : assessment.waz.label}
-                        </div>
-                      </div>
+                      <span className={`text-[11px] font-bold ${assessment.waz.textClass}`}>
+                        {assessment.waz.code === 'BINH_THUONG' ? 'Đạt chuẩn' : assessment.waz.label}
+                      </span>
                     ) : (
                       <span className="text-slate-300 italic">—</span>
                     )}
                   </td>
 
-                  {/* Cột WHZ (Thể trạng Cân nặng / Chiều cao) */}
+                  {/* Cột Thể trạng Cân nặng / Chiều cao */}
                   <td className="py-3 px-3 text-center">
                     {assessment ? (
-                      <div>
-                        <span className="font-mono font-bold text-xs text-slate-800">
-                          {assessment.whz.zScore > 0 ? `+${assessment.whz.zScore}` : assessment.whz.zScore}
-                        </span>
-                        <div className={`text-[10px] font-semibold ${assessment.whz.textClass}`}>
-                          {assessment.whz.code === 'BINH_THUONG' ? 'Đạt chuẩn WHO' : assessment.whz.label}
-                        </div>
-                      </div>
+                      <span className={`text-[11px] font-bold ${assessment.whz.textClass}`}>
+                        {assessment.whz.code === 'BINH_THUONG' ? 'Cân đối' : assessment.whz.label}
+                      </span>
                     ) : (
                       <span className="text-slate-300 italic">—</span>
                     )}
                   </td>
 
-                  {/* Cột Phân loại thể trạng WHO tự động */}
+                  {/* Cột Kết luận thể trạng */}
                   <td className="py-3 px-4 text-right">
                     {assessment ? (
                       <span
@@ -186,7 +171,6 @@ export function TeacherHealthEntryTable({
                             ? 'bg-amber-100 text-amber-800 border-amber-300'
                             : 'bg-emerald-100 text-emerald-800 border-emerald-300'
                         }`}
-                        title={assessment.loiKhuyen}
                       >
                         {assessment.trangThaiTongThe}
                       </span>

@@ -58,13 +58,13 @@ export default function NhanSuPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(12);
 
-  async function fetchStaffData(): Promise<void> {
+  async function fetchStaffData(forceRefresh = false): Promise<void> {
     try {
       const [allStaff, allPositions, allClasses, allAssignments] =
         await Promise.all([
-          getStaff(),
+          getStaff({ forceRefresh }),
           getPositions(),
-          getClasses(),
+          getClasses(forceRefresh),
           getAssignments(),
         ]);
 
@@ -102,7 +102,7 @@ export default function NhanSuPage() {
       );
       setAssignmentsMap(assignMap);
     } catch {
-      setStaffList([]);
+      // Giữ nguyên dữ liệu hiện tại khi có lỗi kết nối thay vì xóa trắng
     }
   }
 
@@ -142,12 +142,23 @@ export default function NhanSuPage() {
   async function handleConfirmDeleteStaff(): Promise<void> {
     if (!staffToDelete) return;
     setIsDeletingLoading(true);
+    const targetStaffId = staffToDelete.staffId;
+    const targetFullName = staffToDelete.fullName;
+
+    // Cập nhật Optimistic UI: Lập tức gỡ bỏ nhân sự đã xóa khỏi bảng hiển thị
+    setStaffList((prev) =>
+      prev.filter(
+        (s) => s.staffId !== targetStaffId && (s as any).id !== targetStaffId
+      )
+    );
+
     try {
-      await deleteStaff(staffToDelete.staffId);
-      setNotificationMessage(`Đã xóa hồ sơ nhân sự "${staffToDelete.fullName}".`);
+      await deleteStaff(targetStaffId);
+      setNotificationMessage(`Đã xóa hồ sơ nhân sự "${targetFullName}".`);
       setStaffToDelete(null);
-      await fetchStaffData();
+      await fetchStaffData(true);
     } catch (error) {
+      await fetchStaffData(true);
       setNotificationMessage(
         error instanceof Error ? error.message : "Xóa nhân sự thất bại."
       );
@@ -185,7 +196,7 @@ export default function NhanSuPage() {
       setNotificationMessage("Tạo nhân sự mới thành công.");
       setIsCreateModalOpen(false);
       setStaffFormData(emptyStaffForm);
-      await fetchStaffData();
+      await fetchStaffData(true);
     } catch (error) {
       setNotificationMessage(
         error instanceof Error ? error.message : "Tạo nhân sự thất bại"
@@ -209,7 +220,7 @@ export default function NhanSuPage() {
 
       setNotificationMessage("Đã phân công giáo viên vào lớp học.");
       setAssignmentFormData((prev) => ({ ...prev, classId: "" }));
-      await fetchStaffData();
+      await fetchStaffData(true);
 
       const refreshedStaff = staffList.find(
         (item) => item.staffId === selectedStaffDetail.staffId
@@ -228,7 +239,7 @@ export default function NhanSuPage() {
     try {
       await deleteAssignment(assignmentId);
       setNotificationMessage("Đã xóa phân công lớp.");
-      await fetchStaffData();
+      await fetchStaffData(true);
     } catch (error) {
       setNotificationMessage(
         error instanceof Error ? error.message : "Không thể xóa phân công"
@@ -239,7 +250,7 @@ export default function NhanSuPage() {
   return (
     <section className="space-y-5">
       <NhanSuHeader
-        onRefresh={fetchStaffData}
+        onRefresh={() => void fetchStaffData(true)}
         onOpenCreate={() => {
           setStaffFormData(emptyStaffForm);
           setIsCreateModalOpen(true);

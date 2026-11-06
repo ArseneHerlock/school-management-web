@@ -46,14 +46,14 @@ export const LearningScopeCards: React.FC<LearningScopeCardsProps> = ({
                 activeTab === 'class' ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600'
               }`}
             >
-              {classMomentsCount} khoảnh khắc
+              {classMomentsCount} hình ảnh
             </span>
           </div>
           <h3 className="mt-1 text-lg font-black text-slate-800 truncate">
-            Khoảnh khắc lớp ({className})
+            Album hoạt động chung ({className})
           </h3>
           <p className="mt-0.5 text-xs text-slate-500">
-            Đăng cho <b>toàn thể phụ huynh</b> trong lớp xem chung hoạt động tập thể
+            Chia sẻ tới <b>toàn thể phụ huynh</b> lớp xem các hoạt động học và sinh hoạt tập thể
           </p>
         </div>
       </button>
@@ -84,14 +84,14 @@ export const LearningScopeCards: React.FC<LearningScopeCardsProps> = ({
                 activeTab === 'child' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
               }`}
             >
-              {childMomentsCount} khoảnh khắc
+              {childMomentsCount} hình ảnh
             </span>
           </div>
           <h3 className="mt-1 text-lg font-black text-slate-800 truncate">
-            Khoảnh khắc của bé
+            Sản phẩm & Hình ảnh riêng của bé
           </h3>
           <p className="mt-0.5 text-xs text-slate-500">
-            Khoảnh khắc riêng biệt — <b>chỉ phụ huynh của bé ấy</b> mới xem được
+            Lưu trữ riêng tư — <b>chỉ phụ huynh của từng bé</b> mới xem được sản phẩm của con
           </p>
         </div>
       </button>

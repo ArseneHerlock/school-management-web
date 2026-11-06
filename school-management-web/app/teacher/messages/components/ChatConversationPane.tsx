@@ -3,7 +3,6 @@
 import React from 'react';
 import {
   ArrowLeft,
-  Phone,
   ShieldCheck,
   Loader2,
   MessageSquare,
@@ -86,14 +85,13 @@ export function ChatConversationPane({
 
         <div className="flex items-center gap-2">
           {selectedParent.phoneNumber && (
-            <a
-              href={`tel:${selectedParent.phoneNumber}`}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition"
-              title="Gọi điện cho phụ huynh"
+            <div
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"
+              title="Số điện thoại phụ huynh"
             >
-              <Phone size={13} />
-              <span className="hidden sm:inline">{selectedParent.phoneNumber}</span>
-            </a>
+              <span className="text-slate-400 font-medium">SĐT:</span>
+              <span className="font-mono text-slate-700">{selectedParent.phoneNumber}</span>
+            </div>
           )}
 
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200 flex items-center gap-1">

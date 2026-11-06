@@ -71,13 +71,14 @@ export function PhuHuynhHeader({
           <div className="relative">
             <Search
               size={17}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"
             />
             <input
-              className="admin-input pl-10"
+              className="admin-input !pl-10"
+              style={{ paddingLeft: "2.5rem" }}
               value={searchKeyword}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Tìm phụ huynh, điện thoại, email, CCCD..."
+              placeholder="Tìm phụ huynh, con, điện thoại, email, CCCD..."
             />
           </div>
 

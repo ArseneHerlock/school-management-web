@@ -41,21 +41,21 @@ export const ClassroomSafetyWatchlist: React.FC<ClassroomSafetyWatchlistProps> =
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-black text-slate-800">
-              Sổ Giám Sát An Toàn Lớp Học Hôm Nay
+              Sổ theo dõi an toàn & y tế của trẻ hôm nay
             </h3>
             <p className="text-[11px] text-slate-400">
-              Theo dõi dặn thuốc, dị ứng thực phẩm và đơn nghỉ của trẻ trong lớp
+              Theo dõi lịch uống thuốc, dị ứng dinh dưỡng và dặn dò đặc biệt từ phụ huynh
             </p>
           </div>
         </div>
         <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-black text-rose-700 self-start sm:self-auto">
-          {items.length} Lưu ý nề nếp
+          {items.length} Lưu ý cần chăm sóc
         </span>
       </div>
 
       {items.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400">
-          Hôm nay lớp không có lưu ý y tế, đơn dặn thuốc hoặc đơn nghỉ học nào cần xử lý.
+          Hôm nay lớp không có lưu ý sức khỏe hoặc dặn thuốc đặc biệt nào từ phụ huynh.
         </div>
       ) : (
         <div className="mt-4 space-y-3">

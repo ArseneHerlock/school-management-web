@@ -64,7 +64,7 @@ export default function TuitionPeriodsTable({
                             ({period.items.length} mục)
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 text-xs">
+                        <div className="flex flex-wrap items-center gap-3 text-xs">
                           <span>Phải nộp: <b>{money(period.subtotalMucNop)} đ</b></span>
                           <span className="text-emerald-600">Đã nộp: <b>{money(period.subtotalDaNop)} đ</b></span>
                           <span className="text-rose-600">Nợ: <b>{money(period.subtotalCongNo)} đ</b></span>

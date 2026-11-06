@@ -14,20 +14,25 @@ import { currentUser, logout } from "@/services/client";
 import NotificationCenter from "@/app/components/NotificationCenter";
 
 const ROUTE_TITLE_MAP: Record<string, string> = {
-  "/teacher": "Bàn làm việc tổng quan",
-  "/teacher/attendance": "Điểm danh học sinh",
-  "/teacher/schedule": "Lịch dạy & Hoạt động",
-  "/teacher/assessment": "Đánh giá sự phát triển",
-  "/teacher/activities": "Hoạt động sự kiện trường",
-  "/teacher/leave": "Duyệt đơn xin nghỉ học",
-  "/teacher/health": "Sức khỏe & Thể chất định kỳ",
-  "/teacher/good-child": "Sổ theo dõi Bé ngoan",
-  "/teacher/flower-awards": "Tặng hoa bé ngoan",
-  "/teacher/messages": "Tin nhắn phụ huynh",
-  "/teacher/album": "Album hình ảnh hoạt động lớp",
-  "/teacher/learning": "Sản phẩm & Tác phẩm của bé",
-  "/teacher/news": "Bảng tin nhà trường",
-  "/teacher/profile": "Hồ sơ cá nhân giáo viên",
+  "/teacher": "Tổng quan lớp học",
+  "/teacher/attendance": "Sổ theo dõi chuyên cần",
+  "/teacher/schedule": "Thời khóa biểu & Lịch sinh hoạt",
+  "/teacher/assessment": "Đánh giá sự phát triển của trẻ",
+  "/teacher/activities": "Kế hoạch hoạt động & Sự kiện",
+  "/teacher/pickup": "Sổ đón trả trẻ & Người đưa đón",
+  "/teacher/medications": "Sổ theo dõi & Dặn thuốc",
+  "/teacher/leave": "Sổ theo dõi nghỉ phép",
+  "/teacher/health": "Khám sức khỏe & Biểu đồ tăng trưởng",
+  "/teacher/good-child": "Theo dõi bé ngoan hàng tuần",
+  "/teacher/flower-awards": "Phiếu bé ngoan & Khen thưởng",
+  "/teacher/fcm": "Hồ sơ năng lực học sinh",
+  "/teacher/year-end-awards": "Tổng kết & Khen thưởng cuối năm",
+  "/teacher/bao-cao": "Báo cáo chuyên môn lớp",
+  "/teacher/messages": "Sổ liên lạc & Tin nhắn phụ huynh",
+  "/teacher/album": "Nhật ký hoạt động & Album ảnh",
+  "/teacher/learning": "Góc sản phẩm của bé",
+  "/teacher/news": "Bản tin & Thông báo lớp",
+  "/teacher/profile": "Hồ sơ giáo viên",
 };
 
 interface TeacherTopBarProps {
@@ -81,7 +86,7 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/85 px-3 sm:px-6 backdrop-blur-md transition-all gap-2 pt-[calc(env(safe-area-inset-top,0px)+2px)]">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/85 px-3 sm:px-6 backdrop-blur-md transition-all gap-2 pt-[calc(env(safe-area-inset-top,0px)+2px)] font-sans">
       {/* Tiêu đề trang & Breadcrumb */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
@@ -100,7 +105,7 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
             </h1>
           </div>
           <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 hidden sm:block truncate">
-            Xin chào, <span className="font-semibold text-slate-600">{teacherDisplayName}</span> • Chúc bạn một ngày dạy học tràn đầy năng lượng!
+            Giáo viên phụ trách: <span className="font-semibold text-slate-600">{teacherDisplayName}</span> • Năm học 2026 - 2027
           </p>
         </div>
       </div>
@@ -123,7 +128,7 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
         {/* Nút tắt tới Đơn xin nghỉ */}
         <Link
           href="/teacher/leave"
-          title="Duyệt đơn xin nghỉ của học sinh"
+          title="Sổ theo dõi nghỉ phép của học sinh"
           className="relative hidden sm:flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600 transition"
         >
           <FileCheck2 size={17} />
@@ -137,7 +142,7 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
         {/* Nút tắt tới Tin nhắn */}
         <Link
           href="/teacher/messages"
-          title="Hộp thư tin nhắn phụ huynh"
+          title="Sổ liên lạc & Tin nhắn phụ huynh"
           className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600 transition"
         >
           <MessageSquare size={17} />
@@ -161,7 +166,7 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
           </div>
         </Link>
 
-        {/* Nút Đăng xuất tiện lợi */}
+        {/* Nút Đăng xuất */}
         <button
           onClick={logout}
           title="Đăng xuất khỏi hệ thống"

@@ -34,13 +34,13 @@ interface RoutinePhase {
 }
 
 const ROUTINE_PHASES: RoutinePhase[] = [
-  { id: 'arrival', label: 'Đón trẻ & Sàng lọc', timeRange: '07:00 - 08:30', startHour: 7, startMinute: 0, endHour: 8, endMinute: 30, icon: Sun },
-  { id: 'breakfast', label: 'Ăn sáng & Thể dục', timeRange: '08:30 - 09:15', startHour: 8, startMinute: 30, endHour: 9, endMinute: 15, icon: Utensils },
-  { id: 'learning', label: 'Hoạt động học', timeRange: '09:15 - 10:30', startHour: 9, startMinute: 15, endHour: 10, endMinute: 30, icon: BookOpen },
-  { id: 'lunch', label: 'Ăn trưa', timeRange: '10:30 - 11:30', startHour: 10, startMinute: 30, endHour: 11, endMinute: 30, icon: Utensils },
-  { id: 'nap', label: 'Giờ ngủ trưa', timeRange: '11:30 - 14:00', startHour: 11, startMinute: 30, endHour: 14, endMinute: 0, icon: Moon },
-  { id: 'snack', label: 'Ăn xế chiều', timeRange: '14:00 - 15:30', startHour: 14, startMinute: 0, endHour: 15, endMinute: 30, icon: Smile },
-  { id: 'departure', label: 'Trả trẻ & Bàn giao', timeRange: '15:30 - 17:30', startHour: 15, startMinute: 30, endHour: 17, endMinute: 30, icon: LogOut },
+  { id: 'arrival', label: 'Đón trẻ & Thể dục sáng', timeRange: '07:00 - 08:30', startHour: 7, startMinute: 0, endHour: 8, endMinute: 30, icon: Sun },
+  { id: 'breakfast', label: 'Bữa sáng & Hoạt động góc', timeRange: '08:30 - 09:15', startHour: 8, startMinute: 30, endHour: 9, endMinute: 15, icon: Utensils },
+  { id: 'learning', label: 'Hoạt động học có chủ đích', timeRange: '09:15 - 10:30', startHour: 9, startMinute: 15, endHour: 10, endMinute: 30, icon: BookOpen },
+  { id: 'lunch', label: 'Vệ sinh & Bữa trưa', timeRange: '10:30 - 11:30', startHour: 10, startMinute: 30, endHour: 11, endMinute: 30, icon: Utensils },
+  { id: 'nap', label: 'Giờ ngủ trưa bán trú', timeRange: '11:30 - 14:00', startHour: 11, startMinute: 30, endHour: 14, endMinute: 0, icon: Moon },
+  { id: 'snack', label: 'Thức dậy & Bữa xế', timeRange: '14:00 - 15:30', startHour: 14, startMinute: 0, endHour: 15, endMinute: 30, icon: Smile },
+  { id: 'departure', label: 'Hoạt động chiều & Trả trẻ', timeRange: '15:30 - 17:30', startHour: 15, startMinute: 30, endHour: 17, endMinute: 30, icon: LogOut },
 ]
 
 export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
@@ -81,7 +81,7 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
 
           <div>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight drop-shadow-xs">
-              Bàn Làm Việc Giáo Viên: {className}
+              Không gian nghiệp vụ sư phạm · Lớp {className}
             </h2>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-orange-50">
               <span className="flex items-center gap-1.5 rounded-lg bg-black/15 px-2.5 py-1 backdrop-blur-xs">
@@ -104,7 +104,7 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
         <div className="flex flex-col items-start md:items-end justify-center rounded-2xl bg-black/20 p-4 backdrop-blur-md border border-white/15">
           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-amber-200">
             <Clock size={13} />
-            <span>Nề nếp đang diễn ra:</span>
+            <span>Chế độ sinh hoạt hiện tại:</span>
           </div>
           <div className="mt-1 flex items-center gap-2">
             <span className="text-lg md:text-xl font-black text-white">{activePhase.label}</span>
@@ -124,7 +124,7 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
       {/* Routine Stepper Timeline (Chuỗi Nề nếp sinh hoạt trong ngày - Vuốt ngang nhẹ nhàng) */}
       <div className="mt-4 sm:mt-5 border-t border-white/15 pt-3">
         <p className="text-[10px] sm:text-[11px] font-bold text-orange-100 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <span>Chuỗi nhịp sinh hoạt trong ngày:</span>
+          <span>Thời gian biểu sinh hoạt trong ngày:</span>
         </p>
 
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -169,7 +169,7 @@ export const TeacherHeroCard: React.FC<TeacherHeroCardProps> = ({
               ))}
             </div>
           </div>
-          <span className="text-[11px] text-amber-200">Đã kích hoạt chế độ thao tác 1 chạm</span>
+          <span className="text-[11px] text-amber-200">Đồng bộ nghiệp vụ thời gian thực</span>
         </div>
       )}
     </div>

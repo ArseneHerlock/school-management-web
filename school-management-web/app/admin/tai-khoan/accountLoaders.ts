@@ -4,25 +4,25 @@ import { UserAccount } from "./types";
 export async function loadAllUserAccounts(): Promise<UserAccount[]> {
   let usersList: any[] = [];
 
-  try {
-    const x = await getUsers();
-    const payload: any = x;
-    const items = Array.isArray(payload)
-      ? payload
-      : Array.isArray(payload?.items)
-        ? payload.items
-        : [];
-    if (items.length > 0) {
-      usersList = items;
-    }
-  } catch (err) {
-    console.warn("Could not fetch users list from auth service:", err);
-  }
-
-  const [staff, parents] = await Promise.all([
+  // Fetch users, staff, and parents in parallel for fast cold loads
+  const [usersRes, staff, parents] = await Promise.all([
+    getUsers().catch((err) => {
+      console.warn("Could not fetch users list from auth service:", err);
+      return [];
+    }),
     getStaff().catch(() => []),
     getParents().catch(() => []),
   ]);
+
+  const payload: any = usersRes;
+  const items = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : [];
+  if (items.length > 0) {
+    usersList = items;
+  }
 
   const staffArr: any[] = Array.isArray(staff) ? (staff as any[]) : [];
   const parentArr: any[] = Array.isArray(parents) ? (parents as any[]) : [];

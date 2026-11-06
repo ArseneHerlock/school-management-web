@@ -75,30 +75,43 @@ export default function PhuHuynhPage() {
 
       const childMap: Record<string, Child[]> = {};
       (Array.isArray(allLinks) ? allLinks : []).forEach((link: any) => {
-        const pId = String(link.parentId || "");
+        const pId = String(link.parentId || link.ParentId || "");
         if (!pId) return;
         if (!childMap[pId]) childMap[pId] = [];
+
+        const studentName =
+          link.tenHocSinh ||
+          link.TenHocSinh ||
+          link.student?.hoTen ||
+          link.student?.tenHocSinh ||
+          link.studentName ||
+          link.hoTen ||
+          "Chưa cập nhật tên";
+
+        const lopIdVal = link.lopId || link.LopId || link.student?.lopId || "";
+        const matchedClass = (Array.isArray(allClasses) ? allClasses : []).find(
+          (c: any) => String(c.id).toLowerCase() === String(lopIdVal).toLowerCase()
+        );
+        const className =
+          link.tenLop ||
+          link.TenLop ||
+          link.student?.tenLop ||
+          matchedClass?.tenLop ||
+          "Chưa xếp lớp";
+
         childMap[pId].push({
-          id: link.studentId || link.id,
-          studentId: link.studentId || link.id,
-          hoTen:
-            link.student?.hoTen ||
-            link.studentName ||
-            link.hoTen ||
-            "Chưa cập nhật tên",
-          tenHocSinh:
-            link.student?.hoTen ||
-            link.studentName ||
-            link.hoTen ||
-            "Chưa cập nhật tên",
-          lopId: link.student?.lopId || link.lopId,
-          tenLop: link.student?.tenLop || link.tenLop,
-          relationship: link.relationship || link.quanHe || "Phụ huynh",
-          quanHe: link.relationship || link.quanHe || "Phụ huynh",
-          ngaySinh: link.student?.ngaySinh || "",
-          gioiTinh: link.student?.gioiTinh || "",
-          trangThaiHoc: link.student?.trangThaiHoc || "DangHoc",
-          laLienHeChinh: Boolean(link.laLienHeChinh),
+          id: link.studentId || link.StudentId || link.id,
+          studentId: link.studentId || link.StudentId || link.id,
+          hoTen: studentName,
+          tenHocSinh: studentName,
+          lopId: lopIdVal,
+          tenLop: className,
+          relationship: link.relationship || link.quanHe || link.QuanHe || "Phụ huynh",
+          quanHe: link.relationship || link.quanHe || link.QuanHe || "Phụ huynh",
+          ngaySinh: link.ngaySinh || link.NgaySinh || link.student?.ngaySinh || "",
+          gioiTinh: link.gioiTinh || link.GioiTinh || link.student?.gioiTinh || "",
+          trangThaiHoc: link.trangThaiHoc || link.TrangThaiHoc || link.student?.trangThaiHoc || "DangHoc",
+          laLienHeChinh: Boolean(link.laLienHeChinh ?? link.LaLienHeChinh),
         });
       });
       setChildrenMap(childMap);
@@ -120,17 +133,17 @@ export default function PhuHuynhPage() {
   }, [classesList]);
 
   const filteredParentsList = useMemo(() => {
+    const q = searchKeyword.toLowerCase().trim();
     return parentsList.filter((p) => {
-      const q = searchKeyword.toLowerCase().trim();
+      const children = childrenMap[p.id] || [];
       const matchSearch =
         !q ||
         (p.hoTen && p.hoTen.toLowerCase().includes(q)) ||
         (p.soDienThoai && p.soDienThoai.includes(q)) ||
         (p.email && p.email.toLowerCase().includes(q)) ||
         (p.cccd && p.cccd.includes(q)) ||
-        (p.soCccd && p.soCccd.includes(q));
-
-      const children = childrenMap[p.id] || [];
+        (p.soCccd && p.soCccd.includes(q)) ||
+        children.some((c) => c.tenHocSinh && c.tenHocSinh.toLowerCase().includes(q));
       const matchClass =
         classFilter === "ALL" ||
         children.some((c) => c.lopId === classFilter);
@@ -198,16 +211,22 @@ export default function PhuHuynhPage() {
 
   async function handleConfirmDeleteParent(): Promise<void> {
     if (!parentToDelete) return;
+    const targetId = parentToDelete.id;
+    const targetName = parentToDelete.hoTen;
+
+    // Cập nhật Optimistic UI: Lập tức gỡ phụ huynh khỏi danh sách
+    setParentsList((prev) => prev.filter((p) => p.id !== targetId));
 
     setIsDeletingLoading(true);
     try {
-      await deleteParent(parentToDelete.id);
+      await deleteParent(targetId);
       setNotificationMessage(
-        `Đã xóa phụ huynh "${parentToDelete.hoTen}" thành công.`
+        `Đã xóa phụ huynh "${targetName}" thành công.`
       );
       setParentToDelete(null);
       await fetchParentsData();
     } catch (error) {
+      await fetchParentsData();
       setNotificationMessage(
         error instanceof Error ? error.message : "Lỗi khi xóa phụ huynh"
       );

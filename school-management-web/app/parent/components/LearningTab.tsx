@@ -203,14 +203,14 @@ export default function LearningTab({ child }: { child: ChildInfo }) {
       <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-5 sm:p-7 text-white shadow-lg">
         <div className="flex items-center gap-2">
           <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-200 bg-white/10 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
-            GÓC HỌC TẬP
+            GÓC TRƯNG BÀY SẢN PHẨM
           </span>
           <span className="text-xs text-indigo-200">·</span>
           <span className="text-xs text-indigo-200 font-semibold">{child.lop || 'Trường mầm non'}</span>
         </div>
-        <h2 className="mt-2 text-xl sm:text-2xl font-black">Sản phẩm học tập của {child.hoTen}</h2>
+        <h2 className="mt-2 text-xl sm:text-2xl font-black">Sản phẩm hoạt động & tạo hình của bé {child.hoTen}</h2>
         <p className="mt-1 text-xs sm:text-sm text-indigo-100 max-w-xl">
-          Nơi lưu giữ các bài tập, nét vẽ đầu đời và minh chứng quá trình học tập sáng tạo của bé được giáo viên ghi nhận.
+          Lưu giữ tranh vẽ, bài xé dán, tạo hình đất nặn và các sản phẩm sáng tạo trong giờ học của bé được giáo viên ghi nhận.
         </p>
       </div>
 
@@ -254,7 +254,7 @@ export default function LearningTab({ child }: { child: ChildInfo }) {
           <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
             {hasActiveFilter
               ? 'Hãy thử đổi tháng, hoạt động hoặc nhấn "Đặt lại bộ lọc" để xem toàn bộ sản phẩm của bé.'
-              : `Khi cô giáo chia sẻ tranh vẽ hoặc bài học của bé ${child.hoTen}, hình ảnh và lời nhận xét sẽ xuất hiện tại đây.`}
+              : `Khi giáo viên chụp ảnh tranh vẽ, bài tạo hình hoặc sản phẩm hoạt động góc của bé ${child.hoTen}, hình ảnh cùng lời nhận xét sẽ được cập nhật tại đây.`}
           </p>
           {hasActiveFilter && (
             <button

@@ -40,32 +40,32 @@ export interface SidebarGroup {
 export const navigationGroups: SidebarGroup[] = [
   {
     id: 'dashboard',
-    groupName: 'Bàn làm việc',
+    groupName: 'Tổng quan lớp học',
     icon: LayoutDashboard,
     href: '/teacher',
   },
   {
     id: 'teaching',
-    groupName: 'Giảng dạy',
+    groupName: 'Nghiệp vụ sư phạm',
     icon: CalendarDays,
     items: [
       {
-        label: 'Điểm danh lớp',
+        label: 'Sổ theo dõi chuyên cần',
         href: '/teacher/attendance',
         icon: ClipboardCheck,
       },
       {
-        label: 'Thời khóa biểu',
+        label: 'Thời khóa biểu & Lịch sinh hoạt',
         href: '/teacher/schedule',
         icon: CalendarDays,
       },
       {
-        label: 'Đánh giá hoạt động',
+        label: 'Đánh giá sự phát triển của trẻ',
         href: '/teacher/assessment',
         icon: Sparkles,
       },
       {
-        label: 'Hoạt động sự kiện',
+        label: 'Kế hoạch hoạt động & Sự kiện',
         href: '/teacher/activities',
         icon: CalendarPlus,
       },
@@ -73,26 +73,26 @@ export const navigationGroups: SidebarGroup[] = [
   },
   {
     id: 'care',
-    groupName: 'Chăm sóc',
+    groupName: 'Chăm sóc & Nuôi dưỡng',
     icon: HeartPulse,
     items: [
       {
-        label: 'Đón trả bé',
+        label: 'Sổ đón trả trẻ & Người đưa đón',
         href: '/teacher/pickup',
         icon: UserCheck,
       },
       {
-        label: 'Sổ dặn thuốc lớp',
+        label: 'Sổ theo dõi & Dặn thuốc',
         href: '/teacher/medications',
         icon: Pill,
       },
       {
-        label: 'Duyệt đơn nghỉ học',
+        label: 'Sổ theo dõi nghỉ phép',
         href: '/teacher/leave',
         icon: FileCheck2,
       },
       {
-        label: 'Sức khỏe định kỳ',
+        label: 'Khám sức khỏe & Biểu đồ tăng trưởng',
         href: '/teacher/health',
         icon: HeartPulse,
       },
@@ -100,26 +100,26 @@ export const navigationGroups: SidebarGroup[] = [
   },
   {
     id: 'evaluation',
-    groupName: 'Phát triển học sinh',
+    groupName: 'Thi đua & Đánh giá',
     icon: Award,
     items: [
       {
-        label: 'Theo dõi rèn luyện',
+        label: 'Theo dõi bé ngoan hàng tuần',
         href: '/teacher/good-child',
         icon: Award,
       },
       {
-        label: 'Hồ sơ phân cụm của lớp',
+        label: 'Hồ sơ năng lực học sinh',
         href: '/teacher/fcm',
         icon: Layers,
       },
       {
-        label: 'Khen thưởng cuối năm',
+        label: 'Tổng kết & Khen thưởng cuối năm',
         href: '/teacher/year-end-awards',
         icon: GraduationCap,
       },
       {
-        label: 'Báo cáo của lớp',
+        label: 'Báo cáo chuyên môn lớp',
         href: '/teacher/bao-cao',
         icon: FileText,
       },
@@ -127,26 +127,26 @@ export const navigationGroups: SidebarGroup[] = [
   },
   {
     id: 'interaction',
-    groupName: 'Tương tác gia đình',
+    groupName: 'Liên lạc Phụ huynh',
     icon: MessageSquare,
     items: [
       {
-        label: 'Tin nhắn phụ huynh',
+        label: 'Sổ liên lạc & Tin nhắn',
         href: '/teacher/messages',
         icon: MessageSquare,
       },
       {
-        label: 'Album ảnh lớp',
+        label: 'Nhật ký hoạt động & Album ảnh',
         href: '/teacher/album',
         icon: Images,
       },
       {
-        label: 'Sản phẩm của bé',
+        label: 'Góc sản phẩm của bé',
         href: '/teacher/learning',
         icon: BookOpenCheck,
       },
       {
-        label: 'Bảng tin thông báo',
+        label: 'Bản tin & Thông báo lớp',
         href: '/teacher/news',
         icon: Bell,
       },

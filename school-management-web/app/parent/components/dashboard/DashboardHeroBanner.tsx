@@ -28,7 +28,7 @@ export function DashboardHeroBanner({
             Xin chào, {parentName || 'Phụ huynh'}!
           </h2>
           <p className="text-blue-100 mt-1 sm:mt-2 text-xs sm:text-sm max-w-lg leading-relaxed">
-            Theo dõi toàn diện quá trình điểm danh chuyên cần, lịch học và các đánh giá phát triển của con tại trường mầm non.
+            Theo dõi chuyên cần, lịch sinh hoạt và kết quả rèn luyện của bé tại trường mầm non.
           </p>
         </div>
 
@@ -38,14 +38,14 @@ export function DashboardHeroBanner({
             className="flex items-center justify-center gap-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur px-3 py-2.5 sm:px-4 sm:py-2.5 text-xs font-bold transition shadow-xs cursor-pointer text-center"
           >
             <CalendarDays size={15} className="shrink-0" />
-            <span className="truncate">Xem Điểm danh</span>
+            <span className="truncate">Sổ điểm danh</span>
           </button>
           <button
             onClick={() => onNavigateTab('assessment')}
             className="flex items-center justify-center gap-1.5 rounded-xl bg-white px-3 py-2.5 sm:px-4 sm:py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-50 transition shadow-xs cursor-pointer text-center"
           >
             <Sparkles size={15} className="shrink-0" />
-            <span className="truncate">Đánh giá của con</span>
+            <span className="truncate">Đánh giá phát triển</span>
           </button>
         </div>
       </div>

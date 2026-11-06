@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MessageCircle, Phone, Wifi, WifiOff, X } from 'lucide-react'
+import { MessageCircle, Wifi, WifiOff, X } from 'lucide-react'
 import { currentUser, createHubConnection, getStaff } from "@/services"
 import {
   getMyConversations,
@@ -212,13 +212,6 @@ export default function MessagesTab({
             {connected ? <Wifi size={12} /> : <WifiOff size={12} />}
             {connected ? 'Trực tuyến' : 'Ngoại tuyến'}
           </span>
-          <button
-            onClick={onOpenCall}
-            className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-700 cursor-pointer"
-          >
-            <Phone size={14} />
-            <span className="hidden sm:inline">Gọi GV</span>
-          </button>
         </div>
       </header>
 

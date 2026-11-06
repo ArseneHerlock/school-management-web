@@ -28,7 +28,7 @@ export function KhenThuongStats({ stats }: KhenThuongStatsProps) {
           <span className="text-xl font-black text-amber-700">{stats.beTaiNang || 0}</span>
           <Sparkles size={16} className="text-amber-600" />
         </div>
-        <p className="mt-1 text-[10px] text-amber-700/80">≥90% CC • Chuẩn WHO • Cụm 1</p>
+        <p className="mt-1 text-[10px] text-amber-700/80">Thành tích nổi trội toàn diện</p>
       </div>
 
       <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-3.5 shadow-sm">
@@ -37,7 +37,7 @@ export function KhenThuongStats({ stats }: KhenThuongStatsProps) {
           <span className="text-xl font-black text-rose-600">{stats.beKhoeBeNgoan || 0}</span>
           <Sparkles size={16} className="text-rose-500" />
         </div>
-        <p className="mt-1 text-[10px] text-rose-600/80">≥90% CC • Chuẩn WHO • Cụm 2</p>
+        <p className="mt-1 text-[10px] text-rose-600/80">Thể chất khỏe, chăm ngoan</p>
       </div>
 
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3.5 shadow-sm">
@@ -46,7 +46,7 @@ export function KhenThuongStats({ stats }: KhenThuongStatsProps) {
           <span className="text-xl font-black text-emerald-600">{stats.beChuyenCan || 0}</span>
           <ShieldCheck size={16} className="text-emerald-600" />
         </div>
-        <p className="mt-1 text-[10px] text-emerald-600/80">≥90% CC • Cần TD • Cụm 3</p>
+        <p className="mt-1 text-[10px] text-emerald-600/80">Đi học chuyên cần, tích cực</p>
       </div>
 
       <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-3.5 shadow-sm">
@@ -55,7 +55,7 @@ export function KhenThuongStats({ stats }: KhenThuongStatsProps) {
           <span className="text-xl font-black text-blue-600">{stats.beChamNgoan || 0}</span>
           <CheckCircle2 size={16} className="text-blue-500" />
         </div>
-        <p className="mt-1 text-[10px] text-blue-600/80">≥80% &amp; &lt;90% • Cần TD • Cụm 1, 2</p>
+        <p className="mt-1 text-[10px] text-blue-600/80">Ngoan ngoãn, hòa đồng</p>
       </div>
 
       <div className="rounded-2xl border border-purple-200 bg-purple-50/50 p-3.5 shadow-sm">
@@ -64,7 +64,7 @@ export function KhenThuongStats({ stats }: KhenThuongStatsProps) {
           <span className="text-xl font-black text-purple-600">{stats.beTienBo || 0}</span>
           <Award size={16} className="text-purple-500" />
         </div>
-        <p className="mt-1 text-[10px] text-purple-600/80">&lt;80% CC hoặc Cụm 4 • Không GH</p>
+        <p className="mt-1 text-[10px] text-purple-600/80">Nỗ lực tiến bộ rõ nét</p>
       </div>
 
       <div className="rounded-2xl border border-teal-200 bg-teal-50/50 p-3.5 shadow-sm">

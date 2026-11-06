@@ -68,7 +68,7 @@ export const AttendanceChartCard: React.FC<AttendanceChartCardProps> = ({
             </div>
             <p className="font-bold text-slate-700">Chưa có bản ghi điểm danh tháng này</p>
             <p className="text-[11px] text-slate-400 mt-1 max-w-sm">
-              Khi bé đến lớp và cô giáo điểm danh mỗi sáng, biểu đồ sẽ tự động ghi nhận số ngày đi học của con.
+              Khi giáo viên hoàn tất điểm danh đón trẻ mỗi sáng, biểu đồ chuyên cần sẽ tự động cập nhật số buổi đến lớp của bé.
             </p>
           </div>
         ) : (

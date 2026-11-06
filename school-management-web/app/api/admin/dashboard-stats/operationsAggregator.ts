@@ -145,58 +145,103 @@ export function aggregateDemographicsAndHealth({
     }
   }
 
-  // WHO nutrition
+  // WHO nutrition - Chuẩn hóa thống kê thể trạng trẻ em đồng bộ tuyệt đối với phân hệ Quản lý Sức Khỏe
+  // Sắp xếp các đợt khám theo thời gian giảm dần để lấy kết quả đợt khám mới nhất của từng bé
+  const sortedHealth = [...healthList].sort((a: any, b: any) => {
+    const da = String(a.ngayDo || a.NgayDo || a.createdAt || a.CreatedAt || "");
+    const db = String(b.ngayDo || b.NgayDo || b.createdAt || b.CreatedAt || "");
+    return db.localeCompare(da);
+  });
+
   const latestHealthMap = new Map<string, any>();
-  healthList.forEach((rec: any) => {
+  sortedHealth.forEach((rec: any) => {
     const sid = String(rec.hocSinhId || rec.HocSinhId || "");
     if (sid && !latestHealthMap.has(sid)) {
       latestHealthMap.set(sid, rec);
     }
   });
 
+  const normalizeVietnamese = (str: string): string =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .toLowerCase();
+
   let normalCount = 0;
-  let underweightOrStuntedCount = 0;
-  let overweightOrObeseCount = 0;
+  let stuntedCount = 0;
+  let severelyStuntedCount = 0;
+  let underweightCount = 0;
+  let severelyUnderweightCount = 0;
+  let wastedCount = 0;
+  let severelyWastedCount = 0;
+  let overweightCount = 0;
+  let obeseCount = 0;
 
   latestHealthMap.forEach((rec) => {
-    const tt = String(
-      rec.trangThaiTheTrang || rec.tinhTrangDinhDuong || rec.ketLuanWhz || ""
-    ).toUpperCase();
-    if (
-      tt.includes("THAP_COI") ||
-      tt.includes("NHE_CAN") ||
-      tt.includes("GAY_COM") ||
-      tt.includes("SUY_DINH_DUONG")
-    ) {
-      underweightOrStuntedCount++;
-    } else if (
-      tt.includes("THUA_CAN") ||
-      tt.includes("BEO_PHI") ||
-      tt.includes("NGUY_CO_THUA_CAN")
-    ) {
-      overweightOrObeseCount++;
+    const rawText = `${rec.trangThaiTheTrang || rec.TrangThaiTheTrang || ""} ${rec.ketLuanHaz || rec.KetLuanHaz || ""} ${rec.ketLuanWaz || rec.KetLuanWaz || ""} ${rec.ketLuanWhz || rec.KetLuanWhz || ""} ${rec.ketLuanTongThe || rec.KetLuanTongThe || ""} ${rec.tinhTrangDinhDuong || ""} ${rec.ghiChu || rec.GhiChu || ""}`;
+    const clean = normalizeVietnamese(rawText);
+
+    const haz = rec.haz != null ? Number(rec.haz) : rec.Haz != null ? Number(rec.Haz) : null;
+    const waz = rec.waz != null ? Number(rec.waz) : rec.Waz != null ? Number(rec.Waz) : null;
+    const whz = rec.whz != null ? Number(rec.whz) : rec.Whz != null ? Number(rec.Whz) : null;
+
+    if ((haz !== null && haz < -3) || clean.includes("thap coi nang") || clean.includes("thap_coi_nang")) {
+      severelyStuntedCount++;
+    } else if ((haz !== null && haz < -2) || clean.includes("thap coi") || clean.includes("thap_coi")) {
+      stuntedCount++;
+    } else if ((waz !== null && waz < -3) || clean.includes("nhe can nang") || clean.includes("nhe_can_nang")) {
+      severelyUnderweightCount++;
+    } else if ((waz !== null && waz < -2) || clean.includes("nhe can") || clean.includes("nhe_can")) {
+      underweightCount++;
+    } else if ((whz !== null && whz < -3) || clean.includes("gay com nang") || clean.includes("gay_com_nang")) {
+      severelyWastedCount++;
+    } else if ((whz !== null && whz < -2) || clean.includes("gay com") || clean.includes("gay_com")) {
+      wastedCount++;
+    } else if ((whz !== null && whz > 3) || (waz !== null && waz > 3) || clean.includes("beo phi") || clean.includes("beo_phi")) {
+      obeseCount++;
+    } else if ((whz !== null && whz > 2) || (waz !== null && waz > 2) || clean.includes("thua can") || clean.includes("thua_can") || clean.includes("nguy co thua can")) {
+      overweightCount++;
     } else {
       normalCount++;
     }
   });
 
+  const underweightOrStuntedCount =
+    stuntedCount +
+    severelyStuntedCount +
+    underweightCount +
+    severelyUnderweightCount +
+    wastedCount +
+    severelyWastedCount;
+  const overweightOrObeseCount = overweightCount + obeseCount;
+
   const measuredCount = latestHealthMap.size;
   const unmeasuredCount = Math.max(0, totalEnrolled - measuredCount);
-  const normalPercent =
-    measuredCount > 0 ? Math.round((normalCount / measuredCount) * 100) : 0;
-  const underweightPercent =
-    measuredCount > 0
-      ? Math.round((underweightOrStuntedCount / measuredCount) * 100)
-      : 0;
-  const overweightPercent =
-    measuredCount > 0
-      ? Math.round((overweightOrObeseCount / measuredCount) * 100)
-      : 0;
+  
+  let normalPercent = 0;
+  let underweightPercent = 0;
+  let overweightPercent = 0;
+
+  if (measuredCount > 0) {
+    underweightPercent = Math.round((underweightOrStuntedCount / measuredCount) * 100);
+    overweightPercent = Math.round((overweightOrObeseCount / measuredCount) * 100);
+    normalPercent = Math.max(0, 100 - underweightPercent - overweightPercent);
+  }
 
   const whoNutrition: WhoNutritionSummary = {
     totalStudents: totalEnrolled,
     measuredCount,
     normalCount,
+    stuntedCount,
+    severelyStuntedCount,
+    underweightCount,
+    severelyUnderweightCount,
+    wastedCount,
+    severelyWastedCount,
+    overweightCount,
+    obeseCount,
     underweightOrStuntedCount,
     overweightOrObeseCount,
     unmeasuredCount,

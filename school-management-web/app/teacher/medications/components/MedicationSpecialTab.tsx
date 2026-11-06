@@ -84,13 +84,13 @@ export function MedicationSpecialTab({ filteredConditions }: MedicationSpecialTa
           {cond.SoDienThoaiKhanCap && (
             <div className="pt-1 flex items-center justify-between text-xs">
               <span className="text-slate-500">Người liên hệ khẩn cấp:</span>
-              <a
-                href={`tel:${cond.SoDienThoaiKhanCap.replace(/\D/g, '')}`}
-                className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200 hover:bg-emerald-100 transition"
+              <span
+                className="inline-flex items-center gap-1.5 font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-xl border border-slate-200"
+                title="Số điện thoại liên hệ khẩn cấp"
               >
-                <Phone size={13} />
-                <span>{cond.SoDienThoaiKhanCap}</span>
-              </a>
+                <span className="text-slate-400 font-medium">SĐT:</span>
+                <span className="font-mono">{cond.SoDienThoaiKhanCap}</span>
+              </span>
             </div>
           )}
         </div>

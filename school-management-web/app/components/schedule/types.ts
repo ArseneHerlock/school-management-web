@@ -56,6 +56,18 @@ export interface DayInfo {
   isToday: boolean;
 }
 
+export interface SessionConfig {
+  key: "morning" | "afternoon" | "evening";
+  label: string;
+  timeRange: string;
+}
+
+export const SESSIONS_CONFIG: SessionConfig[] = [
+  { key: "morning", label: "Sáng", timeRange: "07:00 - 11:30" },
+  { key: "afternoon", label: "Chiều", timeRange: "11:30 - 17:00" },
+  { key: "evening", label: "Tối / Trả muộn", timeRange: "17:00 - 19:00" },
+];
+
 export function isEvaluableActivity(item: {
   title?: string;
   type?: number;

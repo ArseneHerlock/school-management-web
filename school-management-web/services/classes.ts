@@ -64,6 +64,9 @@ const CLASSES_CACHE_TTL_MS = 30_000;
  */
 export async function getClasses(forceRefresh = false): Promise<SchoolClass[]> {
   const now = Date.now();
+  if (forceRefresh) {
+    classesCache = null;
+  }
   if (!forceRefresh && classesCache && now - classesCache.timestamp < CLASSES_CACHE_TTL_MS) {
     return classesCache.data;
   }
@@ -123,7 +126,13 @@ export async function getClassById(classId: string): Promise<SchoolClass> {
  * Tạo một lớp học mới
  */
 export async function createClass(classData: CreateClassInput): Promise<SchoolClass> {
-  return await api.post<SchoolClass>("classes", "/api/Lop", classData);
+  invalidateClassesCache();
+  try {
+    const res = await api.post<SchoolClass>("classes", "/api/Lop", classData);
+    return res;
+  } finally {
+    invalidateClassesCache();
+  }
 }
 
 /**
@@ -133,12 +142,23 @@ export async function updateClass(
   classId: string,
   updatedData: UpdateClassInput
 ): Promise<SchoolClass> {
-  return await api.put<SchoolClass>("classes", `/api/Lop/${classId}`, updatedData);
+  invalidateClassesCache();
+  try {
+    const res = await api.put<SchoolClass>("classes", `/api/Lop/${classId}`, updatedData);
+    return res;
+  } finally {
+    invalidateClassesCache();
+  }
 }
 
 /**
  * Xóa một lớp học theo ID
  */
 export async function deleteClass(classId: string): Promise<void> {
-  await api.delete("classes", `/api/Lop/${classId}`);
+  invalidateClassesCache();
+  try {
+    await api.delete("classes", `/api/Lop/${classId}`);
+  } finally {
+    invalidateClassesCache();
+  }
 }

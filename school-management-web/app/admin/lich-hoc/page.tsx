@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Plus, Grid, List } from "lucide-react";
 import {
   createSchedule,
@@ -60,6 +60,9 @@ export default function LichHocPage() {
       .catch(() => {});
   }, []);
 
+  const classesRef = useRef(classes);
+  classesRef.current = classes;
+
   const fetchAdminSchedules = useCallback(
     async (params: {
       from: string;
@@ -75,11 +78,11 @@ export default function LichHocPage() {
       }).catch(() => []);
 
       const fetchedList = Array.isArray(res) ? res : [];
-      const formatted = formatScheduleItems(fetchedList, classes);
+      const formatted = formatScheduleItems(fetchedList, classesRef.current);
       setTableSchedules(formatted as ScheduleItem[]);
       return formatted;
     },
-    [classes],
+    [],
   );
 
   const handleOpenCreate = (targetDate?: string) => {

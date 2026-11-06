@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-/* Các modal dài, đặc biệt giao diện tặng hoa, phải cuộn trong chính modal. */
+@theme {
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Các modal dài, đặc biệt giao diện tặng hoa, phải cuộn trong chính modal */
 .fixed.inset-0.z-50 > .w-full.max-w-2xl {
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
@@ -31,7 +35,7 @@ html, body {
   overscroll-behavior-x: none;
 }
 
-/* Ẩn thanh cuộn ngang/dọc nhưng vẫn cho cuộn cảm ứng mượt mà trên mobile */
+/* Ẩn thanh cuộn nhưng vẫn cho vuốt mượt mà trên mobile */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -63,7 +67,7 @@ html, body {
 }
 
 button, input, select, textarea {
-  font: inherit;
+  font-family: inherit;
 }
 
 .card-frame {
@@ -79,6 +83,7 @@ button, input, select, textarea {
   border-radius: .75rem;
   padding: .625rem .75rem;
   outline: none;
+  font-family: inherit;
 }
 
 .input:focus {

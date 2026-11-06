@@ -22,10 +22,10 @@ interface DevelopmentProgressCardProps {
 }
 
 const CLUSTER_BADGES: Record<number, { text: string; bg: string; textClass: string }> = {
-  1: { text: 'Cụm 1: Nổi trội toàn diện', bg: 'bg-emerald-100', textClass: 'text-emerald-800' },
-  2: { text: 'Cụm 2: Phát triển mức khá', bg: 'bg-blue-100', textClass: 'text-blue-800' },
-  3: { text: 'Cụm 3: Tiệm cận chuẩn', bg: 'bg-amber-100', textClass: 'text-amber-800' },
-  4: { text: 'Cụm 4: Cần can thiệp sớm', bg: 'bg-rose-100', textClass: 'text-rose-800' },
+  1: { text: 'Nhóm 1: Phát triển xuất sắc', bg: 'bg-emerald-100', textClass: 'text-emerald-800' },
+  2: { text: 'Nhóm 2: Phát triển đạt chuẩn', bg: 'bg-blue-100', textClass: 'text-blue-800' },
+  3: { text: 'Nhóm 3: Đang tiếp tục rèn luyện', bg: 'bg-amber-100', textClass: 'text-amber-800' },
+  4: { text: 'Nhóm 4: Cần phối hợp hỗ trợ', bg: 'bg-rose-100', textClass: 'text-rose-800' },
 }
 
 export const DevelopmentProgressCard: React.FC<DevelopmentProgressCardProps> = ({
@@ -58,7 +58,7 @@ export const DevelopmentProgressCard: React.FC<DevelopmentProgressCardProps> = (
             )}
           </div>
           <h3 className="text-sm sm:text-lg font-black text-slate-800">
-            Phát triển & Tiêu chí đạt của bé {childName}
+            Tổng hợp đánh giá 5 lĩnh vực phát triển của bé {childName}
           </h3>
         </div>
 
@@ -66,7 +66,7 @@ export const DevelopmentProgressCard: React.FC<DevelopmentProgressCardProps> = (
           onClick={onNavigateDetail}
           className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer self-start sm:self-auto"
         >
-          <span>Xem phân nhóm & nhận xét</span>
+          <span>Xem chi tiết đánh giá & nhận xét</span>
           <ArrowRight size={14} />
         </button>
       </div>

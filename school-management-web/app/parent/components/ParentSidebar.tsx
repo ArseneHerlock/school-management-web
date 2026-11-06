@@ -22,7 +22,9 @@ import {
   X,
   User,
   LogOut,
+  UserCheck,
 } from 'lucide-react';
+import { logout } from '@/services';
 
 interface ParentSidebarProps {
   activeTab?: string;
@@ -61,64 +63,62 @@ export default function ParentSidebar({
 }: ParentSidebarProps) {
   const pathname = usePathname();
 
-  // Menu 2 cấp chuẩn mực cho Phụ Huynh (Tên riêng biệt, không dùng chữ và hoặc &)
+  // Menu chuẩn hóa nghiệp vụ Sư phạm Mầm non dành cho Phụ huynh
   const navGroups: NavGroup[] = [
     {
       id: 'dashboard',
-      label: 'Tổng quan',
+      label: 'Sổ liên lạc điện tử',
       href: '/parent',
       icon: <LayoutDashboard size={18} />,
     },
     {
       id: 'learning-group',
-      label: 'Học tập',
+      label: 'Học tập & Hoạt động',
       icon: <GraduationCap size={18} />,
       subItems: [
-        { id: 'schedule', label: 'Thời khóa biểu', href: '/parent/schedule' },
-        { id: 'assessment', label: 'Đánh giá phát triển', href: '/parent/assessment' },
-        { id: 'good-child', label: 'Theo dõi rèn luyện', href: '/parent/good-child' },
-        { id: 'learning', label: 'Góc học tập của bé', href: '/parent/learning' },
-        { id: 'moments', label: 'Khoảnh khắc của con', href: '/parent/moments' },
+        { id: 'schedule', label: 'Thời khóa biểu & Lịch sinh hoạt', href: '/parent/schedule' },
+        { id: 'moments', label: 'Nhật ký hoạt động của bé', href: '/parent/moments' },
+        { id: 'learning', label: 'Góc sản phẩm của bé', href: '/parent/learning' },
+        { id: 'assessment', label: 'Đánh giá sự phát triển của trẻ', href: '/parent/assessment' },
+        { id: 'good-child', label: 'Theo dõi bé ngoan hàng tuần', href: '/parent/good-child' },
       ],
     },
     {
       id: 'health-group',
-      label: 'Chăm sóc sức khỏe',
+      label: 'Chăm sóc & Nuôi dưỡng',
       icon: <HeartPulse size={18} />,
       subItems: [
-        { id: 'attendance', label: 'Điểm danh chuyên cần', href: '/parent/attendance' },
-        { id: 'pickup', label: 'Người đón bé', href: '/parent/pickup' },
-        { id: 'medications', label: 'Dặn thuốc cho con', href: '/parent/medications' },
-        { id: 'health', label: 'Sức khoẻ định kỳ', href: '/parent/health' },
-        { id: 'absence', label: 'Xin nghỉ học', href: '/parent/absence' },
+        { id: 'attendance', label: 'Sổ theo dõi chuyên cần', href: '/parent/attendance' },
+        { id: 'pickup', label: 'Đón trả trẻ & Người đưa đón', href: '/parent/pickup' },
+        { id: 'medications', label: 'Đơn dặn thuốc cho bé', href: '/parent/medications' },
+        { id: 'absence', label: 'Đơn xin phép nghỉ học', href: '/parent/absence' },
+        { id: 'health', label: 'Khám sức khỏe & Tăng trưởng', href: '/parent/health' },
       ],
     },
     {
       id: 'communication-group',
-      label: 'Thông tin liên lạc',
+      label: 'Thông tin & Học phí',
       icon: <MessageSquareText size={18} />,
       subItems: [
         {
           id: 'messages',
-          label: 'Tin nhắn liên lạc',
+          label: 'Trao đổi với giáo viên',
           href: '/parent/messages',
           badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : undefined,
           badgeColor: 'bg-rose-500',
         },
-        { id: 'news', label: 'Bản tin nhà trường', href: '/parent/news' },
-        { id: 'tuition', label: 'Học phí', href: '/parent/tuition' },
+        { id: 'news', label: 'Bản tin & Thông báo nhà trường', href: '/parent/news' },
+        { id: 'tuition', label: 'Học phí & Tiền ăn bán trú', href: '/parent/tuition' },
       ],
     },
   ];
 
-  // Trạng thái đóng/mở của các nhóm menu cấp 1
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'learning-group': true,
     'health-group': true,
     'communication-group': true,
   });
 
-  // Tự động mở nhóm có trang đang hoạt động
   useEffect(() => {
     navGroups.forEach((group) => {
       if (group.subItems?.some((sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`))) {
@@ -155,50 +155,25 @@ export default function ParentSidebar({
         {/* Brand Header */}
         <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100">
           <Link href="/parent" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm">
-              <Sparkles size={18} />
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black shadow-md shadow-indigo-600/20">
+              MN
             </div>
             <div>
-              <h1 className="font-extrabold text-sm text-slate-800 leading-tight">
-                Mầm Non Tuổi Thơ
-              </h1>
-              <p className="text-[10px] font-bold text-indigo-600">
-                Cổng Phụ Huynh
-              </p>
+              <p className="text-xs font-black tracking-tight text-slate-800">Cổng Phụ Huynh</p>
+              <p className="text-[10px] text-slate-400 font-medium">Trường Mầm Non</p>
             </div>
           </Link>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 lg:hidden cursor-pointer"
+            className="lg:hidden p-1.5 text-slate-400 hover:text-slate-700 rounded-lg"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Selected Child Mini-Card */}
-        <div className="p-3.5 border-b border-slate-100">
-          <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-indigo-700 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
-              {child.avatar || 'BE'}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between mb-0.5">
-                <p className="text-xs font-bold text-slate-800 truncate">
-                  {child.hoTen || 'Học sinh'}
-                </p>
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              </div>
-              <p className="text-[10px] text-slate-500 font-medium">
-                Lớp <strong className="text-indigo-600 font-bold">{child.lop || 'Chưa phân lớp'}</strong>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation List: Menu 2 Cấp */}
-        <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
+        {/* Navigation List */}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1.5">
           {navGroups.map((group) => {
-            // Trường hợp Cấp 1 đơn (Ví dụ: Tổng quan)
             if (group.href) {
               const isGroupActive = pathname === group.href;
               return (
@@ -220,13 +195,11 @@ export default function ParentSidebar({
               );
             }
 
-            // Trường hợp Menu Cấp 1 có Sub-items Cấp 2 (Accordion)
-            const isOpen = Boolean(openGroups[group.id]);
+            const isExpanded = Boolean(openGroups[group.id]);
             const hasActiveChild = group.subItems?.some((sub) => isSubActive(sub.href));
 
             return (
               <div key={group.id} className="space-y-1">
-                {/* Header Menu Cấp 1 */}
                 <button
                   type="button"
                   onClick={() => toggleGroup(group.id)}
@@ -245,13 +218,12 @@ export default function ParentSidebar({
                   <ChevronDown
                     size={14}
                     className={`text-slate-400 transition-transform duration-200 shrink-0 ${
-                      isOpen ? 'rotate-180 text-indigo-600' : ''
+                      isExpanded ? 'rotate-180 text-indigo-600' : ''
                     }`}
                   />
                 </button>
 
-                {/* Sub-items Cấp 2 */}
-                {isOpen && group.subItems && (
+                {isExpanded && group.subItems && (
                   <div className="ml-4 pl-3 border-l-2 border-slate-100 space-y-0.5 pt-0.5">
                     {group.subItems.map((sub) => {
                       const active = isSubActive(sub.href);
@@ -298,13 +270,22 @@ export default function ParentSidebar({
             </div>
           </div>
 
-          <button
-            onClick={onOpenProfile}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-            title="Xem thông tin tài khoản"
-          >
-            <User size={15} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onOpenProfile}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              title="Thông tin tài khoản phụ huynh"
+            >
+              <User size={15} />
+            </button>
+            <button
+              onClick={logout}
+              className="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+              title="Đăng xuất"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
         </div>
       </aside>
     </>

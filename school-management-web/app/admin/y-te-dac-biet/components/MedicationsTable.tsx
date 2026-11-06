@@ -1,20 +1,36 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Clock, RotateCcw } from "lucide-react";
 import { MedicationItem } from "@/services/medications";
 
 interface MedicationsTableProps {
   medications: MedicationItem[];
+  hasFilter?: boolean;
+  onResetFilter?: () => void;
 }
 
 export default function MedicationsTable({
   medications,
+  hasFilter = false,
+  onResetFilter,
 }: MedicationsTableProps) {
   if (medications.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-400 text-xs">
-        Hôm nay toàn trường không có đơn dặn thuốc nào được gửi.
+      <div className="text-center py-12 text-slate-500 text-xs space-y-3">
+        <p className="font-semibold text-slate-700">
+          Hôm nay không có đơn dặn thuốc nào theo lớp / từ khóa hiện tại.
+        </p>
+        {hasFilter && onResetFilter && (
+          <button
+            type="button"
+            onClick={onResetFilter}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition cursor-pointer"
+          >
+            <RotateCcw size={12} />
+            Xem tất cả các lớp
+          </button>
+        )}
       </div>
     );
   }
@@ -43,7 +59,7 @@ export default function MedicationsTable({
                   <strong className="block text-slate-900 font-bold text-xs">
                     {med.TenHocSinh}
                   </strong>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-0.5">
                     {med.TenLop || "Lớp Mầm 1"}
                   </span>
                 </td>
@@ -59,28 +75,35 @@ export default function MedicationsTable({
                   {med.GioUongDuKien}
                 </td>
 
-                <td className="py-3 px-4 max-w-xs text-slate-600">
-                  {med.LoiNhan || "--"}
+                <td className="py-3 px-4 text-slate-600 max-w-xs leading-relaxed">
+                  {med.LoiNhan || (
+                    <span className="text-slate-300 italic">Không có</span>
+                  )}
                 </td>
 
                 <td className="py-3 px-4">
                   {isGiven ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      <CheckCircle2 size={12} /> Đã uống ({med.GioUongThucTe})
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <CheckCircle2 size={13} className="text-emerald-600" />
+                      Đã uống ({med.GioUongThucTe || "Đúng giờ"})
                     </span>
                   ) : isIssue ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
-                      <AlertTriangle size={12} /> Có sự cố
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                      <AlertTriangle size={13} className="text-rose-600" />
+                      Sự cố ({med.GhiChuGiaoVien || "Gặp vấn đề"})
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                      <Clock size={12} /> Chờ đến giờ
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                      <Clock size={13} className="text-amber-600" />
+                      Chờ uống
                     </span>
                   )}
                 </td>
 
-                <td className="py-3 px-4 text-slate-700 font-medium">
-                  {med.GiaoVienXacNhan || "Cô chủ nhiệm lớp"}
+                <td className="py-3 px-4 text-slate-600">
+                  {med.GiaoVienXacNhan || (
+                    <span className="text-slate-300 italic">Chưa xác nhận</span>
+                  )}
                 </td>
               </tr>
             );

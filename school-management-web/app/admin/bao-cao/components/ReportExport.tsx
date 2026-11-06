@@ -43,8 +43,8 @@ export function generateReportHtml(
         <p>Thể lực WHO: <strong>${metrics.normalHealth}</strong> bình thường, <strong>${metrics.specialWatchCount}</strong> cần can thiệp dinh dưỡng.</p>
         ${metrics.specialWatchList.length > 0 ? `
           <table class="report-table">
-            <thead><tr><th>STT</th><th>Học sinh</th><th>Cao</th><th>Nặng</th><th>Đánh giá WHO</th><th>Khuyến nghị</th></tr></thead>
-            <tbody>${metrics.specialWatchList.slice(0, 25).map((h, i) => `<tr><td style="text-align:center">${i + 1}</td><td><strong>${h.tenHocSinh || `Học sinh #${i + 1}`}</strong></td><td style="text-align:center">${h.chieuCao || "--"}</td><td style="text-align:center">${h.canNang || "--"}</td><td style="color:#ea580c; font-weight:bold">${h.ketLuanTongThe || "Cần theo dõi"}</td><td>${h.loiKhuyen || "Theo dõi dinh dưỡng"}</td></tr>`).join("")}</tbody>
+            <thead><tr><th>STT</th><th>Học sinh</th><th>Cao</th><th>Nặng</th><th>Đánh giá WHO</th><th>Trạng thái theo dõi</th></tr></thead>
+            <tbody>${metrics.specialWatchList.slice(0, 25).map((h, i) => `<tr><td style="text-align:center">${i + 1}</td><td><strong>${h.tenHocSinh || `Học sinh #${i + 1}`}</strong></td><td style="text-align:center">${h.chieuCao || "--"}</td><td style="text-align:center">${h.canNang || "--"}</td><td style="color:#ea580c; font-weight:bold">${h.ketLuanTongThe || "Cần theo dõi"}</td><td>Theo dõi sức khỏe định kỳ</td></tr>`).join("")}</tbody>
           </table>` : `<p style="color:#16a34a">100% trẻ có thể lực bình thường theo chuẩn WHO.</p>`}`;
     } else if (defId === "y_te_don_thuoc") {
       body = `

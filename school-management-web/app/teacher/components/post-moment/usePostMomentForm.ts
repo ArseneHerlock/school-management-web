@@ -210,7 +210,7 @@ export function usePostMomentForm({
               date: activityDate,
               note:
                 teacherNote ||
-                `Khoảnh khắc của bé ${kidName} trong hoạt động ${finalActivityTitle}`,
+                `Hình ảnh hoạt động của bé ${kidName} trong hoạt động ${finalActivityTitle}`,
             });
 
             await createLearningProduct({
@@ -226,7 +226,7 @@ export function usePostMomentForm({
       }
 
       setSuccessMessage(
-        `Đã đăng thành công ${totalCreated} mục khoảnh khắc cho hoạt động "${finalActivityTitle}"!`
+        `Đã đăng thành công ${totalCreated} hình ảnh hoạt động cho "${finalActivityTitle}"!`
       );
 
       setTimeout(() => {

@@ -41,7 +41,7 @@ export function LeaveHeader({
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Xác nhận đơn xin nghỉ của phụ huynh. Khi duyệt, hệ thống sẽ tự động
-            cập nhật trạng thái "Vắng có phép" trên sổ điểm danh.
+            cập nhật trạng thái "Vắng có phép" trên sổ điểm danh và khấu trừ hoàn trả tiền ăn bán trú (45.000 đ/ngày) cho gia đình bé.
           </p>
         </div>
 

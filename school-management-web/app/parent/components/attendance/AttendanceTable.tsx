@@ -37,7 +37,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-base font-black text-slate-800">Lịch sử điểm danh chi tiết</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Theo dõi nhật ký đưa đón và trạng thái từng ngày</p>
+            <p className="text-xs text-slate-400 mt-0.5">Theo dõi thời gian đón trả trẻ và tình hình chuyên cần từng ngày</p>
           </div>
           <span className="text-xs font-bold text-slate-500">
             Tổng số: <b className="text-blue-600">{records.length}</b> ngày
@@ -46,7 +46,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
-            <label className="text-[11px] font-bold text-slate-400 uppercase">Trạng thái</label>
+            <label className="text-[11px] font-bold text-slate-400 uppercase">Trạng thái điểm danh</label>
             <select
               className="w-full mt-1 h-10 rounded-xl border border-blue-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-blue-400"
               value={statusFilter}
@@ -54,7 +54,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             >
               <option value="all">Tất cả trạng thái</option>
               <option value="present">Có mặt</option>
-              <option value="late">Đi muộn (sau 08:30)</option>
+              <option value="late">Đến muộn (sau 08:30)</option>
               <option value="absent">Vắng mặt</option>
             </select>
           </div>

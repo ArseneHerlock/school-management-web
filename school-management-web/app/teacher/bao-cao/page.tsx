@@ -524,8 +524,18 @@ export default function TeacherClassReportPage() {
 
               {/* TABLE: NUTRITION & BOARDING */}
               {(reportType === 'NUTRITION_BOARDING' || (reportType === 'MONTHLY' && monthlyActiveTab === 'boarding')) && (
-                <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                  <table className="w-full text-left border-collapse text-xs">
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-3.5 flex items-start gap-3">
+                    <Utensils size={18} className="text-indigo-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-700 leading-relaxed">
+                      <span className="font-bold text-indigo-900 uppercase">Quy chuẩn Nuôi dưỡng & Tiền ăn Bán trú Mầm non:</span>{' '}
+                      Định mức tiền ăn <strong>45.000 đ/ngày</strong> (Gồm: Bữa sáng 10k, Bữa trưa 25k, Bữa xế chiều 10k và Nước uống đạt chuẩn).
+                      Trẻ có đơn nghỉ phép hợp lệ được giáo viên phê duyệt sẽ được cắt suất ăn và <strong>hoàn trả 100% (45.000 đ/ngày)</strong> vào hóa đơn học phí của phụ huynh.
+                      Học phí mầm non được miễn 100% theo Nghị định số 238/2025/NĐ-CP; các khoản dịch vụ bán trú, chăm sóc trưa và học phẩm duy trì theo danh mục Nghị quyết HĐND.
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                    <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-slate-100/80 text-slate-700 font-black border-b border-slate-200">
                         <th className="py-2.5 px-3 w-10 text-center">STT</th>
@@ -574,7 +584,8 @@ export default function TeacherClassReportPage() {
                     </tbody>
                   </table>
                 </div>
-              )}
+              </div>
+            )}
 
               {/* TABLE: HEALTH & GROWTH WHO */}
               {(reportType === 'HEALTH_GROWTH' || (reportType === 'MONTHLY' && monthlyActiveTab === 'health')) && (
@@ -779,11 +790,37 @@ export default function TeacherClassReportPage() {
 
             {/* III. Teacher Comments and Proposals */}
             <div className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center gap-2">
-                <MessageSquare size={16} className="text-indigo-600" />
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-700">
-                  III. Đánh giá chuyên môn & Đề xuất kiến nghị của Giáo viên:
-                </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={16} className="text-indigo-600" />
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    III. Đánh giá chuyên môn & Đề xuất kiến nghị của Giáo viên:
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const att = metrics.attendance.attendanceRate;
+                    const norm = metrics.health.normalRate;
+                    const mal = metrics.health.malnutritionCount;
+                    const ref = metrics.boarding.totalRefundAmount;
+                    const exc = metrics.boarding.excusedAbsentDays;
+                    const act = metrics.activities.activityPassRate;
+
+                    const notes = `Lớp ${className} (${gradeName}) có sĩ số ${metrics.totalStudents} em (${metrics.maleCount} Nam, ${metrics.femaleCount} Nữ). Trong kỳ ${periodLabel}, nền nếp lớp học ổn định, trẻ đi học chuyên cần đạt ${att}%. Về công tác bán trú, trẻ ăn hết suất, ngủ trưa ngoan, có thói quen tự phục vụ tốt; có ${exc} lượt nghỉ phép được giáo viên phê duyệt cắt suất ăn và quyết toán hoàn trả ${ref.toLocaleString('vi-VN')} đ đúng quy định. Về thể lực, ${norm}% trẻ đạt chuẩn phát triển WHO; ${mal > 0 ? `có ${mal} trẻ suy dinh dưỡng đang được giáo viên phối hợp cùng bếp ăn tăng cường dinh dưỡng` : '100% trẻ có thể trạng tốt'}. Về hoạt động giáo dục, trẻ hào hứng tham gia các chủ đề, tỷ lệ đạt mục tiêu phát triển đạt ${act}%.`;
+
+                    const proposals = `1. Kính đề nghị Ban Giám hiệu tiếp tục hỗ trợ bổ sung thêm học liệu tạo hình (đất nặn, màu nước, giấy màu) và bổ sung đồ chơi cho góc phân vai của lớp.\n2. Kính đề nghị bộ phận y tế và nhân viên cơ sở vật chất kiểm tra định kỳ đồ chơi ngoài trời để đảm bảo an toàn tuyệt đối cho trẻ trong giờ hoạt động thể chất.`;
+
+                    setTeacherNotes(notes);
+                    setTeacherProposals(proposals);
+                    showToast('Đã tạo gợi ý nhận xét chuyên môn tự động từ số liệu thực tế của lớp!');
+                  }}
+                  disabled={isApproved}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-black transition cursor-pointer border border-indigo-200 w-fit"
+                >
+                  <Sparkles size={14} className="text-indigo-600" />
+                  <span>Tự động gợi ý nhận xét từ số liệu lớp</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

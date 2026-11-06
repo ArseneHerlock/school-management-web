@@ -66,13 +66,13 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
 
   const getStatusDisplay = (status: number | string) => {
     if (status === 0 || status === '0' || status === 'pending' || status === 'Pending') {
-      return { icon: <Clock size={16} />, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", label: "Chờ duyệt" };
+      return { icon: <Clock size={16} />, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", label: "Chờ cô tiếp nhận" };
     }
     if (status === 1 || status === '1' || status === 'approved' || status === 'Approved') {
-      return { icon: <CheckCircle2 size={16} />, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", label: "Đã duyệt" };
+      return { icon: <CheckCircle2 size={16} />, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", label: "Cô đã duyệt" };
     }
     if (status === 2 || status === '2' || status === 'rejected' || status === 'Rejected') {
-      return { icon: <XCircle size={16} />, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200", label: "Từ chối" };
+      return { icon: <XCircle size={16} />, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200", label: "Không duyệt" };
     }
     return { icon: <Clock size={16} />, color: "text-slate-600", bg: "bg-slate-50", border: "border-slate-200", label: "Không rõ" };
   };
@@ -87,9 +87,9 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
               <CalendarOff size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-extrabold text-slate-800">Xin nghỉ học</h2>
+              <h2 className="text-xl font-extrabold text-slate-800">Đơn xin nghỉ học</h2>
               <p className="text-sm font-medium text-slate-500 mt-1">
-                Tạo đơn xin nghỉ phép cho {child.hoTen}
+                Gửi đơn xin phép nghỉ học của bé {child.hoTen} tới giáo viên chủ nhiệm
               </p>
             </div>
           </div>
@@ -124,20 +124,20 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
                 onChange={e => setForm({ ...form, reason: e.target.value })}
               >
                 <option value="Nghỉ ốm">Nghỉ ốm / Khám bệnh</option>
-                <option value="Việc gia đình">Việc gia đình</option>
-                <option value="Đi du lịch">Đi du lịch</option>
-                <option value="Lý do khác">Lý do khác</option>
+                <option value="Việc gia đình">Việc riêng gia đình</option>
+                <option value="Đi du lịch">Về quê / Đi du lịch</option>
+                <option value="Lý do khác">Lý do sức khỏe khác</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Chi tiết (Không bắt buộc)</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Lời dặn thêm của phụ huynh (nếu có)</label>
               <textarea
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all resize-none"
                 rows={3}
                 value={form.note}
                 onChange={e => setForm({ ...form, note: e.target.value })}
-                placeholder="Ví dụ: Cháu bị sốt nhẹ cần đi khám..."
+                placeholder="Ví dụ: Cháu bị sốt nhẹ, gia đình xin cho cháu nghỉ để tiện chăm sóc..."
               />
             </div>
 
@@ -150,9 +150,9 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
             <button
               onClick={() => void submit()}
               disabled={submitting}
-              className="w-full rounded-2xl bg-indigo-600 text-white py-4 font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full rounded-2xl bg-indigo-600 text-white py-4 font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
             >
-              {submitting ? <Loader2 className="animate-spin" size={20} /> : <><Send size={18} /> Gửi đơn xin nghỉ</>}
+              {submitting ? <Loader2 className="animate-spin" size={20} /> : <><Send size={18} /> Gửi đơn tới giáo viên</>}
             </button>
           </div>
         </div>
@@ -164,20 +164,20 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-100">
             <h3 className="font-extrabold text-lg text-slate-800 flex items-center gap-2">
               <FileText size={20} className="text-slate-400" />
-              <span>Lịch sử đơn từ</span>
+              <span>Danh sách đơn xin nghỉ đã gửi</span>
             </h3>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500">Lọc theo:</span>
+              <span className="text-xs font-semibold text-slate-500">Trạng thái:</span>
               <select
                 value={historyStatusFilter}
                 onChange={(e) => setHistoryStatusFilter(e.target.value)}
                 className="text-xs font-bold border border-slate-200 rounded-xl px-2.5 py-1.5 bg-slate-50 text-slate-700 outline-none"
               >
                 <option value="ALL">Tất cả trạng thái</option>
-                <option value="pending">Chờ duyệt</option>
-                <option value="approved">Đã chấp thuận</option>
-                <option value="rejected">Từ chối</option>
+                <option value="pending">Chờ cô tiếp nhận</option>
+                <option value="approved">Cô đã duyệt</option>
+                <option value="rejected">Không duyệt</option>
               </select>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function AbsenceTab({ child }: { child: ChildInfo }) {
           ) : rows.length === 0 ? (
             <div className="py-12 text-center text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
               <CalendarOff size={40} className="mx-auto mb-3 text-slate-300" />
-              <p className="text-sm font-bold text-slate-600">Chưa có đơn xin nghỉ nào</p>
+              <p className="text-sm font-bold text-slate-600">Bé chưa có đơn xin nghỉ học nào</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -67,6 +67,14 @@ export interface WhoNutritionSummary {
   totalStudents: number;
   measuredCount: number;
   normalCount: number;
+  stuntedCount: number;
+  severelyStuntedCount: number;
+  underweightCount: number;
+  severelyUnderweightCount: number;
+  wastedCount: number;
+  severelyWastedCount: number;
+  overweightCount: number;
+  obeseCount: number;
   underweightOrStuntedCount: number;
   overweightOrObeseCount: number;
   unmeasuredCount: number;

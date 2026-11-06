@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   LayoutDashboard,
   Activity,
@@ -23,7 +22,6 @@ import {
   Award,
   Sparkles,
   ShieldAlert,
-  Menu,
 } from "lucide-react";
 import { getAccessToken, currentUser } from "@/services";
 import LoadingScreen from "@/app/components/LoadingScreen";
@@ -32,34 +30,34 @@ import AdminHeader from "./components/layout/AdminHeader";
 import "./admin.css";
 
 const ADMIN_MENU: MenuItem[] = [
-  { id: "dashboard", label: "Tổng quan", icon: LayoutDashboard },
-  { id: "khoi", label: "Quản lý khối", icon: Layers3, group: "Trường học" },
-  { id: "lop", label: "Quản lý lớp", icon: DoorOpen, group: "Trường học" },
-  { id: "hoat-dong", label: "Hoạt động toàn trường", icon: Sparkles, group: "Trường học" },
-  { id: "tuyen-sinh", label: "Tuyển sinh", icon: UserPlus, group: "Trường học" },
-  { id: "hoc-sinh", label: "Quản lý học sinh", icon: Users, group: "Trường học" },
-  { id: "suc-khoe", label: "Sức khỏe mầm non", icon: Activity, group: "Trường học" },
-  { id: "y-te-dac-biet", label: "Y tế đặc biệt", icon: ShieldAlert, group: "Trường học" },
-  { id: "phu-huynh", label: "Quản lý phụ huynh", icon: UserRoundCheck, group: "Trường học" },
-  { id: "nhan-su", label: "Quản lý nhân sự", icon: UserCog, group: "Nhân sự" },
-  { id: "diem-danh", label: "Giám sát chuyên cần", icon: ClipboardCheck, group: "Học vụ" },
-  { id: "lich-hoc", label: "Thời khóa biểu", icon: CalendarDays, group: "Học vụ" },
-  { id: "good-child", label: "Thi đua bé ngoan", icon: Award, group: "Học vụ" },
-  { id: "khen-thuong", label: "Khen thưởng cuối năm", icon: Award, group: "Học vụ" },
-  { id: "danh-gia", label: "Chuẩn phát triển trẻ", icon: Award, group: "Phát triển" },
-  { id: "fcm-overview", label: "Phân loại trẻ (FCM)", icon: BarChart3, group: "Phát triển" },
-  { id: "tin-tuc", label: "Tin tức", icon: Bell, group: "Truyền thông" },
-  { id: "lien-lac", label: "Danh bạ liên lạc", icon: MessageCircle, group: "Truyền thông" },
-  { id: "thu-chi", label: "Thu chi học phí", icon: Receipt, group: "Tài chính" },
-  { id: "bao-cao", label: "Báo cáo & Tổng hợp", icon: BarChart3, group: "Quản trị" },
-  { id: "tai-khoan", label: "Quản lý tài khoản", icon: KeyRound, group: "Quản trị" },
-  { id: "don-nghi", label: "Đơn xin nghỉ (Giám sát)", icon: ClipboardList, group: "Quản trị" },
+  { id: "dashboard", label: "Tổng quan hệ thống", icon: LayoutDashboard },
+  { id: "khoi", label: "Quản lý khối lớp", icon: Layers3, group: "Quản lý nhà trường" },
+  { id: "lop", label: "Danh sách lớp học", icon: DoorOpen, group: "Quản lý nhà trường" },
+  { id: "hoat-dong", label: "Kế hoạch & Sự kiện", icon: Sparkles, group: "Quản lý nhà trường" },
+  { id: "tuyen-sinh", label: "Hồ sơ tuyển sinh", icon: UserPlus, group: "Quản lý nhà trường" },
+  { id: "hoc-sinh", label: "Hồ sơ học sinh", icon: Users, group: "Quản lý nhà trường" },
+  { id: "suc-khoe", label: "Sức khỏe & Dinh dưỡng", icon: Activity, group: "Chăm sóc & Y tế" },
+  { id: "y-te-dac-biet", label: "Sổ theo dõi y tế đặc biệt", icon: ShieldAlert, group: "Chăm sóc & Y tế" },
+  { id: "phu-huynh", label: "Hồ sơ phụ huynh", icon: UserRoundCheck, group: "Cán bộ & Phụ huynh" },
+  { id: "nhan-su", label: "Quản lý cán bộ - giáo viên", icon: UserCog, group: "Cán bộ & Phụ huynh" },
+  { id: "diem-danh", label: "Giám sát chuyên cần toàn trường", icon: ClipboardCheck, group: "Nghiệp vụ sư phạm" },
+  { id: "lich-hoc", label: "Thời khóa biểu & Lịch sinh hoạt", icon: CalendarDays, group: "Nghiệp vụ sư phạm" },
+  { id: "good-child", label: "Theo dõi thi đua bé ngoan", icon: Award, group: "Nghiệp vụ sư phạm" },
+  { id: "khen-thuong", label: "Tổng kết & Khen thưởng cuối năm", icon: Award, group: "Nghiệp vụ sư phạm" },
+  { id: "danh-gia", label: "Đánh giá sự phát triển của trẻ", icon: Award, group: "Chuyên môn & Đánh giá" },
+  { id: "fcm-overview", label: "Phân loại năng lực trẻ", icon: BarChart3, group: "Chuyên môn & Đánh giá" },
+  { id: "tin-tuc", label: "Bản tin & Thông báo", icon: Bell, group: "Thông tin & Truyền thông" },
+  { id: "lien-lac", label: "Sổ liên lạc & Danh bạ", icon: MessageCircle, group: "Thông tin & Truyền thông" },
+  { id: "thu-chi", label: "Quản lý học phí & Tiền ăn", icon: Receipt, group: "Tài chính - Kế toán" },
+  { id: "bao-cao", label: "Báo cáo chuyên môn & Thống kê", icon: BarChart3, group: "Quản trị hệ thống" },
+  { id: "tai-khoan", label: "Quản trị tài khoản & Phân quyền", icon: KeyRound, group: "Quản trị hệ thống" },
+  { id: "don-nghi", label: "Giám sát đơn xin nghỉ học", icon: ClipboardList, group: "Quản trị hệ thống" },
 ];
 
 const TITLES: Record<string, string> = {
   ...Object.fromEntries(ADMIN_MENU.map((x) => [x.id, x.label])),
-  "good-child": "Theo dõi rèn luyện",
-  learning: "Sản phẩm học tập",
+  "good-child": "Theo dõi thi đua bé ngoan",
+  learning: "Góc sản phẩm của bé",
 };
 
 const GROUPS = [...new Set(ADMIN_MENU.map((x) => x.group).filter(Boolean))] as string[];
@@ -99,116 +97,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setAuthorized(true);
   }, [router]);
 
-  const currentSegment = useMemo(() => {
-    const seg = pathname?.split("/")[2] || "dashboard";
-    return seg in TITLES ? seg : "dashboard";
+  const activeId = useMemo(() => {
+    const segments = pathname.split("/").filter(Boolean);
+    return segments[1] || "dashboard";
   }, [pathname]);
+
+  const pageTitle = TITLES[activeId] || "Quản trị hệ thống";
 
   if (!mounted || !authorized) {
     return (
       <LoadingScreen
-        message="Đang tải dữ liệu Quản trị"
-        subMessage="Hệ thống đang kiểm tra quyền truy cập và đồng bộ dữ liệu"
-        theme="rose"
+        message="Đang xác thực quyền quản trị..."
+        subMessage="Hệ thống đang kiểm tra danh mục quản trị trường học"
       />
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#faf8f6] text-slate-800">
+    <div className="flex h-screen bg-[#fff7f7] font-sans antialiased text-slate-800 overflow-hidden">
       <AdminSidebar
         menu={ADMIN_MENU}
         groups={GROUPS}
+        page={activeId}
         collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((v) => !v)}
         mobileOpen={mobileOpen}
-        onToggleCollapse={() => setCollapsed(!collapsed)}
         onCloseMobile={() => setMobileOpen(false)}
         user={user}
         mounted={mounted}
       />
-      <div className="flex min-w-0 max-w-full flex-1 flex-col h-screen overflow-hidden">
+
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminHeader
-          pageTitle={TITLES[currentSegment] || "Quản trị nhà trường"}
+          pageTitle={pageTitle}
           menu={ADMIN_MENU}
           onOpenMobile={() => setMobileOpen(true)}
           user={user}
           mounted={mounted}
         />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-full w-full min-w-0">
-          {children}
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 lg:pb-6 font-sans">
+          <div className="max-w-7xl mx-auto w-full">{children}</div>
         </main>
       </div>
-
-      {/* Mobile Bottom Navigation Bar with Next.js Link prefetching */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-rose-100 px-1 py-1 flex items-center justify-around lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[calc(env(safe-area-inset-bottom,0px)+4px)]">
-        <Link
-          href="/admin"
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-            pathname === "/admin"
-              ? "text-rose-600 font-extrabold"
-              : "text-slate-500 hover:text-slate-800 font-medium"
-          }`}
-        >
-          <LayoutDashboard
-            size={20}
-            className={pathname === "/admin" ? "stroke-[2.5]" : "stroke-[1.8]"}
-          />
-          <span className="text-[10px] mt-0.5">Tổng quan</span>
-        </Link>
-
-        <Link
-          href="/admin/hoc-sinh"
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-            pathname?.startsWith("/admin/hoc-sinh")
-              ? "text-rose-600 font-extrabold"
-              : "text-slate-500 hover:text-slate-800 font-medium"
-          }`}
-        >
-          <Users
-            size={20}
-            className={pathname?.startsWith("/admin/hoc-sinh") ? "stroke-[2.5]" : "stroke-[1.8]"}
-          />
-          <span className="text-[10px] mt-0.5">Học sinh</span>
-        </Link>
-
-        <Link
-          href="/admin/diem-danh"
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-            pathname?.startsWith("/admin/diem-danh")
-              ? "text-rose-600 font-extrabold"
-              : "text-slate-500 hover:text-slate-800 font-medium"
-          }`}
-        >
-          <ClipboardCheck
-            size={20}
-            className={pathname?.startsWith("/admin/diem-danh") ? "stroke-[2.5]" : "stroke-[1.8]"}
-          />
-          <span className="text-[10px] mt-0.5">Điểm danh</span>
-        </Link>
-
-        <Link
-          href="/admin/bao-cao"
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-            pathname?.startsWith("/admin/bao-cao")
-              ? "text-rose-600 font-extrabold"
-              : "text-slate-500 hover:text-slate-800 font-medium"
-          }`}
-        >
-          <BarChart3
-            size={20}
-            className={pathname?.startsWith("/admin/bao-cao") ? "stroke-[2.5]" : "stroke-[1.8]"}
-          />
-          <span className="text-[10px] mt-0.5">Báo cáo</span>
-        </Link>
-
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
-        >
-          <Menu size={20} className="stroke-[1.8]" />
-          <span className="text-[10px] mt-0.5">Menu</span>
-        </button>
-      </nav>
     </div>
   );
 }

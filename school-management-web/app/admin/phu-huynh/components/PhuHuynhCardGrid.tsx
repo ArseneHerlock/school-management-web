@@ -53,12 +53,15 @@ export const PhuHuynhCardGrid: React.FC<PhuHuynhCardGridProps> = ({
           </thead>
           <tbody className="divide-y divide-slate-200">
             {paginatedParents.map((p, idx) => {
-              const displayCode = p.id ? p.id.slice(0, 4).toUpperCase() : `${String(idx + 1).padStart(3, '0')}P`;
+              const displayCode = p.id
+                ? (p.id.length <= 8 ? p.id.toUpperCase() : `PH-${p.id.slice(0, 6).toUpperCase()}`)
+                : `PH${String(idx + 1).padStart(4, '0')}`;
               const kids = childrenMap[p.id] || [];
               const kidsSummary = kids.length > 0
                 ? kids.map((k) => {
-                    const cl = classes.find((c) => String(c.id) === String(k.lopId));
-                    return `${k.tenHocSinh} (${cl?.tenLop || 'Chưa xếp lớp'})`;
+                    const cl = classes.find((c) => String(c.id).toLowerCase() === String(k.lopId).toLowerCase());
+                    const className = cl?.tenLop || k.tenLop || 'Chưa xếp lớp';
+                    return `${k.tenHocSinh} (${className})`;
                   }).join(', ')
                 : 'Chưa liên kết';
 

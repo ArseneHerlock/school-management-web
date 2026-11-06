@@ -19,17 +19,17 @@ export function AlbumHeader({
       <div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-            ALBUM & KHOẢNH KHẮC LỚP
+            NHẬT KÝ HÌNH ẢNH LỚP HỌC
           </span>
           <span className="text-xs text-slate-400 font-bold">
             · Lớp {classNameTitle}
           </span>
         </div>
         <h1 className="text-2xl font-black text-slate-800 mt-1">
-          Khoảnh Khắc Sinh Hoạt & Học Tập
+          Album Hoạt Động & Sinh Hoạt Lớp
         </h1>
         <p className="mt-1 text-xs text-slate-500">
-          Tổng cộng: <b>{totalPhotos}</b> khoảnh khắc trong hệ thống. Thầy/Cô và phụ huynh có thể lọc theo hoạt động, tháng và đối tượng.
+          Tổng số: <b>{totalPhotos}</b> hình ảnh hoạt động. Giáo viên có thể đăng tải và quản lý album theo chủ đề, tháng và từng học sinh.
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export function AlbumHeader({
           className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600 cursor-pointer transition transform hover:-translate-y-0.5"
         >
           <Camera size={16} />
-          <span>Đăng khoảnh khắc mới</span>
+          <span>Thêm hình ảnh hoạt động</span>
         </button>
       </div>
     </header>

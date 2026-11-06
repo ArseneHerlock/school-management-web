@@ -42,43 +42,34 @@ export function TeacherHealthFcmCard({
           </span>
         </div>
 
-        {/* 3 chỉ số Z-score */}
+        {/* 3 chỉ số thể trạng */}
         <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-100 text-center">
           <div className="bg-slate-50 rounded-xl p-1.5">
-            <span className="text-[9px] font-bold text-slate-400 uppercase">HAZ</span>
-            <p className={`text-xs font-black ${assessment.haz.isAlert ? 'text-blue-700' : 'text-slate-700'}`}>
-              {assessment.haz.zScore > 0 ? `+${assessment.haz.zScore}` : assessment.haz.zScore}
-            </p>
-            <p className="text-[9px] text-slate-500 truncate">
-              {assessment.haz.code === 'BINH_THUONG' ? 'Đạt chuẩn WHO' : assessment.haz.label}
+            <span className="text-[9px] font-bold text-slate-400">Chiều cao</span>
+            <p className={`text-[11px] font-bold mt-1 ${assessment.haz.isAlert ? 'text-blue-700' : 'text-slate-700'}`}>
+              {assessment.haz.code === 'BINH_THUONG' ? 'Đạt chuẩn' : assessment.haz.label}
             </p>
           </div>
 
           <div className="bg-slate-50 rounded-xl p-1.5">
-            <span className="text-[9px] font-bold text-slate-400 uppercase">WAZ</span>
-            <p className={`text-xs font-black ${assessment.waz.isAlert ? 'text-amber-700' : 'text-slate-700'}`}>
-              {assessment.waz.zScore > 0 ? `+${assessment.waz.zScore}` : assessment.waz.zScore}
-            </p>
-            <p className="text-[9px] text-slate-500 truncate">
-              {assessment.waz.code === 'BINH_THUONG' ? 'Đạt chuẩn WHO' : assessment.waz.label}
+            <span className="text-[9px] font-bold text-slate-400">Cân nặng</span>
+            <p className={`text-[11px] font-bold mt-1 ${assessment.waz.isAlert ? 'text-amber-700' : 'text-slate-700'}`}>
+              {assessment.waz.code === 'BINH_THUONG' ? 'Đạt chuẩn' : assessment.waz.label}
             </p>
           </div>
 
           <div className="bg-slate-50 rounded-xl p-1.5">
-            <span className="text-[9px] font-bold text-slate-400 uppercase">WHZ</span>
-            <p className={`text-xs font-black ${assessment.whz.isAlert ? 'text-rose-700' : 'text-slate-700'}`}>
-              {assessment.whz.zScore > 0 ? `+${assessment.whz.zScore}` : assessment.whz.zScore}
-            </p>
-            <p className="text-[9px] text-slate-500 truncate">
-              {assessment.whz.code === 'BINH_THUONG' ? 'Đạt chuẩn WHO' : assessment.whz.label}
+            <span className="text-[9px] font-bold text-slate-400">Thể trạng</span>
+            <p className={`text-[11px] font-bold mt-1 ${assessment.whz.isAlert ? 'text-rose-700' : 'text-slate-700'}`}>
+              {assessment.whz.code === 'BINH_THUONG' ? 'Cân đối' : assessment.whz.label}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Lời khuyên tóm tắt */}
-      <div className="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex items-center justify-between">
-        <span className="truncate">{assessment.loiKhuyen}</span>
+      {/* Hành động xem chi tiết */}
+      <div className="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex items-center justify-between font-medium">
+        <span>Xem biểu đồ & hồ sơ theo dõi</span>
         <ArrowRight size={13} className="text-slate-400 shrink-0 ml-1" />
       </div>
     </div>

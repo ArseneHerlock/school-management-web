@@ -107,11 +107,11 @@ export const ChildDailyStoryFeed: React.FC<ChildDailyStoryFeedProps> = ({
               <Heart size={16} />
             </span>
             <h3 className="text-base sm:text-lg font-black text-slate-800">
-              Nhật Ký Hôm Nay Ở Trường Của Bé ({childName})
+              Lịch sinh hoạt & Nhật ký trong ngày của bé ({childName})
             </h3>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Dòng thời gian hoạt động và điểm danh thực tế được ghi nhận từ nhà trường
+            Tiến trình đón trẻ, hoạt động học tập và trả trẻ được giáo viên cập nhật theo thời gian thực
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export const ChildDailyStoryFeed: React.FC<ChildDailyStoryFeedProps> = ({
 
       {moments.length === 0 ? (
         <div className="mt-5 rounded-2xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-400">
-          Chưa có ghi nhận điểm danh hoặc lịch hoạt động nào của bé trong ngày hôm nay.
+          Chưa có lượt điểm danh hoặc hoạt động nào được ghi nhận cho bé trong ngày hôm nay.
         </div>
       ) : (
         <div className="mt-5 relative border-l-2 border-slate-100 ml-3.5 sm:ml-4 pl-4 sm:pl-6 space-y-5">
@@ -150,7 +150,7 @@ export const ChildDailyStoryFeed: React.FC<ChildDailyStoryFeedProps> = ({
                     </div>
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
                       <CheckCircle2 size={12} />
-                      <span>Thực tế</span>
+                      <span>Đã ghi nhận</span>
                     </span>
                   </div>
 

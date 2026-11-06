@@ -26,6 +26,7 @@ import ThuChiFees from "./components/ThuChiFees";
 import ThuChiStudents from "./components/ThuChiStudents";
 import ThuChiModals from "./components/ThuChiModals";
 import ThuChiMealDeduction from "./components/ThuChiMealDeduction";
+import ThuChiSkeleton from "./components/ThuChiSkeleton";
 
 export default function ThuChiPage() {
   const [activeTab, setActiveTab] = useState<AdminBillingTab>("dashboard");
@@ -56,7 +57,13 @@ export default function ThuChiPage() {
 
   const [feeModalOpen, setFeeModalOpen] = useState(false);
   const [editingFee, setEditingFee] = useState<FeeItem | null>(null);
-  const [feeForm, setFeeForm] = useState({
+  const [feeForm, setFeeForm] = useState<{
+    name: string;
+    chargeType: ChargeType | number | string;
+    amount: number;
+    description: string;
+    schoolYear: string;
+  }>({
     name: "",
     chargeType: ChargeType.Tuition,
     amount: 0,
@@ -149,11 +156,20 @@ export default function ThuChiPage() {
   const handleSaveFee = async () => {
     setIsSubmitting(true);
     try {
+      const numericChargeType =
+        typeof feeForm.chargeType === "number"
+          ? feeForm.chargeType
+          : (ChargeType as any)[feeForm.chargeType] || 1;
+
       if (editingFee) {
-        await updateFee(editingFee.id, feeForm);
+        await updateFee(editingFee.id, {
+          ...feeForm,
+          chargeType: numericChargeType,
+        });
       } else {
         await createFee({
           ...feeForm,
+          chargeType: numericChargeType,
           unit: "tháng",
           effectiveFrom: new Date().toISOString(),
         });
@@ -222,75 +238,86 @@ export default function ThuChiPage() {
         onClearNotice={() => setNotice("")}
       />
 
-      {activeTab === "dashboard" && (
-        <ThuChiDashboard
-          financialStats={financialStats}
-          schoolYear={schoolYear}
-          feeStructureChartData={feeStructureChartData}
-          invoiceStatusChartData={invoiceStatusChartData}
-          invoices={invoices}
-          invoiceStatusFilter={invoiceStatusFilter}
-          setInvoiceStatusFilter={setInvoiceStatusFilter}
-          paginatedInvoices={paginatedInvoices}
-          invoicePage={invoicePage}
-          setInvoicePage={setInvoicePage}
-          money={money}
-          onOpenInvoiceDetail={setSelectedInvoice}
-        />
+      {/* Subtle top progress bar during background refresh */}
+      {loading && fees.length > 0 && (
+        <div className="h-0.5 w-full bg-gradient-to-r from-rose-500 via-pink-400 to-rose-500 animate-pulse rounded-full" />
       )}
 
-      {activeTab === "fees" && (
-        <ThuChiFees
-          fees={fees}
-          schoolYear={schoolYear}
-          money={money}
-          onOpenCreateFee={() => {
-            setEditingFee(null);
-            setFeeForm({
-              name: "",
-              chargeType: ChargeType.Tuition,
-              amount: 0,
-              description: "",
-              schoolYear,
-            });
-            setFeeModalOpen(true);
-          }}
-          onOpenEditFee={(f) => {
-            setEditingFee(f);
-            setFeeForm({
-              name: f.name,
-              chargeType: f.chargeType,
-              amount: f.amount,
-              description: f.description || "",
-              schoolYear: f.schoolYear || schoolYear,
-            });
-            setFeeModalOpen(true);
-          }}
-          onDeleteFee={handleDeleteFee}
-        />
-      )}
+      {loading && fees.length === 0 ? (
+        <ThuChiSkeleton />
+      ) : (
+        <>
+          {activeTab === "dashboard" && (
+            <ThuChiDashboard
+              financialStats={financialStats}
+              schoolYear={schoolYear}
+              feeStructureChartData={feeStructureChartData}
+              invoiceStatusChartData={invoiceStatusChartData}
+              invoices={invoices}
+              invoiceStatusFilter={invoiceStatusFilter}
+              setInvoiceStatusFilter={setInvoiceStatusFilter}
+              paginatedInvoices={paginatedInvoices}
+              invoicePage={invoicePage}
+              setInvoicePage={setInvoicePage}
+              money={money}
+              onOpenInvoiceDetail={setSelectedInvoice}
+            />
+          )}
 
-      {activeTab === "students" && (
-        <ThuChiStudents
-          studentsDebtList={studentsDebtList}
-          classes={classes}
-          selectedClassFilter={selectedClassFilter}
-          setSelectedClassFilter={setSelectedClassFilter}
-          debtStatusFilter={debtStatusFilter}
-          setDebtStatusFilter={setDebtStatusFilter}
-          searchStudent={searchStudent}
-          setSearchStudent={setSearchStudent}
-          currentPage={studentPage}
-          setCurrentPage={setStudentPage}
-          pageSize={10}
-          money={money}
-          onSettleDebt={setSettlingStudent}
-          onRevertDebt={handleRevertDebt}
-        />
-      )}
+          {activeTab === "fees" && (
+            <ThuChiFees
+              fees={fees}
+              schoolYear={schoolYear}
+              money={money}
+              onOpenCreateFee={() => {
+                setEditingFee(null);
+                setFeeForm({
+                  name: "",
+                  chargeType: ChargeType.Tuition,
+                  amount: 0,
+                  description: "",
+                  schoolYear,
+                });
+                setFeeModalOpen(true);
+              }}
+              onOpenEditFee={(f) => {
+                setEditingFee(f);
+                setFeeForm({
+                  name: f.name,
+                  chargeType: f.chargeType,
+                  amount: f.amount,
+                  description: f.description || "",
+                  schoolYear: f.schoolYear || schoolYear,
+                });
+                setFeeModalOpen(true);
+              }}
+              onDeleteFee={handleDeleteFee}
+            />
+          )}
 
-      {activeTab === "meal-deduction" && (
-        <ThuChiMealDeduction classes={classes} />
+          {activeTab === "students" && (
+            <ThuChiStudents
+              studentsDebtList={studentsDebtList}
+              classes={classes}
+              selectedClassFilter={selectedClassFilter}
+              setSelectedClassFilter={setSelectedClassFilter}
+              debtStatusFilter={debtStatusFilter}
+              setDebtStatusFilter={setDebtStatusFilter}
+              searchStudent={searchStudent}
+              setSearchStudent={setSearchStudent}
+              currentPage={studentPage}
+              setCurrentPage={setStudentPage}
+              pageSize={10}
+              money={money}
+              onSettleDebt={setSettlingStudent}
+              onRevertDebt={handleRevertDebt}
+            />
+          )}
+
+          {activeTab === "meal-deduction" && (
+            <ThuChiMealDeduction classes={classes} />
+          )}
+        </>
       )}
 
       <ThuChiModals

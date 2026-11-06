@@ -26,7 +26,7 @@ export function TeacherKpiCards({
         className="group rounded-3xl border border-emerald-100 bg-white p-4.5 shadow-xs transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500">Có mặt hôm nay</span>
+          <span className="text-xs font-bold text-slate-500">Trẻ có mặt hôm nay</span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition">
             <UserCheck size={18} />
           </div>
@@ -46,7 +46,7 @@ export function TeacherKpiCards({
         className="group rounded-3xl border border-rose-100 bg-white p-4.5 shadow-xs transition hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-md"
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500">Vắng mặt</span>
+          <span className="text-xs font-bold text-slate-500">Trẻ nghỉ học</span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition">
             <UserX size={18} />
           </div>
@@ -65,7 +65,7 @@ export function TeacherKpiCards({
         className="group rounded-3xl border border-orange-100 bg-white p-4.5 shadow-xs transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500">Đơn xin nghỉ</span>
+          <span className="text-xs font-bold text-slate-500">Đơn xin nghỉ phép</span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition">
             <FileCheck2 size={18} />
           </div>
@@ -85,17 +85,17 @@ export function TeacherKpiCards({
         className="group rounded-3xl border border-blue-100 bg-white p-4.5 shadow-xs transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500">Tin nhắn phụ huynh</span>
+          <span className="text-xs font-bold text-slate-500">Trao đổi phụ huynh</span>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition">
             <MessageSquare size={18} />
           </div>
         </div>
         <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-3xl font-black text-blue-600">Hộp thư</span>
+          <span className="text-2xl font-black text-blue-600">Sổ liên lạc</span>
           <span className="text-xs text-slate-400">trực tuyến</span>
         </div>
         <div className="mt-2.5 flex items-center justify-between text-[11px] text-blue-600 font-semibold">
-          <span>Mở khung chat</span>
+          <span>Xem tin nhắn</span>
           <ArrowRight size={13} />
         </div>
       </Link>

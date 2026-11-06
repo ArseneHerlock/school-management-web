@@ -56,7 +56,7 @@ export const PhuHuynhDetailModal: React.FC<PhuHuynhDetailModalProps> = ({
             <div key={c.studentId} className="mt-2 rounded-xl border border-slate-200 p-3">
               <b>{c.tenHocSinh}</b>
               <div className="mt-1 grid gap-1 text-xs text-slate-500 sm:grid-cols-3">
-                <span>Lớp: {cl?.tenLop || '—'}</span>
+                <span>Lớp: {cl?.tenLop || c.tenLop || '—'}</span>
                 <span>GVCN: {t?.fullName || '—'}</span>
                 <span>Quan hệ: {c.quanHe}</span>
               </div>

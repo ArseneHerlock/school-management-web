@@ -41,7 +41,7 @@ export const ChildHealthTeacherSummary: React.FC<ChildHealthTeacherSummaryProps>
           <div className="flex items-center gap-2">
             <h4 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
               <HeartPulse size={16} className="text-rose-500" />
-              <span>Sức khỏe thể chất gần nhất</span>
+              <span>Kết quả theo dõi thể lực & sức khỏe</span>
             </h4>
             {healthRecord?.canNang ? (
               <span
@@ -77,7 +77,7 @@ export const ChildHealthTeacherSummary: React.FC<ChildHealthTeacherSummaryProps>
             </p>
           </div>
           <div className="rounded-xl bg-slate-50 p-2.5 sm:p-3 min-w-0">
-            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">Thể trạng WHO</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">Đánh giá thể trạng</p>
             <p
               className={`mt-1 text-xs font-black truncate ${
                 isAlert ? 'text-amber-600' : 'text-emerald-600'
@@ -93,13 +93,13 @@ export const ChildHealthTeacherSummary: React.FC<ChildHealthTeacherSummaryProps>
         <div className="flex items-center justify-between pb-3 border-b border-slate-50">
           <h4 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
             <UserRound size={16} className="text-blue-600" />
-            <span>Giáo viên phụ trách lớp</span>
+            <span>Giáo viên chủ nhiệm lớp</span>
           </h4>
           <button
             onClick={onNavigateMessages}
             className="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
           >
-            Nhắn tin cho cô
+            Trao đổi với giáo viên
           </button>
         </div>
 

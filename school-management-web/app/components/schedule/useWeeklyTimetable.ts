@@ -24,6 +24,8 @@ export function useWeeklyTimetable({
   const [filterMode, setFilterMode] = useState<"ALL" | "LESSON" | "ACTIVITY">("ALL");
   const [schedules, setSchedules] = useState<TimetableScheduleItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [selectedItemForModal, setSelectedItemForModal] =
     useState<TimetableScheduleItem | null>(null);
@@ -33,6 +35,8 @@ export function useWeeklyTimetable({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const fetchSchedulesRef = useRef(fetchSchedules);
+  fetchSchedulesRef.current = fetchSchedules;
 
   // Compute Monday - Sunday week dates based on selectedDate
   const currentWeekDays: DayInfo[] = useMemo(() => {
@@ -99,12 +103,18 @@ export function useWeeklyTimetable({
   useEffect(() => {
     let isCancelled = false;
     const load = async () => {
+      if (schedules.length === 0) {
+        setIsInitialLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
       setLoading(true);
+
       try {
         const typeQuery =
           filterMode === "LESSON" ? 1 : filterMode === "ACTIVITY" ? 2 : undefined;
 
-        const data = await fetchSchedules({
+        const data = await fetchSchedulesRef.current({
           from: weekRange.from,
           to: weekRange.to,
           type: typeQuery,
@@ -122,6 +132,8 @@ export function useWeeklyTimetable({
       } finally {
         if (!isCancelled) {
           setLoading(false);
+          setIsInitialLoading(false);
+          setIsRefreshing(false);
         }
       }
     };
@@ -130,7 +142,7 @@ export function useWeeklyTimetable({
     return () => {
       isCancelled = true;
     };
-  }, [fetchSchedules, weekRange.from, weekRange.to, selectedClassId, filterMode]);
+  }, [weekRange.from, weekRange.to, selectedClassId, filterMode]);
 
   // Filter schedules locally
   const filteredSchedules = useMemo(() => {
@@ -193,9 +205,10 @@ export function useWeeklyTimetable({
   ) => {
     return filteredSchedules
       .filter((item) => {
-        if (item.date !== isoDate) return false;
-        const time = item.startTime || "08:00";
-        const hour = parseInt(time.split(":")[0], 10);
+        if (!item.date || item.date.slice(0, 10) !== isoDate) return false;
+        const cleanTime = (item.startTime || "").trim();
+        const match = cleanTime.match(/^(\d{1,2})/);
+        const hour = match ? parseInt(match[1], 10) : 8;
         if (session === "morning") return hour < 12;
         if (session === "afternoon") return hour >= 12 && hour < 17;
         return hour >= 17;
@@ -294,6 +307,8 @@ export function useWeeklyTimetable({
     setFilterMode,
     schedules,
     loading,
+    isInitialLoading,
+    isRefreshing,
     isFullscreen,
     selectedItemForModal,
     setSelectedItemForModal,

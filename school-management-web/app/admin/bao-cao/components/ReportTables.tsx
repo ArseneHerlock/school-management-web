@@ -141,15 +141,15 @@ export function ReportDetailTables({
         return (
           <TableBox
             title={`Thể lực WHO (${metrics.normalHealth} bình thường, ${metrics.specialWatchCount} trẻ cần can thiệp)`}
-            headers={["STT", "Học sinh", "Cao (cm)", "Nặng (kg)", "Đánh giá WHO", "Khuyến nghị"]}
+            headers={["STT", "Học sinh", "Cao (cm)", "Nặng (kg)", "Đánh giá WHO", "Trạng thái theo dõi"]}
             rows={list.slice(start, start + pageSize).map((h, i) => [
               start + i + 1, <span className="font-bold text-slate-800">{h.tenHocSinh || `Học sinh #${start + i + 1}`}</span>,
               h.chieuCao || "--", h.canNang || "--",
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">{h.ketLuanTongThe || "Cần theo dõi"}</span>,
-              h.loiKhuyen || "Bổ sung dinh dưỡng",
+              "Theo dõi sức khỏe định kỳ",
             ])}
             page={page} pageSize={pageSize} totalItems={list.length} onPageChange={setPage} onPageSizeChange={setPageSize}
-            onExportCsv={() => exportToCsv("The_Luc_WHO", ["STT", "Học sinh", "Cao", "Nặng", "Thể trạng", "Khuyến nghị"], list.map((h, i) => [i + 1, h.tenHocSinh || "Học sinh", h.chieuCao || "--", h.canNang || "--", h.ketLuanTongThe || "Theo dõi", h.loiKhuyen || "Theo dõi"]), suffix)}
+            onExportCsv={() => exportToCsv("The_Luc_WHO", ["STT", "Học sinh", "Cao", "Nặng", "Thể trạng", "Ghi chú theo dõi"], list.map((h, i) => [i + 1, h.tenHocSinh || "Học sinh", h.chieuCao || "--", h.canNang || "--", h.ketLuanTongThe || "Theo dõi", "Theo dõi sức khỏe định kỳ"]), suffix)}
           />
         );
       }

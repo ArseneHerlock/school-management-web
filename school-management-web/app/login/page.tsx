@@ -8,6 +8,7 @@ import {
   LogIn,
   ShieldCheck,
   UserRound,
+  GraduationCap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -51,7 +52,7 @@ export default function LoginPage() {
       setAccessToken(null);
       setPasswordChangeToken(null);
       setError(
-        err instanceof Error ? err.message : "Đăng nhập không thành công.",
+        err instanceof Error ? err.message : "Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.",
       );
     } finally {
       setLoading(false);
@@ -59,39 +60,25 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-linear-to-br from-rose-50 via-white to-slate-50 px-3 sm:px-4 py-6 sm:py-10 flex items-center justify-center">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-6 lg:gap-10 lg:grid-cols-[1.05fr_.95fr]">
-        <section className="hidden lg:block">
-          <div className="max-w-xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600">
-              <ShieldCheck size={15} /> Hệ thống quản lý trường học
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-orange-50 p-4 font-sans text-slate-800">
+      <div className="w-full max-w-md">
+        <section className="rounded-3xl border border-rose-100 bg-white/90 p-8 shadow-xl backdrop-blur-md">
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-rose-500 to-orange-500 text-white shadow-lg shadow-rose-500/25">
+              <GraduationCap size={28} />
             </div>
-            <h1 className="text-5xl font-bold leading-tight tracking-tight text-slate-900">
-              Một không gian quản lý rõ ràng cho nhà trường, giáo viên và phụ
-              huynh.
+            <h1 className="text-xl font-black tracking-tight text-slate-900">
+              Hệ thống Quản lý Trường Mầm non
             </h1>
-            <p className="mt-5 text-base leading-7 text-slate-500">
-              Đăng nhập để tiếp tục quản lý học sinh, lớp học, lịch hoạt động,
-              trao đổi và các nghiệp vụ của nhà trường.
-            </p>
-          </div>
-        </section>
-
-        <section className="mx-auto w-full max-w-md rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-xl shadow-slate-200/40">
-          <div className="mb-5 sm:mb-7">
-            <div className="mb-3 sm:mb-4 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-rose-500 text-white">
-              <ShieldCheck size={22} className="sm:w-6 sm:h-6" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Đăng nhập</h2>
-            <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-500">
-              Sử dụng tài khoản được nhà trường cấp.
+            <p className="mt-1 text-xs font-medium text-slate-500">
+              Đăng nhập cổng thông tin Cán bộ, Giáo viên & Phụ huynh
             </p>
           </div>
 
           <form onSubmit={submit} className="space-y-4">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-slate-700">
-                Tên đăng nhập
+              <span className="mb-1.5 block text-xs font-bold text-slate-700">
+                Tài khoản đăng nhập
               </span>
               <span className="relative block">
                 <UserRound
@@ -101,14 +88,15 @@ export default function LoginPage() {
                 <input
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-sm outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50"
+                  placeholder="Nhập tên đăng nhập hoặc số điện thoại..."
+                  className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-xs outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50 font-sans"
                   autoComplete="username"
                 />
               </span>
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+              <span className="mb-1.5 block text-xs font-bold text-slate-700">
                 Mật khẩu
               </span>
               <span className="relative block">
@@ -120,13 +108,14 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-11 text-sm outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50"
+                  placeholder="Nhập mật khẩu..."
+                  className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-11 text-xs outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50 font-sans"
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition cursor-pointer"
                   aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -135,16 +124,16 @@ export default function LoginPage() {
             </label>
 
             {error && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-sm text-rose-700">
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-xs text-rose-700 font-medium">
                 {error}
               </div>
             )}
 
             <button
               disabled={loading}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-xs font-bold text-white shadow-md shadow-rose-500/20 transition hover:from-rose-600 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer font-sans"
             >
-              <LogIn size={17} /> {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+              <LogIn size={17} /> {loading ? "Đang xác thực thông tin..." : "Đăng nhập hệ thống"}
             </button>
           </form>
         </section>

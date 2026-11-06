@@ -16,13 +16,13 @@ export function MomentsHeaderBanner({
     <div className="card-frame p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-gradient-to-r from-sky-50 via-indigo-50 to-purple-50 border-sky-100 rounded-2xl sm:rounded-3xl">
       <div>
         <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-600 bg-sky-100/80 px-2 py-0.5 rounded-full">
-          KHOẢNH KHẮC TRẺ TẠI TRƯỜNG
+          NHẬT KÝ HÌNH ẢNH HOẠT ĐỘNG
         </span>
         <h2 className="text-base sm:text-xl font-black text-slate-800 mt-1">
-          Nhật Ký Hoạt Động & Album Ảnh
+          Album Ảnh & Nhật Ký Hoạt Động Của Lớp
         </h2>
         <p className="mt-0.5 text-[11px] sm:text-xs text-slate-500">
-          Xem lại hình ảnh, video vui chơi và sản phẩm học tập của bé{' '}
+          Lưu giữ những khoảnh khắc học tập, sinh hoạt và vui chơi của bé{' '}
           {childName ? `(${childName})` : ''} - {classNameProp || 'Lớp của bé'}
         </p>
       </div>

@@ -224,13 +224,9 @@ export const SucKhoeKpiCards: React.FC<SucKhoeKpiCardsProps> = ({
                   <div className={`p-2 rounded-xl ${c.iconColor}`}>
                     <Icon size={16} />
                   </div>
-                  {isActive ? (
+                  {isActive && (
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-600 text-white shadow-2xs">
                       Đang lọc
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-mono font-bold text-slate-400">
-                      {c.criteria}
                     </span>
                   )}
                 </div>

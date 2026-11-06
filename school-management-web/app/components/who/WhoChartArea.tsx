@@ -43,11 +43,10 @@ export default function WhoChartArea({
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Median (0
-            SD)
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Chuẩn trung bình WHO
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> ±2 SD
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Giới hạn chuẩn
           </span>
           <span className="flex items-center gap-1 font-bold text-indigo-600">
             <span className="w-3 h-3 rounded-full bg-indigo-600" /> Bé thực tế
@@ -101,16 +100,8 @@ export default function WhoChartArea({
                               {pt.beThucTe} {unit}
                             </span>
                           </div>
-                          {pt.zScore != null && (
-                            <div className="flex justify-between text-slate-300">
-                              <span>Z-score:</span>
-                              <span className="font-semibold text-emerald-400">
-                                {pt.zScore > 0 ? `+${pt.zScore}` : pt.zScore} SD
-                              </span>
-                            </div>
-                          )}
                           {pt.phanLoai && (
-                            <div className="text-[11px] text-amber-200 border-t border-slate-800 pt-1">
+                            <div className="text-[11px] text-amber-200 border-t border-slate-800 pt-1 font-semibold">
                               {pt.phanLoai}
                             </div>
                           )}
@@ -177,18 +168,6 @@ export default function WhoChartArea({
           </div>
         )}
       </div>
-
-      {lanDo?.loiKhuyen && (
-        <div className="mt-4 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-start gap-2.5 text-xs text-slate-700">
-          <Info size={17} className="text-indigo-600 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-indigo-900">
-              Khuyến nghị dinh dưỡng (WHO 2006):{" "}
-            </span>
-            {lanDo.loiKhuyen}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

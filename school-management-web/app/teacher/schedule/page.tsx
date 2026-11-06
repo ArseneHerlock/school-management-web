@@ -51,6 +51,11 @@ export default function TeacherSchedulePage() {
       .catch(() => {});
   }, []);
 
+  const teacherContextRef = React.useRef(teacherContext);
+  teacherContextRef.current = teacherContext;
+  const allClassesRef = React.useRef(allClasses);
+  allClassesRef.current = allClasses;
+
   // Fetch teacher schedules from backend API (strictly assigned class + school-wide)
   const fetchTeacherSchedules = useCallback(
     async (params: {
@@ -65,8 +70,8 @@ export default function TeacherSchedulePage() {
       if (params.type !== undefined) q.set('type', String(params.type));
 
       // Resolve teacher context if not yet state-saved
-      let assignedCls = teacherContext?.cls;
-      let classesList = allClasses;
+      let assignedCls = teacherContextRef.current?.cls;
+      let classesList = allClassesRef.current;
       if (!assignedCls || classesList.length === 0) {
         const ctx = await loadLiveTeacherContext().catch(() => null);
         if (ctx) {
@@ -137,7 +142,7 @@ export default function TeacherSchedulePage() {
             item.teacherName ||
             item.teachers?.[0]?.teacherId ||
             CLASS_INFO.teachers?.[0]?.name ||
-            teacherContext?.me?.fullName ||
+            teacherContextRef.current?.me?.fullName ||
             'Giáo viên phụ trách',
           teachers: item.teachers,
           criteria: item.criteria,
@@ -148,7 +153,7 @@ export default function TeacherSchedulePage() {
         return mappedItem;
       });
     },
-    [teacherContext, allClasses]
+    []
   );
 
   const handleItemClick = (item: TimetableScheduleItem) => {

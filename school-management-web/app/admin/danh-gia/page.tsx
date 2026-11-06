@@ -103,8 +103,8 @@ export default function DanhGiaPage() {
   );
 
   const domainChartData = useMemo(
-    () => buildDomainChartData(domains, criteria, assessments),
-    [domains, criteria, assessments],
+    () => buildDomainChartData(domains, criteria, assessments, activities),
+    [domains, criteria, assessments, activities],
   );
 
   const filteredAssessments = useMemo(

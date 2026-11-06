@@ -225,7 +225,13 @@ export default function LienLacPage() {
   }
 
   return (
-    <section className="flex h-[calc(100vh-120px)] flex-col gap-4 overflow-hidden lg:h-[calc(100vh-136px)]">
+    <section
+      className={
+        selectedContact
+          ? "flex h-[calc(100vh-120px)] flex-col gap-4 overflow-hidden lg:h-[calc(100vh-136px)]"
+          : "flex flex-col gap-4 pb-12"
+      }
+    >
       <header className="flex shrink-0 items-center justify-between">
         <div>
           <p className="admin-eyebrow">LIÊN LẠC</p>

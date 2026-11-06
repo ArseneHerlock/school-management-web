@@ -12,12 +12,26 @@ import {
   Legend,
 } from "recharts";
 import { Activity, Info } from "lucide-react";
+import { StackedNutritionBarData } from "../healthAggregations";
 
 interface HealthStackedBarChartProps {
   title: string;
   subtitle: string;
-  data?: any[];
+  data?: StackedNutritionBarData[];
 }
+
+const CATEGORY_BARS = [
+  { key: "datChuan", name: "Đạt chuẩn WHO", color: "#10b981" },
+  { key: "thapCoi", name: "Thấp còi", color: "#3b82f6" },
+  { key: "thapCoiNang", name: "Thấp còi nặng", color: "#6366f1" },
+  { key: "nheCan", name: "Nhẹ cân", color: "#f59e0b" },
+  { key: "nheCanNang", name: "Nhẹ cân nặng", color: "#f43f5e" },
+  { key: "gayCom", name: "Gầy còm", color: "#ea580c" },
+  { key: "gayComNang", name: "Gầy còm nặng", color: "#dc2626" },
+  { key: "thuaCan", name: "Thừa cân", color: "#8b5cf6" },
+  { key: "beoPhi", name: "Béo phì", color: "#be185d" },
+  { key: "unmeasured", name: "Chưa có số đo", color: "#cbd5e1" },
+];
 
 export default function HealthStackedBarChart({
   title,
@@ -49,11 +63,11 @@ export default function HealthStackedBarChart({
             Chưa có dữ liệu đo kiểm sức khỏe cho danh mục này.
           </div>
         ) : (
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data}
-                margin={{ top: 15, right: 15, left: 10, bottom: 30 }}
+                margin={{ top: 15, right: 15, left: 10, bottom: 35 }}
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -76,56 +90,39 @@ export default function HealthStackedBarChart({
                 />
                 <Tooltip
                   formatter={(val: any, name: any) => [`${val} học sinh`, name]}
-                  labelFormatter={(l: any) => `Nhóm lớp: ${l}`}
+                  labelFormatter={(l: any) => `Nhóm: ${l}`}
                   contentStyle={{
                     borderRadius: "1rem",
                     borderColor: "#e2e8f0",
                     boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                    fontSize: "12px",
                   }}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                  wrapperStyle={{ fontSize: 11, paddingTop: 10 }}
                   iconType="circle"
                 />
-                <Bar
-                  dataKey="normal"
-                  name="Đạt chuẩn (Bình thường)"
-                  fill="#10b981"
-                  stackId="theTrang"
-                  maxBarSize={38}
-                />
-                <Bar
-                  dataKey="undernourished"
-                  name="Suy dinh dưỡng (Thấp còi/Nhẹ cân)"
-                  fill="#f59e0b"
-                  stackId="theTrang"
-                  maxBarSize={38}
-                />
-                <Bar
-                  dataKey="overweight"
-                  name="Thừa cân / Béo phì"
-                  fill="#f43f5e"
-                  stackId="theTrang"
-                  maxBarSize={38}
-                />
-                <Bar
-                  dataKey="unmeasured"
-                  name="Chưa cập nhật số đo"
-                  fill="#cbd5e1"
-                  stackId="theTrang"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={38}
-                />
+                {CATEGORY_BARS.map((bar, idx) => (
+                  <Bar
+                    key={bar.key}
+                    dataKey={bar.key}
+                    name={bar.name}
+                    fill={bar.color}
+                    stackId="theTrang"
+                    radius={idx === CATEGORY_BARS.length - 1 ? [6, 6, 0, 0] : undefined}
+                    maxBarSize={42}
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
       </div>
 
-      <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+      <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
         <span className="flex items-center gap-1.5 font-medium text-slate-600">
           <Info size={13} className="text-emerald-600" />
-          Chiều cao cột = Tổng sĩ số. Màu sắc thể hiện tỷ lệ thể trạng thực tế.
+          Chiều cao cột = Tổng sĩ số. Phân bố chi tiết 9 tiêu chí chuẩn WHO 2006.
         </span>
         <span className="font-bold text-emerald-700">
           Chuẩn WHO & Viện Dinh Dưỡng

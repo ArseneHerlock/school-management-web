@@ -22,7 +22,7 @@ export const MomentsScopeSelector: React.FC<MomentsScopeSelectorProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-      {/* CARD 1: Khoảnh khắc lớp con mình học */}
+      {/* CARD 1: Album hoạt động chung của lớp */}
       <button
         type="button"
         onClick={() => onSelectScope('class')}
@@ -53,10 +53,10 @@ export const MomentsScopeSelector: React.FC<MomentsScopeSelectorProps> = ({
             </span>
           </div>
           <h3 className="mt-0.5 text-sm sm:text-base font-black text-slate-800 truncate">
-            Khoảnh khắc lớp con mình học
+            Album sinh hoạt chung của lớp
           </h3>
           <p className="mt-0.5 text-[11px] sm:text-xs text-slate-500 line-clamp-2">
-            Hình ảnh giáo viên chia sẻ chung cho toàn thể phụ huynh {className ? `lớp ${className}` : 'của lớp'}
+            Hình ảnh, video hoạt động chung do giáo viên chia sẻ tới phụ huynh {className ? `lớp ${className}` : 'của lớp'}
           </p>
           {activeScope === 'class' && (
             <span className="inline-flex items-center gap-1.5 mt-2 text-[11px] sm:text-xs font-bold text-indigo-600">
@@ -67,7 +67,7 @@ export const MomentsScopeSelector: React.FC<MomentsScopeSelectorProps> = ({
         </div>
       </button>
 
-      {/* CARD 2: Khoảnh khắc con mình */}
+      {/* CARD 2: Hình ảnh riêng của bé */}
       <button
         type="button"
         onClick={() => onSelectScope('child')}
@@ -87,7 +87,7 @@ export const MomentsScopeSelector: React.FC<MomentsScopeSelectorProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-1.5">
             <span className="text-[10px] font-black uppercase tracking-wider text-purple-600">
-              KHOẢNH KHẮC RIÊNG CỦA BÉ
+              HÌNH ẢNH RIÊNG CỦA BÉ
             </span>
             <span
               className={`rounded-full px-2 py-0.5 text-[11px] font-black transition-colors shrink-0 ${
@@ -98,10 +98,10 @@ export const MomentsScopeSelector: React.FC<MomentsScopeSelectorProps> = ({
             </span>
           </div>
           <h3 className="mt-0.5 text-sm sm:text-base font-black text-slate-800 truncate">
-            Khoảnh khắc con mình {childName ? `(${childName})` : ''}
+            Ảnh hoạt động riêng của bé {childName ? `(${childName})` : ''}
           </h3>
           <p className="mt-0.5 text-[11px] sm:text-xs text-slate-500 line-clamp-2">
-            Chỉ riêng phụ huynh của bé mới xem được các hoạt động cá nhân này
+            Hình ảnh cá nhân, sản phẩm tạo hình và góc rèn luyện riêng của bé tại trường
           </p>
           {activeScope === 'child' && (
             <span className="inline-flex items-center gap-1.5 mt-2 text-[11px] sm:text-xs font-bold text-purple-600">

@@ -33,7 +33,10 @@ export default function WeeklyTimetable({
     setSelectedDate,
     filterMode,
     setFilterMode,
+    schedules,
     loading,
+    isInitialLoading,
+    isRefreshing,
     isFullscreen,
     selectedItemForModal,
     setSelectedItemForModal,
@@ -91,40 +94,55 @@ export default function WeeklyTimetable({
         toggleFullscreen={toggleFullscreen}
       />
 
-      {/* Loading Bar */}
-      {loading && (
-        <div className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-sky-600 bg-sky-50 rounded-md border border-sky-100">
-          <Loader2 size={14} className="animate-spin" />
-          <span>Đang tải dữ liệu lịch từ hệ thống...</span>
+      {/* Top Background Sync Progress Bar */}
+      {isRefreshing && (
+        <div className="h-0.5 w-full bg-slate-100 overflow-hidden rounded-full">
+          <div className="h-full bg-gradient-to-r from-sky-500 via-indigo-500 to-sky-500 animate-pulse w-full" />
         </div>
       )}
 
-      {/* Mobile Day View */}
-      <TimetableMobileView
-        currentWeekDays={currentWeekDays}
-        selectedMobileDay={selectedMobileDay}
-        setSelectedMobileDay={setSelectedMobileDay}
-        filteredSchedules={filteredSchedules}
-        userRole={userRole}
-        getEventsForCell={getEventsForCell}
-        getPeriodLabel={getPeriodLabel}
-        getCardStyle={getCardStyle}
-        onEditSchedule={onEditSchedule}
-        onDeleteSchedule={onDeleteSchedule}
-        handleCardClick={handleCardClick}
-      />
+      {/* Initial Loading Skeleton */}
+      {isInitialLoading && schedules.length === 0 ? (
+        <div className="hidden sm:grid sm:grid-cols-7 gap-2 p-4 rounded-3xl border border-slate-100 bg-slate-50/50 animate-pulse">
+          {currentWeekDays.map((d, i) => (
+            <div key={i} className="space-y-3">
+              <div className="h-10 bg-slate-200/70 rounded-2xl" />
+              <div className="h-24 bg-slate-200/50 rounded-2xl" />
+              <div className="h-24 bg-slate-200/50 rounded-2xl" />
+              <div className="h-24 bg-slate-200/50 rounded-2xl" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Mobile Day View */}
+          <TimetableMobileView
+            currentWeekDays={currentWeekDays}
+            selectedMobileDay={selectedMobileDay}
+            setSelectedMobileDay={setSelectedMobileDay}
+            filteredSchedules={filteredSchedules}
+            userRole={userRole}
+            getEventsForCell={getEventsForCell}
+            getPeriodLabel={getPeriodLabel}
+            getCardStyle={getCardStyle}
+            onEditSchedule={onEditSchedule}
+            onDeleteSchedule={onDeleteSchedule}
+            handleCardClick={handleCardClick}
+          />
 
-      {/* Desktop Grid View */}
-      <TimetableDesktopGrid
-        currentWeekDays={currentWeekDays}
-        userRole={userRole}
-        getEventsForCell={getEventsForCell}
-        getPeriodLabel={getPeriodLabel}
-        getCardStyle={getCardStyle}
-        onEditSchedule={onEditSchedule}
-        onDeleteSchedule={onDeleteSchedule}
-        handleCardClick={handleCardClick}
-      />
+          {/* Desktop Grid View */}
+          <TimetableDesktopGrid
+            currentWeekDays={currentWeekDays}
+            userRole={userRole}
+            getEventsForCell={getEventsForCell}
+            getPeriodLabel={getPeriodLabel}
+            getCardStyle={getCardStyle}
+            onEditSchedule={onEditSchedule}
+            onDeleteSchedule={onDeleteSchedule}
+            handleCardClick={handleCardClick}
+          />
+        </>
+      )}
 
       {/* Item Details Modal */}
       <TimetableDetailModal

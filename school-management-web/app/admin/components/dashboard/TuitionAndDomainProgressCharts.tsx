@@ -65,10 +65,10 @@ export function TuitionAndDomainProgressCharts({
               </span>
               <div className="min-w-0">
                 <h3 className="text-sm sm:text-base font-black text-slate-800 truncate">
-                  Thu Học phí & Dòng tiền ({tuitionLedger.periodLabel})
+                  Tiền ăn bán trú & Dịch vụ hỗ trợ ({tuitionLedger.periodLabel})
                 </h3>
                 <p className="text-[11px] text-slate-400 truncate">
-                  Tiến độ thu học phí chính khóa & tiền ăn bán trú
+                  Tiến độ thu tiền ăn bán trú & các dịch vụ hỗ trợ theo NQ HĐND
                 </p>
               </div>
             </div>
@@ -175,7 +175,7 @@ export function TuitionAndDomainProgressCharts({
         </div>
 
         <div className="mt-2 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-          <span className="truncate">Học phí chính khóa & bán trú</span>
+          <span className="truncate">Tiền ăn bán trú & dịch vụ theo NQ HĐND (Miễn 100% học phí theo NĐ 238)</span>
           <span className="font-bold text-sky-700 shrink-0 ml-2">Đối soát tự động</span>
         </div>
       </section>

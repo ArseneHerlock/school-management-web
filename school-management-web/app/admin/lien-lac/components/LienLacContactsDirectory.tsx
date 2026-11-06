@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Filter, Search, Users, Loader2, ChevronRight } from "lucide-react";
 import { ContactPerson, RawRecord, getInitials } from "../types";
+import Pagination from "@/app/admin/components/shared/Pagination";
 
 interface LienLacContactsDirectoryProps {
   searchKeyword: string;
@@ -35,6 +36,19 @@ export function LienLacContactsDirectory({
   isLoadingContacts,
   onOpenConversation,
 }: LienLacContactsDirectoryProps) {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(24);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, selectedClassId, selectedGradeId, selectedRoleFilter]);
+
+  const totalPages = Math.ceil(filteredContacts.length / pageSize) || 1;
+  const paginatedContacts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredContacts.slice(start, start + pageSize);
+  }, [filteredContacts, currentPage, pageSize]);
+
   return (
     <>
       {/* Bộ lọc danh bạ */}
@@ -109,63 +123,82 @@ export function LienLacContactsDirectory({
       </div>
 
       {/* Lưới danh bạ liên lạc */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="w-full space-y-6">
         {isLoadingContacts ? (
           <div className="flex justify-center py-16">
             <Loader2 className="animate-spin text-emerald-500" />
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredContacts.map((person) => (
-              <button
-                key={`${person.role}-${person.accountId}`}
-                onClick={() => onOpenConversation(person)}
-                className="group admin-card p-5 text-left transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 font-black text-emerald-700">
-                    {getInitials(person.name)}
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {paginatedContacts.map((person) => (
+                <button
+                  key={`${person.role}-${person.accountId}`}
+                  onClick={() => onOpenConversation(person)}
+                  className="group admin-card p-5 text-left transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 font-black text-emerald-700">
+                      {getInitials(person.name)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="truncate font-black text-slate-800">
+                        {person.name}
+                      </h2>
+                      <p className="mt-1 text-xs font-bold text-emerald-600">
+                        {person.role === "PHU_HUYNH" ? "Phụ huynh" : "Giáo viên"}
+                      </p>
+                    </div>
+                    <ChevronRight
+                      size={18}
+                      className="text-slate-300 group-hover:text-emerald-600"
+                    />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-black text-slate-800">
-                      {person.name}
-                    </h2>
-                    <p className="mt-1 text-xs font-bold text-emerald-600">
-                      {person.role === "PHU_HUYNH" ? "Phụ huynh" : "Giáo viên"}
-                    </p>
-                  </div>
-                  <ChevronRight
-                    size={18}
-                    className="text-slate-300 group-hover:text-emerald-600"
-                  />
-                </div>
 
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {person.classNames.length > 0 ? (
-                    person.classNames.map((className) => (
-                      <span key={className} className="admin-chip">
-                        {className}
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {person.classNames.length > 0 ? (
+                      person.classNames.map((className) => (
+                        <span key={className} className="admin-chip">
+                          {className}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-400">
+                        Chưa có lớp liên kết
                       </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-slate-400">
-                      Chưa có lớp liên kết
-                    </span>
-                  )}
+                    )}
+                  </div>
+
+                  <p className="mt-3 truncate text-xs text-slate-400">
+                    {person.conversation ? "Đã có hội thoại" : "Chưa mở hội thoại"}
+                  </p>
+                </button>
+              ))}
+
+              {filteredContacts.length === 0 && (
+                <div className="admin-card p-12 text-center text-sm text-slate-400 col-span-full">
+                  Không tìm thấy người phù hợp.
                 </div>
+              )}
+            </div>
 
-                <p className="mt-3 truncate text-xs text-slate-400">
-                  {person.conversation ? "Đã có hội thoại" : "Chưa mở hội thoại"}
-                </p>
-              </button>
-            ))}
-
-            {filteredContacts.length === 0 && (
-              <div className="admin-card p-12 text-center text-sm text-slate-400 col-span-full">
-                Không tìm thấy người phù hợp.
+            {filteredContacts.length > pageSize && (
+              <div className="flex justify-center pt-2">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={filteredContacts.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={(sz) => {
+                    setPageSize(sz);
+                    setCurrentPage(1);
+                  }}
+                  pageSizeOptions={[18, 24, 48, 96]}
+                />
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </>
