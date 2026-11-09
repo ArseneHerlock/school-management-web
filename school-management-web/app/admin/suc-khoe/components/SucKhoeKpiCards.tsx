@@ -120,12 +120,12 @@ export const SucKhoeKpiCards: React.FC<SucKhoeKpiCardsProps> = ({
       subCountText: "bé",
       criteria: "WAZ < -3",
       icon: Scale,
-      badgeColor: "text-rose-700 bg-rose-50 border-rose-200",
+      badgeColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
       activeStyle:
-        "border-rose-600 ring-2 ring-rose-600/25 bg-rose-50/50 shadow-sm",
-      defaultStyle: "border-rose-200/80 bg-white hover:border-rose-400",
-      iconColor: "text-rose-600 bg-rose-100",
-      countColor: "text-rose-700",
+        "border-emerald-600 ring-2 ring-emerald-600/25 bg-emerald-50/50 shadow-sm",
+      defaultStyle: "border-emerald-200/80 bg-white hover:border-emerald-400",
+      iconColor: "text-emerald-600 bg-emerald-100",
+      countColor: "text-emerald-700",
     },
     {
       id: "GAY_COM" as HealthCategoryFilter,
@@ -176,12 +176,12 @@ export const SucKhoeKpiCards: React.FC<SucKhoeKpiCardsProps> = ({
       subCountText: "bé",
       criteria: "WHZ > +3",
       icon: AlertTriangle,
-      badgeColor: "text-rose-800 bg-rose-50 border-rose-300",
+      badgeColor: "text-emerald-800 bg-emerald-50 border-emerald-300",
       activeStyle:
-        "border-rose-600 ring-2 ring-rose-600/25 bg-rose-50/50 shadow-sm",
-      defaultStyle: "border-rose-200/80 bg-white hover:border-rose-400",
-      iconColor: "text-rose-600 bg-rose-100",
-      countColor: "text-rose-700",
+        "border-emerald-600 ring-2 ring-emerald-600/25 bg-emerald-50/50 shadow-sm",
+      defaultStyle: "border-emerald-200/80 bg-white hover:border-emerald-400",
+      iconColor: "text-emerald-600 bg-emerald-100",
+      countColor: "text-emerald-700",
     },
   ];
 

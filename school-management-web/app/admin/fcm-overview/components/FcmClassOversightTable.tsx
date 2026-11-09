@@ -40,7 +40,7 @@ export function FcmClassOversightTable({
               <th className="pb-3 text-center font-bold text-amber-600">
                 Cụm 3 (TB)
               </th>
-              <th className="pb-3 text-center font-bold text-rose-600">
+              <th className="pb-3 text-center font-bold text-emerald-600">
                 Cụm 4 (Cần theo dõi)
               </th>
               <th className="pb-3 text-center font-bold">Mức cảnh báo</th>
@@ -57,7 +57,7 @@ export function FcmClassOversightTable({
               );
               if (c4Rate > 30) {
                 warningBadge = (
-                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                     Cần hỗ trợ gấp ({Math.round(c4Rate)}%)
                   </span>
                 );
@@ -87,7 +87,7 @@ export function FcmClassOversightTable({
                   <td className="py-3 text-center font-bold text-amber-600">
                     {row.Cluster3}
                   </td>
-                  <td className="py-3 text-center font-bold text-rose-600">
+                  <td className="py-3 text-center font-bold text-emerald-600">
                     {row.Cluster4}
                   </td>
                   <td className="py-3 text-center">{warningBadge}</td>

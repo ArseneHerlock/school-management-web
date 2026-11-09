@@ -108,7 +108,7 @@ export default function ParentSidebar({
           badgeColor: 'bg-rose-500',
         },
         { id: 'news', label: 'Bản tin & Thông báo nhà trường', href: '/parent/news' },
-        { id: 'tuition', label: 'Học phí & Tiền ăn bán trú', href: '/parent/tuition' },
+        { id: 'tuition', label: 'Học phí & Các khoản thu', href: '/parent/tuition' },
       ],
     },
   ];
@@ -142,13 +142,13 @@ export default function ParentSidebar({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[60] lg:hidden transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50 flex flex-col transition-transform duration-200 ${
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-[70] flex flex-col transition-transform duration-200 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 shadow-xl lg:shadow-none font-sans`}
       >

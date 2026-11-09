@@ -1,122 +1,121 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from "react";
-import {
-  REPORT_DEFINITIONS,
-  ReportFilterState,
-} from "./types";
-import { useReportData, calculateReportMetrics } from "./reportService";
-import { ReportHeader, ReportFilters } from "./components/ReportFilters";
-import { ReportKpiCards, ReportBatchSelector } from "./components/ReportOverview";
-import { ReportDetailTables } from "./components/ReportTables";
-import {
-  generateReportHtml,
-  printOrDownloadPdf,
-  ReportPreviewModal,
-} from "./components/ReportExport";
-import { AdminClassReportsCentral } from "./components/AdminClassReportsCentral";
-import { AdminSchoolExecutiveReport } from "./components/AdminSchoolExecutiveReport";
+import React, { useState, useMemo } from 'react';
+import { ADMIN_REPORTS_CONFIG } from './adminReportConfig';
+import { AdminReportId, AdminFilterState } from './types';
+import { getFilteredAdminClasses, calculateAdminStatMetrics } from './adminReportData';
+import { AdminReportCardGrid } from './components/AdminReportCardGrid';
+import { AdminReportFilterBar } from './components/AdminReportFilterBar';
+import { AdminReportDetailView } from './components/AdminReportDetailView';
+import { AdminReportPrintModal } from './components/AdminReportPrintModal';
 
-export default function BaoCaoPage() {
-  const [selectedReports, setSelectedReports] = useState<string[]>(() =>
-    REPORT_DEFINITIONS.filter((r) => r.defaultChecked).map((r) => r.id),
-  );
+export default function AdminBaoCaoPage() {
+  const [selectedReportId, setSelectedReportId] = useState<AdminReportId | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [printModalReportId, setPrintModalReportId] = useState<AdminReportId | null>(null);
 
-  const [viewMode, setViewMode] = useState<"admin-school" | "teacher-classes" | "detail">("admin-school");
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  const [filters, setFilters] = useState<ReportFilterState>({
-    scope: "school",
-    selectedGradeId: "all",
-    selectedClassId: "all",
-    selectedMonth: new Date().getMonth() + 1,
-    selectedYear: new Date().getFullYear(),
-    periodScope: "month",
-    searchKeyword: "",
+  const [filters, setFilters] = useState<AdminFilterState>({
+    gradeId: 'all',
+    classId: 'all',
+    period: 'thang_10',
+    schoolYear: '2026-2027',
+    searchKeyword: '',
   });
 
-  const { data, loading, reloadData, monthsWithData } = useReportData(
-    filters.selectedMonth,
-    filters.selectedYear,
+  const filteredRows = useMemo(
+    () => getFilteredAdminClasses(filters.gradeId, filters.classId, filters.searchKeyword),
+    [filters.gradeId, filters.classId, filters.searchKeyword],
   );
 
-  const { metrics } = useMemo(
-    () => calculateReportMetrics(data, filters),
-    [data, filters],
+  const statMetrics = useMemo(
+    () => calculateAdminStatMetrics(filteredRows),
+    [filteredRows],
   );
 
-  const handleToggleReport = (id: string) => {
-    setSelectedReports((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+  const handleFilterChange = (key: keyof AdminFilterState, val: string) => {
+    setFilters((prev) => ({ ...prev, [key]: val }));
   };
 
-  const previewHtml = useMemo(
-    () =>
-      generateReportHtml(
-        selectedReports,
-        metrics,
-        data,
-        filters.selectedMonth,
-        filters.selectedYear,
-      ),
-    [selectedReports, metrics, data, filters.selectedMonth, filters.selectedYear],
-  );
-
-  const handleDownloadPdf = () => {
-    if (selectedReports.length === 0) {
-      alert("Vui lòng tích chọn ít nhất một báo cáo để tải về / in!");
-      return;
-    }
-    printOrDownloadPdf(previewHtml);
+  const handleResetFilters = () => {
+    setFilters({
+      gradeId: 'all',
+      classId: 'all',
+      period: 'thang_10',
+      schoolYear: '2026-2027',
+      searchKeyword: '',
+    });
   };
+
+  const currentReportMeta = useMemo(() => {
+    if (!selectedReportId) return null;
+    return ADMIN_REPORTS_CONFIG.find((r) => r.id === selectedReportId) || null;
+  }, [selectedReportId]);
+
+  const modalReportMeta = useMemo(() => {
+    if (!printModalReportId) return null;
+    return ADMIN_REPORTS_CONFIG.find((r) => r.id === printModalReportId) || null;
+  }, [printModalReportId]);
+
+  const periodLabelMap: Record<string, string> = {
+    today: 'Hôm nay',
+    thang_10: 'Tháng 10 / 2026',
+    thang_11: 'Tháng 11 / 2026',
+    hoc_ky_1: 'Học kỳ I (2026-2027)',
+    ca_nam: 'Cả năm học (2026-2027)',
+  };
+
+  const currentPeriodText = periodLabelMap[filters.period] || filters.period;
 
   return (
-    <div className="space-y-6 p-4 md:p-6 bg-slate-50/50 min-h-[calc(100vh-4rem)] font-sans">
-      <ReportHeader
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        loading={loading}
-        onRefresh={() => void reloadData()}
-        onOpenPreview={() => setPreviewOpen(true)}
-        onDownloadPdf={handleDownloadPdf}
-        selectedCount={selectedReports.length}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 pb-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+            Báo cáo quản trị
+          </h1>
+        </div>
+      </div>
+
+      {/* Filter Toolbar */}
+      <AdminReportFilterBar
+        filters={filters}
+        onChangeFilter={handleFilterChange}
+        onReset={handleResetFilters}
+        onExportAll={() => setPrintModalReportId(selectedReportId || 'BGH_TONG_KET_NAM')}
       />
 
-      {viewMode === "admin-school" ? (
-        <AdminSchoolExecutiveReport
-          onSwitchToClassesManagement={() => setViewMode("teacher-classes")}
+      {/* Main Content Area */}
+      {!currentReportMeta ? (
+        <AdminReportCardGrid
+          reports={ADMIN_REPORTS_CONFIG}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          onOpenReport={(id) => setSelectedReportId(id)}
+          onQuickPrint={(id) => setPrintModalReportId(id)}
         />
-      ) : viewMode === "teacher-classes" ? (
-        <AdminClassReportsCentral />
       ) : (
-        <>
-          <ReportFilters
-            filters={filters}
-            onChangeFilters={setFilters}
-            grades={data.grades}
-            classes={data.classes}
-            monthsWithData={monthsWithData}
-          />
-
-          <ReportKpiCards metrics={metrics} />
-
-          <ReportDetailTables
-            metrics={metrics}
-            data={data}
-            selectedMonth={filters.selectedMonth}
-            selectedYear={filters.selectedYear}
-          />
-        </>
+        <AdminReportDetailView
+          reportMeta={currentReportMeta}
+          rows={filteredRows}
+          metrics={statMetrics}
+          periodText={currentPeriodText}
+          onBack={() => setSelectedReportId(null)}
+          onPrint={() => setPrintModalReportId(currentReportMeta.id)}
+        />
       )}
 
-      <ReportPreviewModal
-        isOpen={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        htmlContent={previewHtml}
-        onDownloadPdf={handleDownloadPdf}
-        selectedCount={selectedReports.length}
-      />
+      {/* Print / Export Modal */}
+      {modalReportMeta && (
+        <AdminReportPrintModal
+          isOpen={!!printModalReportId}
+          onClose={() => setPrintModalReportId(null)}
+          reportMeta={modalReportMeta}
+          rows={filteredRows}
+          metrics={statMetrics}
+          periodText={currentPeriodText}
+        />
+      )}
     </div>
   );
 }

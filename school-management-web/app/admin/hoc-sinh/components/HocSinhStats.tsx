@@ -14,39 +14,39 @@ export default function HocSinhStats({ students }: HocSinhStatsProps) {
   const unassigned = students.filter((item) => !item.lopId).length;
 
   return (
-    <div className="grid gap-3 md:grid-cols-3">
-      <div className="admin-card p-5">
-        <div className="flex items-center gap-3">
-          <div className="admin-icon">
-            <Users size={19} />
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="admin-card p-3 sm:p-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1.5 sm:gap-3">
+          <div className="admin-icon shrink-0">
+            <Users size={17} />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-400">Tổng học sinh</p>
-            <p className="text-2xl font-black text-slate-900">{total}</p>
+            <p className="text-[10px] sm:text-xs font-semibold text-slate-500">Tổng học sinh</p>
+            <p className="text-base sm:text-2xl font-black text-slate-900">{total}</p>
           </div>
         </div>
       </div>
 
-      <div className="admin-card p-5">
-        <div className="flex items-center gap-3">
-          <div className="admin-icon">
-            <Link2 size={19} />
+      <div className="admin-card p-3 sm:p-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1.5 sm:gap-3">
+          <div className="admin-icon shrink-0">
+            <Link2 size={17} />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-400">Đang học</p>
-            <p className="text-2xl font-black text-slate-900">{active}</p>
+            <p className="text-[10px] sm:text-xs font-semibold text-slate-500">Đang học</p>
+            <p className="text-base sm:text-2xl font-black text-emerald-700">{active}</p>
           </div>
         </div>
       </div>
 
-      <div className="admin-card p-5">
-        <div className="flex items-center gap-3">
-          <div className="admin-icon">
-            <UserRound size={19} />
+      <div className="admin-card p-3 sm:p-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1.5 sm:gap-3">
+          <div className="admin-icon shrink-0">
+            <UserRound size={17} />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-400">Chưa xếp lớp</p>
-            <p className="text-2xl font-black text-slate-900">{unassigned}</p>
+            <p className="text-[10px] sm:text-xs font-semibold text-slate-500">Chưa xếp lớp</p>
+            <p className="text-base sm:text-2xl font-black text-amber-600">{unassigned}</p>
           </div>
         </div>
       </div>

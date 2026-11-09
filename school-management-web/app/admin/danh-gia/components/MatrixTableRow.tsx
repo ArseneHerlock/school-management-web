@@ -39,10 +39,10 @@ export default function MatrixTableRow({
   });
 
   return (
-    <tr className="hover:bg-rose-50/20 transition">
+    <tr className="hover:bg-emerald-50/20 transition">
       <td className="p-3 font-bold text-slate-800 whitespace-nowrap">
         <div className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-black text-[11px]">
+          <span className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-[11px]">
             {(student.tenHocSinh || "B").charAt(0)}
           </span>
           <span>{student.tenHocSinh}</span>
@@ -85,7 +85,7 @@ export default function MatrixTableRow({
                 cell.result === true
                   ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                   : cell.result === false
-                  ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
+                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                   : "bg-slate-100 text-slate-300 hover:bg-slate-200"
               }`}
               title={`Xem chi tiết tiêu chí: ${crit.name} (${

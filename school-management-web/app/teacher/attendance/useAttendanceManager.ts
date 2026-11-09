@@ -150,7 +150,6 @@ export function useAttendanceManager() {
 
   const handleLateArrivalSubmit = async (data: {
     time: string;
-    coAnTrua: boolean;
     note: string;
   }) => {
     if (!lateModalChild?.apiId) return;
@@ -171,7 +170,7 @@ export function useAttendanceManager() {
 
     setNoteMap((prev) => ({
       ...prev,
-      [lateModalChild.id]: `[Đến muộn ${data.time}] Suất ăn: ${data.coAnTrua ? 'Ăn trưa trường' : 'Đã ăn ở nhà'}`,
+      [lateModalChild.id]: `[Đến muộn ${data.time}] ${data.note || 'Tiếp nhận vào lớp'}`,
     }));
 
     setLateModalChild(null);
@@ -227,14 +226,9 @@ export function useAttendanceManager() {
   };
 
   const filteredChildren = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return CHILDREN.filter((child) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        child.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        child.nickname.toLowerCase().includes(searchQuery.toLowerCase());
-
-      if (!matchesSearch) return false;
-
+      if (q && !child.name.toLowerCase().includes(q) && !child.nickname.toLowerCase().includes(q)) return false;
       const isAbsent = absentIds.has(child.id);
       const isLate = lateIds.has(child.id);
       const isPresent = !isAbsent && !isLate;
@@ -244,7 +238,6 @@ export function useAttendanceManager() {
       if (activeFilterTab === 'LATE') return isLate;
       if (activeFilterTab === 'ABSENT') return isAbsent && !isApprovedLeave;
       if (activeFilterTab === 'APPROVED_LEAVE') return isApprovedLeave;
-
       return true;
     });
   }, [searchQuery, activeFilterTab, childrenVersion, absentIds, lateIds, approvedLeaveMap]);

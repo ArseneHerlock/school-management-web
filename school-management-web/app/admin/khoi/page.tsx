@@ -166,11 +166,7 @@ export default function KhoiPage() {
     <section className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="admin-eyebrow">QUẢN TRỊ TRƯỜNG HỌC</p>
-          <h1 className="admin-title">Quản lý Khối học</h1>
-          <p className="admin-subtitle">
-            Cấu hình độ tuổi, chương trình học và định danh các khối lớp trong trường.
-          </p>
+          <h1 className="admin-title">Quản lý khối học</h1>
         </div>
         <div className="flex gap-2">
           <button
@@ -198,7 +194,7 @@ export default function KhoiPage() {
       )}
 
       {errorMessage && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           {errorMessage}
         </div>
       )}

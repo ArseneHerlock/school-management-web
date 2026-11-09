@@ -80,10 +80,8 @@ export async function processChildNotifications({
           severity: isOverdue ? "danger" : "warning",
           isUrgent: true,
           title: isOverdue
-            ? `Quá hạn học phí: ${child.hoTen} (${formatVnd(outstanding)})`
-            : `Thông báo học phí chưa đóng: ${child.hoTen} (${formatVnd(
-                outstanding
-              )})`,
+            ? `Học phí quá hạn cần thanh toán (${formatVnd(outstanding)})`
+            : `Học phí chưa hoàn tất (${formatVnd(outstanding)})`,
           message: `Hóa đơn #${invNum}: Còn nợ ${formatVnd(
             outstanding
           )} / Tổng ${formatVnd(total)}${

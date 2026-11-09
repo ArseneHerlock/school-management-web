@@ -33,18 +33,18 @@ export default function DanhGiaHistory({
   onDeleteClick,
 }: DanhGiaHistoryProps) {
   return (
-    <div className="rounded-3xl border border-rose-100 bg-white overflow-hidden shadow-xs">
-      <div className="p-4 border-b border-rose-100 bg-rose-50/30 flex items-center justify-between">
+    <div className="rounded-3xl border border-emerald-100 bg-white overflow-hidden shadow-xs">
+      <div className="p-4 border-b border-emerald-100 bg-emerald-50/30 flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-800">Lịch sử đánh giá chi tiết</h3>
         <span className="text-xs font-semibold text-slate-500">
-          Tổng số: <span className="text-rose-600 font-bold">{filteredAssessmentsCount}</span> bản ghi
+          Tổng số: <span className="text-emerald-600 font-bold">{filteredAssessmentsCount}</span> bản ghi
         </span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-rose-100 bg-slate-50/50 text-slate-500 uppercase text-[10px] tracking-wider">
+            <tr className="border-b border-emerald-100 bg-slate-50/50 text-slate-500 uppercase text-[10px] tracking-wider">
               <th className="p-3.5">Học sinh</th>
               <th className="p-3.5">Tiêu chí đánh giá</th>
               <th className="p-3.5">Hoạt động</th>
@@ -54,7 +54,7 @@ export default function DanhGiaHistory({
               <th className="p-3.5 text-center">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-rose-50">
+          <tbody className="divide-y divide-emerald-50">
             {paginatedAssessments.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-slate-400">
@@ -64,7 +64,7 @@ export default function DanhGiaHistory({
               </tr>
             ) : (
               paginatedAssessments.map((a) => (
-                <tr key={a.id} className="hover:bg-rose-50/20 transition">
+                <tr key={a.id} className="hover:bg-emerald-50/20 transition">
                   <td className="p-3.5 font-bold text-slate-800">
                     <p>{getStudentName(a.childId)}</p>
                   </td>
@@ -81,7 +81,7 @@ export default function DanhGiaHistory({
                         <CheckCircle2 size={13} /> Đạt
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-rose-700 border border-rose-200">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200">
                         <XCircle size={13} /> Chưa đạt
                       </span>
                     )}
@@ -102,7 +102,7 @@ export default function DanhGiaHistory({
                   <td className="p-3.5 text-center">
                     <button
                       onClick={() => onDeleteClick(a)}
-                      className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                      className="rounded-lg p-1.5 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition"
                       title="Xóa đánh giá"
                     >
                       <Trash2 size={15} />
@@ -115,7 +115,7 @@ export default function DanhGiaHistory({
         </table>
       </div>
 
-      <div className="p-3 border-t border-rose-100 flex justify-end">
+      <div className="p-3 border-t border-emerald-100 flex justify-end">
         <Pagination
           currentPage={currentPage}
           pageSize={pageSize}

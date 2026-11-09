@@ -73,22 +73,22 @@ export default function FCMOverviewPage() {
   const pieData = useMemo(() => {
     return [
       {
-        name: "Nhóm 1 (Xuất sắc - Nổi trội)",
+        name: "Cụm 1 (Toàn diện - Vượt trội)",
         value: clusterCounts[1],
         color: CLUSTER_CONFIG[1].color,
       },
       {
-        name: "Nhóm 2 (Đạt chuẩn tốt)",
+        name: "Cụm 2 (Đạt chuẩn - Vững vàng)",
         value: clusterCounts[2],
         color: CLUSTER_CONFIG[2].color,
       },
       {
-        name: "Nhóm 3 (Mức khá)",
+        name: "Cụm 3 (Không đồng đều / Lệch pha)",
         value: clusterCounts[3],
         color: CLUSTER_CONFIG[3].color,
       },
       {
-        name: "Nhóm 4 (Cần rèn luyện)",
+        name: "Cụm 4 (Cần hỗ trợ can thiệp)",
         value: clusterCounts[4],
         color: CLUSTER_CONFIG[4].color,
       },
@@ -98,10 +98,10 @@ export default function FCMOverviewPage() {
   const barChartData = useMemo(() => {
     return classBreakdown.map((c) => ({
       name: c.TenLop,
-      "Nhóm 1": c.Cluster1,
-      "Nhóm 2": c.Cluster2,
-      "Nhóm 3": c.Cluster3,
-      "Nhóm 4": c.Cluster4,
+      "Cụm 1": c.Cluster1,
+      "Cụm 2": c.Cluster2,
+      "Cụm 3": c.Cluster3,
+      "Cụm 4": c.Cluster4,
     }));
   }, [classBreakdown]);
 

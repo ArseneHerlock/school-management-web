@@ -30,7 +30,7 @@ export function PickupRegisteredList({
         </div>
         <button
           onClick={onOpenModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-teal-600 text-white text-sm font-bold shadow hover:bg-teal-700 transition cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 text-white text-sm font-bold shadow hover:bg-indigo-700 transition cursor-pointer"
         >
           <Plus size={16} /> Thêm người thân đón bé
         </button>
@@ -47,7 +47,7 @@ export function PickupRegisteredList({
           </p>
           <button
             onClick={onOpenModal}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 text-white text-xs font-bold shadow cursor-pointer"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow cursor-pointer"
           >
             <Plus size={14} /> Đăng ký người đón
           </button>
@@ -65,25 +65,25 @@ export function PickupRegisteredList({
                     className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${
                       p.IsOfficialParent
                         ? 'bg-blue-50 text-blue-800 border-blue-200'
-                        : 'bg-teal-50 text-teal-800 border-teal-200'
+                        : 'bg-indigo-50 text-indigo-800 border-indigo-200'
                     }`}
                   >
                     {p.IsOfficialParent ? 'Phụ huynh chính thức' : 'Người thân ủy quyền'}
                   </span>
 
                   {p.IsDefault && (
-                    <span className="bg-emerald-100 text-emerald-800 font-extrabold text-[10px] px-2 py-0.5 rounded-md">
+                    <span className="bg-indigo-100 text-indigo-800 font-extrabold text-[10px] px-2.5 py-0.5 rounded-md">
                       Mặc định
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-3.5 mb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-teal-100 text-teal-800 font-black flex items-center justify-center text-base border-2 border-teal-200 shadow-xs shrink-0">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-800 font-black flex items-center justify-center text-base border-2 border-indigo-200 shadow-xs shrink-0">
                     {getInitials(p.FullName)}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-teal-700 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">
                       {p.Relationship}
                     </span>
                     <h3 className="font-black text-slate-900 text-base leading-tight truncate">

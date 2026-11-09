@@ -36,6 +36,9 @@ export interface AdmissionFormData {
   tenChuHo: string;
   dienThoaiLienHe: string;
   ghiChu: string;
+
+  // Initial Assessment 31 indicators
+  khaoSatDauVao?: Record<string, number>;
 }
 
 export const INITIAL_FORM_DATA: AdmissionFormData = {

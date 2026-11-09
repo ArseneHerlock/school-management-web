@@ -35,6 +35,28 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/teacher/profile": "Hồ sơ giáo viên",
 };
 
+const MOBILE_ROUTE_TITLE_MAP: Record<string, string> = {
+  "/teacher": "Tổng quan",
+  "/teacher/attendance": "Chuyên cần",
+  "/teacher/schedule": "Thời khóa biểu",
+  "/teacher/assessment": "Đánh giá trẻ",
+  "/teacher/activities": "Hoạt động & Sự kiện",
+  "/teacher/pickup": "Đón trả trẻ",
+  "/teacher/medications": "Sổ dặn thuốc",
+  "/teacher/leave": "Đơn nghỉ phép",
+  "/teacher/health": "Sức khỏe trẻ",
+  "/teacher/good-child": "Bé ngoan tuần",
+  "/teacher/flower-awards": "Phiếu bé ngoan",
+  "/teacher/fcm": "Hồ sơ năng lực",
+  "/teacher/year-end-awards": "Khen thưởng",
+  "/teacher/bao-cao": "Báo cáo lớp",
+  "/teacher/messages": "Sổ liên lạc",
+  "/teacher/album": "Album ảnh",
+  "/teacher/learning": "Sản phẩm bé",
+  "/teacher/news": "Bản tin lớp",
+  "/teacher/profile": "Hồ sơ",
+};
+
 interface TeacherTopBarProps {
   teacher?: {
     name?: string;
@@ -44,16 +66,8 @@ interface TeacherTopBarProps {
   onOpenMobile?: () => void;
 }
 
-export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarProps) {
-  const pathname = usePathname();
-  const activeUser = currentUser();
+function LiveDigitalClock() {
   const [currentDateTime, setCurrentDateTime] = useState<Date>(new Date());
-  const [badgeCounts, setBadgeCounts] = useState({
-    unreadTotal: 0,
-    urgentUnread: 0,
-    unreadMessages: 0,
-    pendingLeaves: 0,
-  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -61,9 +75,6 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const pageTitle = ROUTE_TITLE_MAP[pathname] || "Cổng giáo viên";
-  const teacherDisplayName = teacher?.name || activeUser?.name || "Giáo viên";
 
   const dateString = currentDateTime.toLocaleDateString("vi-VN", {
     weekday: "long",
@@ -77,6 +88,28 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
     minute: "2-digit",
     second: "2-digit",
   });
+
+  return (
+    <div className="hidden items-center gap-2 rounded-xl bg-orange-50/80 px-3 py-1.5 text-xs font-bold text-orange-800 border border-orange-200/60 md:flex">
+      <Calendar size={14} className="text-orange-600" />
+      <span className="capitalize">{dateString}</span>
+      <span className="font-mono text-orange-600 font-black ml-1">{timeString}</span>
+    </div>
+  );
+}
+
+export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarProps) {
+  const pathname = usePathname();
+  const activeUser = currentUser();
+  const [badgeCounts, setBadgeCounts] = useState({
+    unreadTotal: 0,
+    urgentUnread: 0,
+    unreadMessages: 0,
+    pendingLeaves: 0,
+  });
+
+  const pageTitle = ROUTE_TITLE_MAP[pathname] || "Cổng giáo viên";
+  const teacherDisplayName = teacher?.name || activeUser?.name || "Giáo viên";
 
   const initials = teacherDisplayName
     .split(" ")
@@ -100,24 +133,18 @@ export default function TeacherTopBar({ teacher, onOpenMobile }: TeacherTopBarPr
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse shrink-0" />
-            <h1 className="text-xs sm:text-base font-extrabold text-slate-800 tracking-tight truncate">
-              {pageTitle}
+            <h1 className="text-sm sm:text-base font-extrabold text-slate-800 tracking-tight truncate">
+              <span className="sm:hidden">{MOBILE_ROUTE_TITLE_MAP[pathname] || pageTitle}</span>
+              <span className="hidden sm:inline">{pageTitle}</span>
             </h1>
           </div>
-          <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 hidden sm:block truncate">
-            Giáo viên phụ trách: <span className="font-semibold text-slate-600">{teacherDisplayName}</span> • Năm học 2026 - 2027
-          </p>
         </div>
       </div>
 
       {/* Hành động nhanh bên phải */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Đồng hồ số thời gian thực */}
-        <div className="hidden items-center gap-2 rounded-xl bg-orange-50/80 px-3 py-1.5 text-xs font-bold text-orange-800 border border-orange-200/60 md:flex">
-          <Calendar size={14} className="text-orange-600" />
-          <span className="capitalize">{dateString}</span>
-          <span className="font-mono text-orange-600 font-black ml-1">{timeString}</span>
-        </div>
+        {/* Đồng hồ số thời gian thực tách biệt (không re-render toàn thanh header) */}
+        <LiveDigitalClock />
 
         {/* Trung tâm Thông báo & Cảnh báo giáo viên */}
         <NotificationCenter

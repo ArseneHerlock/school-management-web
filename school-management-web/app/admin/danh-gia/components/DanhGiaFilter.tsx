@@ -45,7 +45,7 @@ export default function DanhGiaFilter({
   filteredCount,
 }: DanhGiaFilterProps) {
   return (
-    <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
+    <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h3 className="text-base font-extrabold text-slate-800">Bộ lọc theo dõi kết quả thực tế</h3>
@@ -54,7 +54,7 @@ export default function DanhGiaFilter({
           </p>
         </div>
         <div className="text-xs font-bold text-slate-500">
-          Tìm thấy: <span className="text-rose-600 font-extrabold">{filteredCount}</span> kết quả
+          Tìm thấy: <span className="text-emerald-600 font-extrabold">{filteredCount}</span> kết quả
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export default function DanhGiaFilter({
         <div>
           <label className="text-[11px] font-bold text-slate-400 uppercase">Lớp học</label>
           <select
-            className="mt-1 w-full rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-emerald-400"
             value={filterClass}
             onChange={(e) => setFilterClass(e.target.value)}
           >
@@ -78,7 +78,7 @@ export default function DanhGiaFilter({
         <div>
           <label className="text-[11px] font-bold text-slate-400 uppercase">Hoạt động</label>
           <select
-            className="mt-1 w-full rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-emerald-400"
             value={filterActivity}
             onChange={(e) => setFilterActivity(e.target.value)}
           >
@@ -94,7 +94,7 @@ export default function DanhGiaFilter({
         <div>
           <label className="text-[11px] font-bold text-slate-400 uppercase">Tiêu chí</label>
           <select
-            className="mt-1 w-full rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-emerald-400"
             value={filterCriterion}
             onChange={(e) => setFilterCriterion(e.target.value)}
           >
@@ -110,7 +110,7 @@ export default function DanhGiaFilter({
         <div>
           <label className="text-[11px] font-bold text-slate-400 uppercase">Kết quả</label>
           <select
-            className="mt-1 w-full rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-emerald-400"
             value={filterResult}
             onChange={(e) => setFilterResult(e.target.value as any)}
           >
@@ -124,7 +124,7 @@ export default function DanhGiaFilter({
           <label className="text-[11px] font-bold text-slate-400 uppercase">Từ ngày</label>
           <input
             type="date"
-            className="mt-1 w-full rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-emerald-400"
             value={filterFromDate}
             onChange={(e) => setFilterFromDate(e.target.value)}
           />
@@ -134,7 +134,7 @@ export default function DanhGiaFilter({
           <label className="text-[11px] font-bold text-slate-400 uppercase">Đến ngày</label>
           <input
             type="date"
-            className="mt-1 w-full rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-emerald-400"
             value={filterToDate}
             onChange={(e) => setFilterToDate(e.target.value)}
           />
@@ -145,7 +145,7 @@ export default function DanhGiaFilter({
         <input
           type="text"
           placeholder="Tìm theo tên bé, nhận xét hoặc bằng chứng..."
-          className="w-full rounded-xl border border-rose-200/80 bg-rose-50/30 px-3 py-2 text-xs font-medium text-slate-700 placeholder-slate-400 outline-none focus:border-rose-400 focus:bg-white"
+          className="w-full rounded-xl border border-emerald-200/80 bg-emerald-50/30 px-3 py-2 text-xs font-medium text-slate-700 placeholder-slate-400 outline-none focus:border-emerald-400 focus:bg-white"
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
         />

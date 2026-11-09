@@ -56,6 +56,7 @@ function TeacherAssessmentContent() {
     progressStats,
     classBreakdown,
     radarData,
+    competencyProfile,
   } = useTeacherAssessment();
 
   const handleClearFocusedContext = () => {
@@ -232,6 +233,11 @@ function TeacherAssessmentContent() {
         childRadarModal={childRadarModal}
         onCloseRadar={() => setChildRadarModal({ open: false, student: null })}
         radarData={radarData}
+        competencyProfile={competencyProfile}
+        onGoToMatrix={() => {
+          setChildRadarModal({ open: false, student: null });
+          setActiveTab('matrix');
+        }}
         confirmModalOpen={confirmModalOpen}
         onCloseConfirmModal={() => setConfirmModalOpen(false)}
         onConfirmSave={() => void handleSaveBatch()}

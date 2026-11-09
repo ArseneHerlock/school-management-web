@@ -1,46 +1,38 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Modal from '@/app/components/ui/Modal'
-import ConfirmModal from '@/app/components/ui/ConfirmModal'
-import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Tooltip,
-} from 'recharts'
+import React, { useState, useEffect } from 'react';
+import Modal from '@/app/components/ui/Modal';
+import ConfirmModal from '@/app/components/ui/ConfirmModal';
+import { StudentCompetencyProfile } from '../assessmentBatchHelpers';
+import { ChildCompetencyProfileModal } from './ChildCompetencyProfileModal';
 
 interface TeacherAssessmentModalsProps {
-  // Cell Detail Modal
   cellDetailModal: {
-    open: boolean
-    studentId: string
-    criterionId: string
-    studentName: string
-    criterionName: string
-    comment: string
-    evidence: string
-  }
-  onCloseCellDetail: () => void
-  onSaveCellDetail: (comment: string, evidence: string) => void
+    open: boolean;
+    studentId: string;
+    criterionId: string;
+    studentName: string;
+    criterionName: string;
+    comment: string;
+    evidence: string;
+  };
+  onCloseCellDetail: () => void;
+  onSaveCellDetail: (comment: string, evidence: string) => void;
 
-  // Radar Modal
   childRadarModal: {
-    open: boolean
-    student: any | null
-  }
-  onCloseRadar: () => void
-  radarData: any[]
+    open: boolean;
+    student: any | null;
+  };
+  onCloseRadar: () => void;
+  radarData: any[];
+  competencyProfile?: StudentCompetencyProfile | null;
+  onGoToMatrix?: () => void;
 
-  // Confirm Modal
-  confirmModalOpen: boolean
-  onCloseConfirmModal: () => void
-  onConfirmSave: () => void
-  dirtyCount: number
-  isSaving: boolean
+  confirmModalOpen: boolean;
+  onCloseConfirmModal: () => void;
+  onConfirmSave: () => void;
+  dirtyCount: number;
+  isSaving: boolean;
 }
 
 export default function TeacherAssessmentModals({
@@ -50,21 +42,23 @@ export default function TeacherAssessmentModals({
   childRadarModal,
   onCloseRadar,
   radarData,
+  competencyProfile,
+  onGoToMatrix,
   confirmModalOpen,
   onCloseConfirmModal,
   onConfirmSave,
   dirtyCount,
   isSaving,
 }: TeacherAssessmentModalsProps) {
-  const [tempComment, setTempComment] = React.useState('')
-  const [tempEvidence, setTempEvidence] = React.useState('')
+  const [tempComment, setTempComment] = useState('');
+  const [tempEvidence, setTempEvidence] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (cellDetailModal.open) {
-      setTempComment(cellDetailModal.comment || '')
-      setTempEvidence(cellDetailModal.evidence || '')
+      setTempComment(cellDetailModal.comment || '');
+      setTempEvidence(cellDetailModal.evidence || '');
     }
-  }, [cellDetailModal.open, cellDetailModal.comment, cellDetailModal.evidence])
+  }, [cellDetailModal.open, cellDetailModal.comment, cellDetailModal.evidence]);
 
   return (
     <>
@@ -100,16 +94,16 @@ export default function TeacherAssessmentModals({
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
             <button
               onClick={onCloseCellDetail}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
             >
               Hủy
             </button>
             <button
               onClick={() => {
-                onSaveCellDetail(tempComment, tempEvidence)
-                onCloseCellDetail()
+                onSaveCellDetail(tempComment, tempEvidence);
+                onCloseCellDetail();
               }}
-              className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700"
+              className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 cursor-pointer"
             >
               Xác nhận
             </button>
@@ -117,40 +111,15 @@ export default function TeacherAssessmentModals({
         </div>
       </Modal>
 
-      {/* 2. Modal Biểu đồ Radar Cá Nhân Của Bé */}
-      <Modal
+      {/* 2. Modal Hồ Sơ Năng Lực Chuẩn 5 Lĩnh Vực Của Bé */}
+      <ChildCompetencyProfileModal
         isOpen={childRadarModal.open}
         onClose={onCloseRadar}
-        title={`Hồ sơ năng lực: ${childRadarModal.student?.tenHocSinh || ''}`}
-        subtitle="Biểu đồ đa giác đánh giá năng lực các hoạt động giáo dục của bé"
-        maxWidth="lg"
-      >
-        <div className="space-y-4">
-          <div className="h-72 w-full flex items-center justify-center">
-            {radarData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="#f1f5f9" />
-                  <PolarAngleAxis dataKey="domain" tick={{ fill: '#475569', fontSize: 11, fontWeight: 700 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} />
-                  <Radar name="Mức độ đạt" dataKey="score" stroke="#f43f5e" fill="#f43f5e" fillOpacity={0.4} />
-                  <Tooltip />
-                </RadarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-xs text-slate-400">Chưa có đủ dữ liệu đánh giá để vẽ biểu đồ</div>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <button
-              onClick={onCloseRadar}
-              className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200"
-            >
-              Đóng
-            </button>
-          </div>
-        </div>
-      </Modal>
+        student={childRadarModal.student}
+        radarData={radarData}
+        competencyProfile={competencyProfile}
+        onGoToMatrix={onGoToMatrix}
+      />
 
       {/* 3. Confirm Modal Lưu Hàng Loạt */}
       <ConfirmModal
@@ -164,5 +133,5 @@ export default function TeacherAssessmentModals({
         loading={isSaving}
       />
     </>
-  )
+  );
 }

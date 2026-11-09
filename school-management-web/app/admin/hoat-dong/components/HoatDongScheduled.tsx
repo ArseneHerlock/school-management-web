@@ -15,7 +15,7 @@ export default function HoatDongScheduled({
 }: HoatDongScheduledProps) {
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-white rounded-3xl border border-rose-100 shadow-xs flex items-center justify-between">
+      <div className="p-4 bg-white rounded-3xl border border-emerald-100 shadow-xs flex items-center justify-between">
         <div>
           <h3 className="text-base font-black text-slate-800">
             Lịch trình hoạt động đã xếp cho học sinh
@@ -26,16 +26,16 @@ export default function HoatDongScheduled({
           </p>
         </div>
         <span className="text-xs font-bold text-slate-500">
-          Tổng số: <b className="text-rose-600">{scheduledList.length}</b> buổi
+          Tổng số: <b className="text-emerald-600">{scheduledList.length}</b> buổi
           hoạt động
         </span>
       </div>
 
-      <div className="rounded-3xl border border-rose-100 bg-white overflow-hidden shadow-xs">
+      <div className="rounded-3xl border border-emerald-100 bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-rose-100 bg-rose-50/20 text-slate-500 text-[10px] uppercase">
+              <tr className="border-b border-emerald-100 bg-emerald-50/20 text-slate-500 text-[10px] uppercase">
                 <th className="p-3.5">Ngày & Thời gian</th>
                 <th className="p-3.5">Tên hoạt động</th>
                 <th className="p-3.5">Phạm vi áp dụng</th>
@@ -44,12 +44,12 @@ export default function HoatDongScheduled({
                 <th className="p-3.5 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-rose-50">
+            <tbody className="divide-y divide-emerald-50">
               {scheduledList.map((item) => (
-                <tr key={item.id} className="hover:bg-rose-50/20 transition">
+                <tr key={item.id} className="hover:bg-emerald-50/20 transition">
                   <td className="p-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                      <Calendar size={13} className="text-rose-500" />
+                      <Calendar size={13} className="text-emerald-500" />
                       <span>{item.date}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
@@ -66,7 +66,7 @@ export default function HoatDongScheduled({
                     </p>
                   </td>
                   <td className="p-3.5">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 border border-rose-200">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
                       <Building2 size={12} />{" "}
                       {item.isSchoolWide
                         ? "Toàn trường"
@@ -99,7 +99,7 @@ export default function HoatDongScheduled({
                   <td className="p-3.5 text-center">
                     <button
                       onClick={() => onDeleteSchedule(item.id, item.title)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                      className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 transition"
                       title="Hủy buổi hoạt động này"
                     >
                       <Trash2 size={14} />

@@ -46,7 +46,10 @@ export default function ChildDevelopmentClusterHeroCard({
 
   const rawRadar = latestFCM?.RadarScores || (latestFCM as any)?.radarScores || {};
   const getDomainScore = (vnKey: string, camelKey: string): number => {
-    const val = rawRadar[vnKey] ?? rawRadar[camelKey];
+    const val =
+      rawRadar[vnKey] ??
+      rawRadar[camelKey] ??
+      (vnKey === 'Thẩm mỹ' ? rawRadar['Thẩm mĩ'] : undefined);
     if (val !== undefined && val !== null) {
       const num = Number(val);
       return num > 1 ? Math.min(100, Math.round(num)) : Math.round(num * 100);
@@ -59,7 +62,7 @@ export default function ChildDevelopmentClusterHeroCard({
     { domain: 'Nhận thức', score: getDomainScore('Nhận thức', 'nhanThuc') },
     { domain: 'Ngôn ngữ', score: getDomainScore('Ngôn ngữ', 'ngonNgu') },
     { domain: 'Tình cảm - Xã hội', score: getDomainScore('Tình cảm - Xã hội', 'tinhCamXaHoi') },
-    { domain: 'Thẩm mĩ', score: getDomainScore('Thẩm mĩ', 'thamMy') },
+    { domain: 'Thẩm mỹ', score: getDomainScore('Thẩm mỹ', 'thamMy') },
   ];
 
   if (!profile || currentClusterId === 0) {
@@ -179,7 +182,7 @@ export default function ChildDevelopmentClusterHeroCard({
           <div className="rounded-2xl bg-white/80 border border-slate-200/80 p-4 shadow-xs backdrop-blur-xs">
             <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-1.5 mb-1.5">
               <Smile size={15} className="text-indigo-600" />
-              Ý NGHĨA SƯ PHẠM VỚI BÉ {childName.toUpperCase()}
+              ĐẶC ĐIỂM PHÁT TRIỂN CỦA BÉ
             </h4>
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
               {profile.pedagogicalSummary}
@@ -188,38 +191,17 @@ export default function ChildDevelopmentClusterHeroCard({
             <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-2.5">
                 <span className="font-black text-emerald-800 block text-[11px] mb-0.5">
-                  🌟 Thế mạnh nổi bật:
+                  🌟 Năng lực nổi bật:
                 </span>
                 <span className="text-emerald-950 font-medium">{profile.strengthsText}</span>
               </div>
               <div className="bg-amber-50/70 border border-amber-100 rounded-xl p-2.5">
                 <span className="font-black text-amber-800 block text-[11px] mb-0.5">
-                  🎯 Điểm cần lưu ý thêm:
+                  🎯 Điểm cần rèn luyện:
                 </span>
                 <span className="text-amber-950 font-medium">{profile.supportAreasText}</span>
               </div>
             </div>
-          </div>
-
-          {/* Companion Action Items For Parents */}
-          <div className="rounded-2xl bg-white/80 border border-slate-200/80 p-4 shadow-xs backdrop-blur-xs space-y-2.5">
-            <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-1.5">
-              <BookOpen size={15} className="text-rose-600" />
-              HƯỚNG DẪN ĐỒNG HÀNH DÀNH CHO CHA MẸ TẠI NHÀ
-            </h4>
-            <ul className="space-y-2">
-              {profile.homeCompanionTips.map((tip, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 leading-relaxed">
-                  <span
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-black mt-0.5"
-                    style={{ backgroundColor: profile.themeColor }}
-                  >
-                    {idx + 1}
-                  </span>
-                  <span>{tip}</span>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
 

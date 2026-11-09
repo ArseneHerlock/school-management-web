@@ -55,12 +55,7 @@ export function TeacherAssessmentHeader({
             <ArrowLeft size={16} />
           </Link>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-                Theo dõi phát triển toàn diện
-              </span>
-            </div>
-            <h1 className="text-2xl font-black text-slate-800 mt-1">Đánh giá sự phát triển của trẻ</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Đánh giá sự phát triển của trẻ</h1>
           </div>
         </div>
         <button

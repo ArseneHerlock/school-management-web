@@ -69,8 +69,8 @@ export const KitchenDispatchWidget: React.FC<KitchenDispatchWidgetProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border border-rose-100 bg-rose-50/50 p-2.5 sm:p-3.5">
-          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-rose-500 text-white shadow-xs">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border border-emerald-100 bg-emerald-50/50 p-2.5 sm:p-3.5">
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-emerald-500 text-white shadow-xs">
             <Cookie size={18} />
           </div>
           <div className="min-w-0">
@@ -83,21 +83,21 @@ export const KitchenDispatchWidget: React.FC<KitchenDispatchWidgetProps> = ({
       </div>
 
       {/* Sổ cảnh báo Dị ứng & Chế độ ăn kiêng hôm nay */}
-      <div className="mt-3.5 rounded-xl sm:rounded-2xl border border-rose-200/80 bg-rose-50/40 p-3 sm:p-4">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-rose-100">
+      <div className="mt-3.5 rounded-xl sm:rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-3 sm:p-4">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-emerald-100">
           <div className="flex items-center gap-2 min-w-0">
-            <ShieldAlert size={15} className="text-rose-600 shrink-0" />
+            <ShieldAlert size={15} className="text-emerald-600 shrink-0" />
             <h3 className="text-xs sm:text-sm font-black text-slate-800 truncate">
               Sổ Dị ứng Thực phẩm & Lưu ý ({dispatch.allergyWatchlist.length} trẻ)
             </h3>
           </div>
           {dispatch.allergyWatchlist.length > 0 && (
-            <span className="text-[10px] font-bold text-rose-700 shrink-0 ml-1">Tuân thủ 100%</span>
+            <span className="text-[10px] font-bold text-emerald-700 shrink-0 ml-1">Tuân thủ 100%</span>
           )}
         </div>
 
         {dispatch.allergyWatchlist.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-rose-200 bg-white/70 p-3 text-center text-xs text-slate-500 font-medium">
+          <div className="rounded-xl border border-dashed border-emerald-200 bg-white/70 p-3 text-center text-xs text-slate-500 font-medium">
             ✅ Hiện tại toàn trường không có ghi nhận dị ứng thực phẩm hoặc chế độ ăn kiêng đặc biệt.
           </div>
         ) : (
@@ -105,7 +105,7 @@ export const KitchenDispatchWidget: React.FC<KitchenDispatchWidgetProps> = ({
             {dispatch.allergyWatchlist.map((item: AllergyDietAlert) => (
               <div
                 key={item.childId}
-                className="flex items-start justify-between gap-2.5 rounded-xl border border-rose-200 bg-white p-2.5 sm:p-3 shadow-2xs"
+                className="flex items-start justify-between gap-2.5 rounded-xl border border-emerald-200 bg-white p-2.5 sm:p-3 shadow-2xs"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -114,7 +114,7 @@ export const KitchenDispatchWidget: React.FC<KitchenDispatchWidgetProps> = ({
                       {item.className}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[11px] font-bold text-rose-600 flex items-center gap-1">
+                  <p className="mt-0.5 text-[11px] font-bold text-emerald-600 flex items-center gap-1">
                     <AlertOctagon size={11} className="shrink-0" />
                     <span className="truncate">{item.allergen}</span>
                   </p>
@@ -124,7 +124,7 @@ export const KitchenDispatchWidget: React.FC<KitchenDispatchWidgetProps> = ({
                 <span
                   className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase shrink-0 ${
                     item.severity === "high"
-                      ? "bg-rose-100 text-rose-800 border border-rose-300"
+                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
                       : "bg-amber-100 text-amber-800 border border-amber-300"
                   }`}
                 >

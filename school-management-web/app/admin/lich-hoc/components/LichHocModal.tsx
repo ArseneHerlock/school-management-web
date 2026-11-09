@@ -211,7 +211,7 @@ export default function LichHocModal({
           </button>
           <div className="flex items-center gap-2">
             {conflicts.length > 0 && (
-              <span className="text-[11px] font-bold text-rose-600 hidden sm:inline">
+              <span className="text-[11px] font-bold text-emerald-600 hidden sm:inline">
                 Đang bị trùng lịch!
               </span>
             )}
@@ -220,7 +220,7 @@ export default function LichHocModal({
               onClick={onSave}
               disabled={isSubmitting || !form.title.trim()}
               className={`rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-sm transition disabled:opacity-50 cursor-pointer ${
-                conflicts.length > 0 ? "bg-amber-600 hover:bg-amber-700" : "bg-rose-600 hover:bg-rose-700"
+                conflicts.length > 0 ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"
               }`}
             >
               {isSubmitting

@@ -41,9 +41,6 @@ export default function ParentHeader({
         </button>
         <div className="min-w-0 flex-1">
           <h2 className="text-sm sm:text-base lg:text-lg font-extrabold text-slate-800 tracking-tight truncate leading-tight">{title}</h2>
-          <p className="text-[10px] sm:text-xs font-medium text-slate-500 mt-0.5 truncate">
-            {subtitle}
-          </p>
         </div>
       </div>
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-2">

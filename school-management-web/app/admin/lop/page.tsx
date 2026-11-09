@@ -37,14 +37,12 @@ export default function LopPage() {
       })
   );
   const gradesQuery = useApiQuery(["grades"], getGrades);
-  const staffQuery = useApiQuery(["staff", "class-form"], getStaff, {
-    enabled: false,
-  });
+  const staffQuery = useApiQuery(["staff"], () => getStaff());
 
   const classesList = (classesQuery.data?.items ?? []) as unknown as ClassItem[];
   const gradesList = (gradesQuery.data ?? []) as unknown as Grade[];
   const staffList = (staffQuery.data ?? []) as unknown as Staff[];
-  const isLoading = classesQuery.isLoading || gradesQuery.isLoading;
+  const isLoading = classesQuery.isLoading || gradesQuery.isLoading || staffQuery.isLoading;
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
@@ -75,11 +73,20 @@ export default function LopPage() {
 
   const loadClassesData = async () => {
     invalidateClassesCache();
-    await Promise.all([classesQuery.refetch(), gradesQuery.refetch()]);
+    await Promise.all([
+      classesQuery.refetch(),
+      gradesQuery.refetch(),
+      staffQuery.refetch(),
+    ]);
   };
 
   function findStaffById(id: string): Staff | undefined {
-    return staffList.find((s) => s.staffId === id || s.id === id);
+    if (!id) return undefined;
+    const lowerId = String(id).toLowerCase().trim();
+    return staffList.find((s: any) => {
+      const sId = String(s.staffId || s.StaffId || s.id || s.Id || "").toLowerCase().trim();
+      return sId === lowerId;
+    });
   }
 
   function findGradeById(id: string): Grade | undefined {

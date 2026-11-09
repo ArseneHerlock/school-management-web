@@ -37,11 +37,7 @@ export function LopHeader({
     <div className="space-y-6">
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="admin-eyebrow">TỔ CHỨC GIÁO DỤC</p>
-          <h1 className="admin-title">Quản lý Lớp học & Khối lớp</h1>
-          <p className="admin-subtitle">
-            Phân bổ khối mầm non, quản lý sĩ số trẻ và theo dõi phân công giáo viên phụ trách.
-          </p>
+          <h1 className="admin-title">Quản lý lớp học</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -72,7 +68,7 @@ export function LopHeader({
         </div>
       )}
       {errorMessage && (
-        <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-bold text-rose-800 flex justify-between items-center">
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-800 flex justify-between items-center">
           <span>{errorMessage}</span>
           <button onClick={onClearError}>
             <X size={14} />

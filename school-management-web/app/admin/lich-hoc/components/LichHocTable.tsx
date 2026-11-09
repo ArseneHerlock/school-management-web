@@ -28,11 +28,11 @@ export default function LichHocTable({
   }, [schedules, currentPage, itemsPerPage]);
 
   return (
-    <div className="rounded-3xl border border-rose-100 bg-white overflow-hidden shadow-xs">
+    <div className="rounded-3xl border border-emerald-100 bg-white overflow-hidden shadow-xs">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-rose-100 bg-rose-50/20 text-slate-500 text-[10px] uppercase">
+            <tr className="border-b border-emerald-100 bg-emerald-50/20 text-slate-500 text-[10px] uppercase">
               <th className="p-3.5">Thời gian & Ngày</th>
               <th className="p-3.5">Tên hoạt động</th>
               <th className="p-3.5">Phân loại</th>
@@ -42,7 +42,7 @@ export default function LichHocTable({
               <th className="p-3.5 text-center">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-rose-50">
+          <tbody className="divide-y divide-emerald-50">
             {paginated.map((item) => {
               const color =
                 TYPE_COLORS[item.type] ||
@@ -53,7 +53,7 @@ export default function LichHocTable({
                   badge: "bg-slate-500 text-white",
                 };
               return (
-                <tr key={item.id} className="hover:bg-rose-50/20 transition">
+                <tr key={item.id} className="hover:bg-emerald-50/20 transition">
                   <td className="p-3.5 whitespace-nowrap">
                     <p className="font-bold text-slate-800">{item.date}</p>
                     <p className="text-[10px] text-slate-400">
@@ -70,7 +70,7 @@ export default function LichHocTable({
                       {TYPE_NAMES[item.type] || "Hoạt động"}
                     </span>
                   </td>
-                  <td className="p-3.5 font-semibold text-rose-600">
+                  <td className="p-3.5 font-semibold text-emerald-600">
                     {item.isSchoolWide
                       ? "Toàn trường"
                       : item.className || "Lớp mầm non"}
@@ -91,7 +91,7 @@ export default function LichHocTable({
                       </button>
                       <button
                         onClick={() => onDelete(item.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 cursor-pointer"
+                        className="p-1.5 text-slate-400 hover:text-emerald-600 cursor-pointer"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -111,7 +111,7 @@ export default function LichHocTable({
         </table>
       </div>
 
-      <div className="p-3 border-t border-rose-100 flex justify-end">
+      <div className="p-3 border-t border-emerald-100 flex justify-end">
         <Pagination
           currentPage={currentPage}
           pageSize={itemsPerPage}

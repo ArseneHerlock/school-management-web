@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   getActivities,
+  getActivitiesWithCriteria,
   createActivity,
   updateActivity,
   deleteActivity,
@@ -39,7 +40,8 @@ export function useHoatDong() {
   const load = async () => {
     setLoading(true);
     try {
-      const [actRes, domRes, criRes, classesRes, schItems] = await Promise.all([
+      const [actCritRes, actRes, domRes, criRes, classesRes, schItems] = await Promise.all([
+        getActivitiesWithCriteria().catch(() => []),
         getActivities({ page: 1, pageSize: 200, includeInactive: true }).catch(() => ({
           total: 0,
           items: [],
@@ -61,7 +63,26 @@ export function useHoatDong() {
         getClasses().catch(() => []),
         loadScheduledActivities(),
       ]);
-      setActivities(actRes.items || []);
+      if (Array.isArray(actCritRes) && actCritRes.length > 0) {
+        setActivities(
+          actCritRes.map((a: any) => ({
+            id: a.id,
+            code: a.code,
+            name: a.name,
+            description: a.description,
+            scope: a.scope || "SCHOOL",
+            classId: a.classId || null,
+            className: a.className || "",
+            domainCode: a.domainCode || "GDMN-PHYSICAL",
+            domainName: a.domainName || "Thể chất",
+            isActive: true,
+            createdAt: "",
+            developmentCriteria: a.criteria || [],
+          }))
+        );
+      } else {
+        setActivities(actRes.items || []);
+      }
       setDomains(domRes.items || []);
       setCriteria(criRes.items || []);
       setClassesList(Array.isArray(classesRes) ? classesRes : []);
@@ -96,7 +117,10 @@ export function useHoatDong() {
         isActive: editingItem.isActive,
       });
     } else {
-      await createActivity(formData);
+      await createActivity({
+        ...formData,
+        scope: "SCHOOL",
+      });
     }
     setNotice("Đã lưu thông tin hoạt động!");
     await load();

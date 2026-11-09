@@ -58,6 +58,48 @@ html, body {
   touch-action: pan-x pan-y;
 }
 
+/* Ẩn triệt để nút/icon Next.js Dev Indicator đang nổi ở góc dưới màn hình di động */
+nextjs-portal,
+[data-nextjs-dev-indicator],
+[data-nextjs-toast],
+#nextjs-dev-indicator,
+div[data-nextjs-indicator],
+[data-nextjs-dev-indicator-container],
+[data-nextjs-dev-tools-indicator],
+div[data-nextjs-scroll-focus-boundary] + div:has(button) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  z-index: -9999 !important;
+}
+
+/* Đảm bảo thanh điều hướng mobile luôn nhận tương tác cảm ứng nhạy bén, không bị trễ */
+.mobile-nav-bar {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Hiệu ứng nhạy bén, tức thì khi người dùng bấm/chạm vào các tab điều hướng mobile (không dùng scale làm lệch vùng chạm) */
+.nav-tab-btn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color 0.08s ease;
+}
+.nav-tab-btn:active {
+  opacity: 0.85;
+}
+
 /* Hỗ trợ an toàn khoảng cách trên các thiết bị có tai thỏ / notch hoặc thanh điều hướng cử chỉ */
 .safe-top {
   padding-top: max(env(safe-area-inset-top, 0px), 8px);

@@ -20,7 +20,7 @@ export const MOMENT_CATEGORIES = [
   'Tất cả',
   'Hoạt động học tập',
   'Vui chơi ngoài trời',
-  'Bữa ăn - Giấc ngủ',
+  'Nề nếp - Giấc ngủ',
   'Sự kiện & Dã ngoại',
   'Sáng tạo nghệ thuật',
 ] as const;

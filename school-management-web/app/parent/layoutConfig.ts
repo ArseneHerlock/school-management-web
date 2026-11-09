@@ -19,6 +19,6 @@ export const PARENT_HEADERS: Record<string, string> = {
   absence: 'Đơn xin phép nghỉ học',
   moments: 'Nhật ký hoạt động của bé',
   news: 'Bản tin & Thông báo nhà trường',
-  tuition: 'Học phí & Tiền ăn bán trú',
+  tuition: 'Học phí & Các khoản thu',
   medications: 'Sổ theo dõi & Dặn thuốc',
 };

@@ -1,55 +1,44 @@
-'use client'
+'use client';
 
-import React from 'react'
+import React from 'react';
 import {
   Users,
   Activity,
   CheckCircle2,
   Award,
-  BarChart3,
   PieChart as PieChartIcon,
   LayoutGrid,
-  Eye,
-  Heart,
-  Brain,
-  MessageSquare,
-  Palette,
-  Sparkles,
-} from 'lucide-react'
+} from 'lucide-react';
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
   PieChart,
   Pie,
   Cell,
-} from 'recharts'
+  Tooltip,
+} from 'recharts';
+import { ActivityBreakdownSection } from './ActivityBreakdownSection';
+import { StudentProfilesSection } from './StudentProfilesSection';
 
 interface TeacherAssessmentStatsProps {
-  selectedClassId: string
-  authorizedClasses: any[]
-  currentClassName?: string
-  currentTeacherName?: string
-  onClassChange: (classId: string) => void
-  activitiesCount: number
+  selectedClassId: string;
+  authorizedClasses: any[];
+  currentClassName?: string;
+  currentTeacherName?: string;
+  onClassChange: (classId: string) => void;
+  activitiesCount: number;
   progressStats: {
-    totalStudents: number
-    completedCells: number
-    passRate: number
-    passCells: number
-    fullyCompletedStudentsCount: number
-  }
-  classBreakdown: any[]
-  tierPieData: any[]
-  classStudents: any[]
-  getStudentProgress: (studentId: string) => { completed: number; total: number; pass: number; rate: number }
-  onOpenRadar: (student: any) => void
-  onGoToMatrix: () => void
+    totalStudents: number;
+    completedCells: number;
+    passRate: number;
+    passCells: number;
+    fullyCompletedStudentsCount: number;
+  };
+  classBreakdown: any[];
+  tierPieData: any[];
+  classStudents: any[];
+  getStudentProgress: (studentId: string) => { completed: number; total: number; pass: number; rate: number };
+  onOpenRadar: (student: any) => void;
+  onGoToMatrix: () => void;
 }
 
 export default function TeacherAssessmentStats({
@@ -106,8 +95,8 @@ export default function TeacherAssessmentStats({
       </div>
 
       {/* 4 Thẻ KPI */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white rounded-3xl border border-rose-100 p-5 shadow-xs">
+      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="bg-white rounded-3xl border border-rose-100 p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Sĩ số lớp</span>
             <span className="p-2 rounded-xl bg-rose-50 text-rose-600"><Users size={16} /></span>
@@ -116,7 +105,7 @@ export default function TeacherAssessmentStats({
           <p className="mt-1 text-xs text-slate-400">Bé trong lớp học</p>
         </div>
 
-        <div className="bg-white rounded-3xl border border-rose-100 p-5 shadow-xs">
+        <div className="bg-white rounded-3xl border border-rose-100 p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Lượt đánh giá HĐ</span>
             <span className="p-2 rounded-xl bg-sky-50 text-sky-600"><Activity size={16} /></span>
@@ -125,7 +114,7 @@ export default function TeacherAssessmentStats({
           <p className="mt-1 text-xs text-slate-400">Qua {activitiesCount} hoạt động tổ chức</p>
         </div>
 
-        <div className="bg-white rounded-3xl border border-emerald-100 p-5 shadow-xs">
+        <div className="bg-white rounded-3xl border border-emerald-100 p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Tỷ lệ Đạt chỉ số</span>
             <span className="p-2 rounded-xl bg-emerald-50 text-emerald-600"><CheckCircle2 size={16} /></span>
@@ -134,7 +123,7 @@ export default function TeacherAssessmentStats({
           <p className="mt-1 text-xs text-emerald-600 font-medium">{progressStats.passCells} lượt đạt chỉ số</p>
         </div>
 
-        <div className="bg-white rounded-3xl border border-amber-100 p-5 shadow-xs">
+        <div className="bg-white rounded-3xl border border-amber-100 p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Đạt chuẩn 100%</span>
             <span className="p-2 rounded-xl bg-amber-50 text-amber-600"><Award size={16} /></span>
@@ -144,51 +133,15 @@ export default function TeacherAssessmentStats({
         </div>
       </div>
 
-      {/* 2 BIỂU ĐỒ */}
+      {/* 2 KHỐI THỐNG KÊ CHI TIẾT */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="bg-white rounded-3xl border border-rose-100 p-5 shadow-xs lg:col-span-2">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-800">
-                Thống kê Đạt chuẩn theo Hoạt động Giáo dục
-              </h3>
-              <p className="text-xs text-slate-400">
-                Số lượt tiêu chí Đạt chuẩn, Cần rèn luyện của học sinh trong từng hoạt động
-              </p>
-            </div>
-            <span className="p-2 rounded-xl bg-rose-50 text-rose-600"><BarChart3 size={16} /></span>
-          </div>
+        <ActivityBreakdownSection
+          classBreakdown={classBreakdown}
+          classStudents={classStudents}
+          onGoToMatrix={onGoToMatrix}
+        />
 
-          <div className="h-64 w-full mt-4">
-            {classBreakdown.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={classBreakdown} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="shortName" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} interval={0} angle={-15} textAnchor="end" />
-                  <YAxis tick={{ fill: '#64748b', fontSize: 10 }} unit=" lượt" />
-                  <Tooltip
-                    formatter={(val: any, name: any) => [`${val} lượt`, name]}
-                    labelFormatter={(label: any, payload: any) => {
-                      const full = payload?.[0]?.payload?.fullName;
-                      return full ? `${full}` : label;
-                    }}
-                    contentStyle={{ borderRadius: '1rem', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
-                  />
-                  <Legend verticalAlign="top" align="right" wrapperStyle={{ fontSize: '11px', paddingBottom: '10px' }} />
-                  <Bar dataKey="passSlots" name="Đạt chuẩn" fill="#10b981" stackId="a" />
-                  <Bar dataKey="failSlots" name="Cần rèn luyện" fill="#f43f5e" stackId="a" />
-                  <Bar dataKey="unassessedSlots" name="Chưa đánh giá" fill="#e2e8f0" stackId="a" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400">
-                Chưa có dữ liệu đánh giá hoạt động cho lớp học này.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl border border-rose-100 p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-3xl border border-rose-100 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between max-w-full overflow-hidden">
           <div>
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-slate-800">Phân bố Mức độ Cả Lớp</h3>
@@ -233,43 +186,11 @@ export default function TeacherAssessmentStats({
         </div>
       </div>
 
-      {/* DANH SÁCH BÉ TRONG LỚP & HỒ SƠ NĂNG LỰC */}
-      <div className="bg-white rounded-3xl border border-rose-100 p-5 shadow-xs">
-        <h3 className="text-sm font-extrabold text-slate-800 mb-3">Hồ sơ năng lực từng bé trong lớp</h3>
-        {classStudents.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-400">
-            Chưa có học sinh nào trong lớp học này.
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {classStudents.map((st) => {
-              const sId = st.id || st.Id;
-              const prog = getStudentProgress(sId)
-              return (
-                <div key={sId} className="rounded-2xl border border-rose-50 bg-rose-50/20 p-3.5 flex items-center justify-between hover:bg-rose-50/40 transition">
-                  <div className="min-w-0 flex-1 pr-2">
-                    <p className="font-bold text-slate-800 text-xs truncate">{st.tenHocSinh}</p>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 rounded-full bg-slate-200 overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-rose-500 to-amber-500" style={{ width: `${prog.rate}%` }} />
-                      </div>
-                      <span className="text-[10px] font-bold text-rose-600">{prog.rate}%</span>
-                    </div>
-                    <p className="mt-1 text-[10px] text-slate-400">Đạt: {prog.pass}/{prog.completed} chỉ số</p>
-                  </div>
-                  <button
-                    onClick={() => onOpenRadar(st)}
-                    className="p-2 rounded-xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 transition shrink-0 cursor-pointer"
-                    title="Xem biểu đồ Radar năng lực"
-                  >
-                    <Eye size={15} />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      <StudentProfilesSection
+        classStudents={classStudents}
+        getStudentProgress={getStudentProgress}
+        onOpenRadar={onOpenRadar}
+      />
     </div>
-  )
+  );
 }

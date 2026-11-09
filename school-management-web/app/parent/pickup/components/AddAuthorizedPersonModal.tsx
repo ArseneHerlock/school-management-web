@@ -43,7 +43,7 @@ export function AddAuthorizedPersonModal({
       <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-            <UserPlus className="text-teal-600" /> Thêm người thân đón bé
+            <UserPlus className="text-indigo-600" /> Thêm người thân đón bé
           </h3>
           <button
             onClick={onClose}
@@ -64,7 +64,7 @@ export function AddAuthorizedPersonModal({
               placeholder="Ví dụ: Bác Nguyễn Văn Nam"
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+              className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
             />
           </div>
 
@@ -76,7 +76,7 @@ export function AddAuthorizedPersonModal({
               <select
                 value={formData.relationship}
                 onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600 cursor-pointer"
+                className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600 cursor-pointer"
               >
                 <option value="Ông nội">Ông nội</option>
                 <option value="Bà nội">Bà nội</option>
@@ -98,7 +98,7 @@ export function AddAuthorizedPersonModal({
                 placeholder="0912..."
                 value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+                className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
               />
             </div>
           </div>
@@ -112,7 +112,7 @@ export function AddAuthorizedPersonModal({
               placeholder="0012..."
               value={formData.idCardNumber}
               onChange={(e) => setFormData({ ...formData, idCardNumber: e.target.value })}
-              className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+              className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
             />
           </div>
 
@@ -125,7 +125,7 @@ export function AddAuthorizedPersonModal({
               placeholder="Ví dụ: Đi xe Lead đỏ, thường đón lúc 17h15..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+              className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
             />
           </div>
 
@@ -135,7 +135,7 @@ export function AddAuthorizedPersonModal({
               id="isDefault"
               checked={formData.isDefault}
               onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-              className="w-4 h-4 text-teal-600 rounded"
+              className="w-4 h-4 text-indigo-600 rounded"
             />
             <label
               htmlFor="isDefault"
@@ -155,7 +155,7 @@ export function AddAuthorizedPersonModal({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow hover:bg-teal-700 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow hover:bg-indigo-700 cursor-pointer"
             >
               Xác nhận lưu hồ sơ
             </button>

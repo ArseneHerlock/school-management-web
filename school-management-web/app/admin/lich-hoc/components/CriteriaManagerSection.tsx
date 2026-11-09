@@ -242,7 +242,7 @@ export default function CriteriaManagerSection({
                 <button
                   type="button"
                   onClick={() => handleDeleteCriterionPermanently(crit)}
-                  className="rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                  className="rounded-lg p-1 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 cursor-pointer"
                   title="Xóa vĩnh viễn tiêu chí"
                 >
                   <Trash2 size={13} />

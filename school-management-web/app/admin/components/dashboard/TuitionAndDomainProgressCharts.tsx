@@ -64,12 +64,9 @@ export function TuitionAndDomainProgressCharts({
                 <Wallet size={16} />
               </span>
               <div className="min-w-0">
-                <h3 className="text-sm sm:text-base font-black text-slate-800 truncate">
-                  Tiền ăn bán trú & Dịch vụ hỗ trợ ({tuitionLedger.periodLabel})
+                <h3 className="text-sm sm:text-base font-bold text-slate-800 truncate">
+                  Tiền ăn & Dịch vụ ({tuitionLedger.periodLabel})
                 </h3>
-                <p className="text-[11px] text-slate-400 truncate">
-                  Tiến độ thu tiền ăn bán trú & các dịch vụ hỗ trợ theo NQ HĐND
-                </p>
               </div>
             </div>
 
@@ -158,14 +155,14 @@ export function TuitionAndDomainProgressCharts({
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-2.5">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-rose-600 uppercase">
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase">
                       Còn nợ cần thu
                     </span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
-                  <p className="text-base sm:text-lg font-black text-rose-700 mt-0.5 truncate">
+                  <p className="text-base sm:text-lg font-black text-emerald-700 mt-0.5 truncate">
                     {formatVND(tuitionLedger.totalOutstanding)}
                   </p>
                 </div>
@@ -189,12 +186,9 @@ export function TuitionAndDomainProgressCharts({
                 <Sparkles size={16} />
               </span>
               <div className="min-w-0">
-                <h3 className="text-sm sm:text-base font-black text-slate-800 truncate">
-                  5 Lĩnh vực Phát triển Trẻ em
+                <h3 className="text-sm sm:text-base font-bold text-slate-800 truncate">
+                  5 Lĩnh vực phát triển
                 </h3>
-                <p className="text-[11px] text-slate-400 truncate">
-                  Chuẩn chương trình Giáo dục Mầm non Bộ GD&ĐT
-                </p>
               </div>
             </div>
 

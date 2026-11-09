@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,157 +11,31 @@ import {
   Loader2,
   FileText,
   AlertCircle,
-  RotateCw,
 } from 'lucide-react';
+import { usePdfDocument } from './usePdfDocument';
 
 interface PdfViewerProps {
   url: string;
   title?: string;
 }
 
-declare global {
-  interface Window {
-    pdfjsLib?: any;
-  }
-}
-
 export default function PdfViewer({ url, title = 'Tài liệu PDF' }: PdfViewerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
-  const [pageNum, setPageNum] = useState(1);
-  const [numPages, setNumPages] = useState(0);
-  const [scale, setScale] = useState(1.0);
-  const [rendering, setRendering] = useState(false);
-
-  // 1. Load PDF.js library from bundled /pdfjs/pdf.min.js
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    setError('');
-
-    const loadLib = async () => {
-      try {
-        if (!window.pdfjsLib) {
-          const script = document.createElement('script');
-          script.src = '/pdfjs/pdf.min.js';
-          script.async = true;
-          await new Promise<void>((resolve, reject) => {
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Không thể tải thư viện đọc PDF'));
-            document.body.appendChild(script);
-          });
-        }
-
-        if (window.pdfjsLib && !window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.js';
-        }
-
-        const loadingTask = window.pdfjsLib.getDocument({
-          url,
-          withCredentials: false,
-        });
-
-        const doc = await loadingTask.promise;
-        if (!isMounted) return;
-
-        setPdfDoc(doc);
-        setNumPages(doc.numPages);
-        setPageNum(1);
-        setLoading(false);
-      } catch (err: any) {
-        if (!isMounted) return;
-        console.error('PDF loading error:', err);
-        setError(err?.message || 'Không thể đọc tệp PDF trực tiếp.');
-        setLoading(false);
-      }
-    };
-
-    void loadLib();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [url]);
-
-  // 2. Render current page to canvas whenever pageNum, scale, or pdfDoc changes
-  useEffect(() => {
-    if (!pdfDoc || !canvasRef.current || !containerRef.current) return;
-    let cancelled = false;
-
-    const renderPage = async () => {
-      setRendering(true);
-      try {
-        const page = await pdfDoc.getPage(pageNum);
-        if (cancelled) return;
-
-        const containerWidth = containerRef.current?.clientWidth || 360;
-        const unscaledViewport = page.getViewport({ scale: 1 });
-        // Auto fit width to container with margin
-        const targetWidth = Math.min(containerWidth - 24, 1100);
-        const fitScale = (targetWidth / unscaledViewport.width) * scale;
-        const viewport = page.getViewport({ scale: fitScale });
-
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const context = canvas.getContext('2d');
-        if (!context) return;
-
-        // Support high DPI screens (retina / modern mobile phones)
-        const outputScale = window.devicePixelRatio || 1;
-        canvas.width = Math.floor(viewport.width * outputScale);
-        canvas.height = Math.floor(viewport.height * outputScale);
-        canvas.style.width = `${Math.floor(viewport.width)}px`;
-        canvas.style.height = `${Math.floor(viewport.height)}px`;
-
-        const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-
-        const renderContext = {
-          canvasContext: context,
-          transform: transform || undefined,
-          viewport,
-        };
-
-        await page.render(renderContext).promise;
-      } catch (err: any) {
-        if (!cancelled) {
-          console.error('Page render error:', err);
-        }
-      } finally {
-        if (!cancelled) setRendering(false);
-      }
-    };
-
-    void renderPage();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [pdfDoc, pageNum, scale]);
-
-  const handlePrevPage = () => {
-    if (pageNum > 1) setPageNum(pageNum - 1);
-  };
-
-  const handleNextPage = () => {
-    if (pageNum < numPages) setPageNum(pageNum + 1);
-  };
-
-  const handleZoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.25, 2.5));
-  };
-
-  const handleZoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.25, 0.75));
-  };
-
-  const handleResetZoom = () => {
-    setScale(1.0);
-  };
+  const {
+    containerRef,
+    canvasRef,
+    loading,
+    error,
+    pdfDoc,
+    pageNum,
+    numPages,
+    scale,
+    rendering,
+    handlePrevPage,
+    handleNextPage,
+    handleZoomIn,
+    handleZoomOut,
+    handleResetZoom,
+  } = usePdfDocument(url);
 
   if (loading) {
     return (
@@ -204,9 +78,7 @@ export default function PdfViewer({ url, title = 'Tài liệu PDF' }: PdfViewerP
       ref={containerRef}
       className="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden flex flex-col"
     >
-      {/* PDF Control Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-3 py-2 text-white text-xs border-b border-slate-800 shrink-0">
-        {/* Page navigation */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={handlePrevPage}
@@ -231,7 +103,6 @@ export default function PdfViewer({ url, title = 'Tài liệu PDF' }: PdfViewerP
           </button>
         </div>
 
-        {/* Zoom and view controls */}
         <div className="flex items-center gap-1">
           <button
             onClick={handleZoomOut}
@@ -271,7 +142,6 @@ export default function PdfViewer({ url, title = 'Tài liệu PDF' }: PdfViewerP
         </div>
       </div>
 
-      {/* Canvas View Container with horizontal/vertical scrolling if zoomed */}
       <div className="relative min-h-[420px] max-h-[85vh] overflow-auto bg-slate-100 flex items-center justify-center p-2 sm:p-4">
         {rendering && (
           <div className="absolute top-3 right-3 bg-slate-900/80 text-white text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10 backdrop-blur-xs">
@@ -286,7 +156,6 @@ export default function PdfViewer({ url, title = 'Tài liệu PDF' }: PdfViewerP
         />
       </div>
 
-      {/* Footer document details */}
       <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 font-medium">
         <div className="flex items-center gap-1.5 truncate">
           <FileText size={14} className="text-rose-600 shrink-0" />

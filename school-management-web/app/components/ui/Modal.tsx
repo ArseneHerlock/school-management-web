@@ -61,8 +61,7 @@ export default function Modal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-rose-100/60 bg-gradient-to-r from-rose-50/70 to-amber-50/30 px-6 py-4">
           <div>
-            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
+            <h3 className="text-base sm:text-lg font-bold text-slate-800">{title}</h3>
           </div>
           <button
             onClick={onClose}

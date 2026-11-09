@@ -155,22 +155,11 @@ export default function MedicationTab({ child }: MedicationTabProps) {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12 font-sans">
       {/* Top Banner / Header */}
-      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-orange-100 text-orange-600">
-              <Pill size={18} />
-            </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-600">
-              Chăm Sóc & Y Tế Lớp Học
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800">
-            Sổ Dặn Thuốc & Y Tế Của Bé {child.hoTen || ''}
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Dặn thuốc & Y tế {child.hoTen ? `— ${child.hoTen}` : ''}
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Gửi đơn nhờ cô cho bé uống thuốc theo giờ quy định và theo dõi xác nhận thực tế từ giáo viên chủ nhiệm.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -179,7 +168,7 @@ export default function MedicationTab({ child }: MedicationTabProps) {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50/70 text-rose-700 hover:bg-rose-100 text-xs font-bold transition cursor-pointer"
           >
             <ShieldAlert size={15} />
-            <span>Hồ sơ dị ứng & Bệnh lý đặc biệt</span>
+            <span>Hồ sơ bệnh lý đặc biệt</span>
           </button>
 
           <button
@@ -189,15 +178,6 @@ export default function MedicationTab({ child }: MedicationTabProps) {
             <Plus size={16} />
             <span>Gửi đơn dặn thuốc</span>
           </button>
-        </div>
-      </div>
-
-      {/* Safety Policy Notice */}
-      <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-900 leading-relaxed shadow-2xs">
-        <Info size={18} className="text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold">Lưu ý an toàn y tế mầm non:</span> Phụ huynh vui lòng chuẩn bị thuốc theo liều, dán nhãn tên bé và{' '}
-          <span className="font-bold">bàn giao trực tiếp cho giáo viên đón trẻ</span> vào đầu giờ sáng. Nhà trường chỉ cho bé uống đúng liều và thời gian phụ huynh đã đăng ký.
         </div>
       </div>
 

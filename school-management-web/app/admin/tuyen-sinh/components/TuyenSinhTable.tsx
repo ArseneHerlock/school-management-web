@@ -111,7 +111,7 @@ export function TuyenSinhTable({
               <button
                 type="button"
                 onClick={onBulkDeleteOpen}
-                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition cursor-pointer flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition cursor-pointer flex items-center gap-1"
               >
                 <Trash2 size={13} /> Xóa đã chọn
               </button>
@@ -270,7 +270,7 @@ export function TuyenSinhTable({
                           <button
                             type="button"
                             onClick={() => onDelete(a)}
-                            className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition cursor-pointer"
+                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition cursor-pointer"
                             title="Xóa hồ sơ"
                           >
                             <Trash2 size={13} />

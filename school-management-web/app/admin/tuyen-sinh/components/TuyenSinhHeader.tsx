@@ -29,39 +29,32 @@ export function TuyenSinhHeader({
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="admin-eyebrow">TUYỂN SINH MẦM NON</p>
-          <h1 className="admin-title">Tuyển sinh</h1>
-          <p className="admin-subtitle">
-            Tiếp nhận hồ sơ xin nhập học trực tuyến từ phụ huynh và xét tuyển
-            vào các lớp
-          </p>
+          <h1 className="admin-title">Quản lý tuyển sinh</h1>
         </div>
         <button
           onClick={onRefresh}
           className="admin-btn admin-btn-secondary cursor-pointer"
         >
-          <RefreshCw size={16} /> Làm mới danh sách
+          <RefreshCw size={16} /> Làm mới
         </button>
       </header>
 
       {/* Shareable Online Registration Link Banner */}
-      <div className="rounded-2xl border-2 border-dashed border-sky-300 bg-sky-50/60 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-md shadow-sky-600/20">
-            <LinkIcon size={20} />
+      <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 w-full max-w-full overflow-hidden">
+        <div className="flex items-start sm:items-center gap-3 min-w-0 w-full flex-1">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-white shadow-xs">
+            <LinkIcon size={18} />
           </div>
-          <div>
-            <h3 className="font-extrabold text-slate-800 text-sm">
-              Link gửi cho Phụ huynh điền phiếu Đơn xin nhập học:
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-slate-800 text-xs sm:text-sm">
+              Cổng đăng ký tuyển sinh trực tuyến
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5 font-sans">
-              Phụ huynh điền link này sẽ tự động cập nhật đầy đủ thông tin trẻ
-              và bố mẹ vào danh sách bên dưới
-            </p>
-            <div className="mt-1.5 font-mono text-xs font-bold text-sky-800 bg-white px-3 py-1.5 rounded-xl border border-sky-200 inline-block">
-              {publicLink}
+            <div className="mt-1 flex items-center bg-white px-2.5 py-1.5 rounded-lg border border-sky-200 w-full min-w-0 overflow-hidden">
+              <span className="font-mono text-[11px] sm:text-xs font-medium text-sky-800 truncate select-all block w-full">
+                {publicLink}
+              </span>
             </div>
           </div>
         </div>
@@ -69,10 +62,10 @@ export function TuyenSinhHeader({
         <button
           type="button"
           onClick={copyPublicLink}
-          className="shrink-0 flex items-center gap-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 text-xs font-bold shadow-md shadow-sky-600/20 transition cursor-pointer"
+          className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 text-xs font-bold shadow-md shadow-sky-600/20 transition cursor-pointer"
         >
           {copiedLink ? <Check size={16} /> : <Copy size={16} />}
-          {copiedLink ? "Đã sao chép link!" : "Sao chép link gửi PH"}
+          <span>{copiedLink ? "Đã sao chép link!" : "Sao chép link gửi PH"}</span>
         </button>
       </div>
 

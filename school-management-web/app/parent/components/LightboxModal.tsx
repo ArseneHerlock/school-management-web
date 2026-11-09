@@ -18,7 +18,7 @@ export default function LightboxModal({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[80] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div

@@ -59,16 +59,16 @@ export default function TeacherSidebar({
 
   return (
     <>
-      {/* Backdrop overlay on mobile */}
-      <div
-        className={`fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs transition lg:hidden ${
-          mobileOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-        onClick={() => setMobileOpen?.(false)}
-      />
+      {/* Backdrop overlay on mobile: chỉ render khi mobileOpen là true, tránh chặn thao tác cảm ứng của bottom nav */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-xs transition lg:hidden animate-in fade-in duration-200"
+          onClick={() => setMobileOpen?.(false)}
+        />
+      )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-slate-200 bg-white transition-all duration-200 ease-in-out shadow-xl lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-[70] flex flex-col border-r border-slate-200 bg-white transition-all duration-200 ease-in-out shadow-xl lg:shadow-none ${
           collapsed ? 'lg:w-20' : 'lg:w-64'
         } w-72 ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} font-sans`}
       >

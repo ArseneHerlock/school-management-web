@@ -36,18 +36,18 @@ export const DirectorHeader: React.FC<DirectorHeaderProps> = ({
   }).format(new Date());
 
   return (
-    <header className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-rose-200/80 bg-gradient-to-br from-rose-900 via-rose-950 to-slate-900 p-4 sm:p-6 md:p-7 text-white shadow-xl shadow-rose-950/20 max-w-full">
+    <header className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-900 via-emerald-950 to-slate-900 p-4 sm:p-6 md:p-7 text-white shadow-xl shadow-emerald-950/20 max-w-full">
       {/* Decorative ambient background strictly contained */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-12 -right-12 h-64 w-64 rounded-full bg-rose-500/20 blur-3xl" />
+        <div className="absolute -top-12 -right-12 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
         <div className="absolute -bottom-16 left-1/4 h-56 w-56 rounded-full bg-amber-500/10 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 min-w-0">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/20 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-black tracking-wide text-rose-300 border border-rose-400/30">
-              <Building2 size={12} className="text-rose-400 shrink-0" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-black tracking-wide text-emerald-300 border border-emerald-400/30">
+              <Building2 size={12} className="text-emerald-400 shrink-0" />
               <span className="truncate">HỆ THỐNG MẦM NON ÁNH SAO</span>
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-semibold text-slate-200 backdrop-blur">
@@ -60,12 +60,12 @@ export const DirectorHeader: React.FC<DirectorHeaderProps> = ({
             Trung tâm Điều hành Ban Giám Hiệu
           </h1>
 
-          <div className="mt-2 flex flex-wrap items-center gap-y-1 gap-x-3 text-[11px] sm:text-xs text-rose-100/90">
+          <div className="mt-2 flex flex-wrap items-center gap-y-1 gap-x-3 text-[11px] sm:text-xs text-emerald-100/90">
             <span className="flex items-center gap-1.5 shrink-0">
-              <Clock size={12} className="text-rose-300" />
+              <Clock size={12} className="text-emerald-300" />
               <span className="capitalize">{todayStr}</span>
             </span>
-            <span className="hidden sm:inline text-rose-300/40">•</span>
+            <span className="hidden sm:inline text-emerald-300/40">•</span>
             <span className="inline-flex items-center gap-1.5 text-emerald-300 font-bold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
               <span>
@@ -85,7 +85,7 @@ export const DirectorHeader: React.FC<DirectorHeaderProps> = ({
             onClick={() => onNavigate("tin-tuc")}
             className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 px-2.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white transition active:scale-98 cursor-pointer"
           >
-            <Radio size={14} className="text-rose-300 shrink-0" />
+            <Radio size={14} className="text-emerald-300 shrink-0" />
             <span className="truncate">Phát tin tức</span>
           </button>
 
@@ -100,10 +100,10 @@ export const DirectorHeader: React.FC<DirectorHeaderProps> = ({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 p-2 sm:p-2.5 text-xs font-bold text-rose-200 transition disabled:opacity-50 cursor-pointer"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 p-2 sm:p-2.5 text-xs font-bold text-emerald-200 transition disabled:opacity-50 cursor-pointer"
             title="Đồng bộ số liệu thời gian thực"
           >
-            <RefreshCw size={14} className={isRefreshing ? "animate-spin text-rose-300" : ""} />
+            <RefreshCw size={14} className={isRefreshing ? "animate-spin text-emerald-300" : ""} />
             <span className="sm:hidden text-xs font-bold">Đồng bộ dữ liệu</span>
           </button>
         </div>

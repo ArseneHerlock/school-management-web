@@ -33,12 +33,13 @@ const DOMAIN_FALLBACKS: DomainItem[] = [
 
 function resolveDomainForActivity(act: any, liveDomains: DomainItem[]): DomainItem {
   const code = (act?.code || '').toUpperCase();
+  const name = (act?.name || '').toLowerCase();
   let matchedCode = 'GDMN-PHYSICAL';
-  if (code.includes('PTTCXH')) matchedCode = 'GDMN-SOCIAL-EMOTIONAL';
-  else if (code.includes('PTTC')) matchedCode = 'GDMN-PHYSICAL';
-  else if (code.includes('PTNT')) matchedCode = 'GDMN-COGNITION';
-  else if (code.includes('PTNN')) matchedCode = 'GDMN-LANGUAGE';
-  else if (code.includes('PTTM')) matchedCode = 'GDMN-AESTHETIC';
+  if (code.includes('PTTCXH') || name.includes('tình cảm') || name.includes('xã hội') || name.includes('chơi cùng bạn') || name.includes('tình huống')) matchedCode = 'GDMN-SOCIAL-EMOTIONAL';
+  else if (code.includes('PTTC') || name.includes('vận động') || name.includes('thể chất') || name.includes('chuyền bóng') || name.includes('bóng')) matchedCode = 'GDMN-PHYSICAL';
+  else if (code.includes('PTNT') || name.includes('nhận thức') || name.includes('khám phá') || name.includes('so sánh') || name.includes('toán') || name.includes('đồ vật')) matchedCode = 'GDMN-COGNITION';
+  else if (code.includes('PTNN') || name.includes('ngôn ngữ') || name.includes('kể chuyện') || name.includes('tranh') || name.includes('chữ cái') || name.includes('thơ')) matchedCode = 'GDMN-LANGUAGE';
+  else if (code.includes('PTTM') || name.includes('thẩm mỹ') || name.includes('thẩm mĩ') || name.includes('hát') || name.includes('nhạc') || name.includes('tạo hình') || name.includes('vẽ')) matchedCode = 'GDMN-AESTHETIC';
 
   const fallback = DOMAIN_FALLBACKS.find((f) => f.code === matchedCode)!;
   const live = liveDomains.find(
@@ -183,16 +184,50 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
       ? Math.round(breakdown.reduce((acc, d) => acc + d.domainScore, 0) / domains.length)
       : 0
 
-    const radarData = breakdown.map((b) => ({
-      domain: b.name.replace('Phát triển ', ''),
-      'Điểm phát triển (%)': b.domainScore,
-    }))
+    const formatDomainLabel = (name: string): string => {
+      const lower = name.toLowerCase();
+      if (lower.includes('thể chất') || lower.includes('vận động')) return 'Thể chất';
+      if (lower.includes('nhận thức') || lower.includes('toán')) return 'Nhận thức';
+      if (lower.includes('ngôn ngữ') || lower.includes('kể chuyện')) return 'Ngôn ngữ';
+      if (lower.includes('tình cảm') || lower.includes('xã hội')) return 'Tình cảm - Xã hội';
+      if (lower.includes('thẩm m')) return 'Thẩm mỹ';
+      return name.replace(/^phát triển\s+/i, '');
+    };
+
+    const rawRadar = latestFCM?.RadarScores || (latestFCM as any)?.radarScores || {};
+    const getFcmScore = (short: string): number => {
+      let val = rawRadar[short];
+      if (val === undefined) {
+        if (short === 'Thể chất') val = rawRadar.theChat;
+        else if (short === 'Nhận thức') val = rawRadar.nhanThuc;
+        else if (short === 'Ngôn ngữ') val = rawRadar.ngonNgu;
+        else if (short === 'Tình cảm - Xã hội') val = rawRadar['Tình cảm - Xã hội'] ?? rawRadar.tinhCamXaHoi;
+        else if (short === 'Thẩm mỹ') val = rawRadar['Thẩm mĩ'] ?? rawRadar.thamMy;
+      }
+      if (val !== undefined && val !== null) {
+        const num = Number(val);
+        return num > 1 ? Math.min(100, Math.round(num)) : Math.round(num * 100);
+      }
+      return 0;
+    };
+
+    const radarData = breakdown.map((b) => {
+      const label = formatDomainLabel(b.name);
+      let score = b.domainScore;
+      if (score === 0 && totalAssessed === 0) {
+        score = getFcmScore(label);
+      }
+      return {
+        domain: label,
+        'Điểm phát triển (%)': score,
+      };
+    });
 
     const barData = breakdown.map((b) => ({
-      name: b.name.replace('Phát triển ', ''),
+      name: formatDomainLabel(b.name),
       'Đạt chuẩn': b.passInDomain,
       'Cần rèn luyện': b.failInDomain,
-    }))
+    }));
 
     return {
       generalStats: {
@@ -206,7 +241,7 @@ export default function AssessmentTab({ child }: { child: ChildInfo }) {
       radarChartData: radarData,
       barChartData: barData,
     }
-  }, [assessments, criteria, domains])
+  }, [assessments, criteria, domains, latestFCM])
 
   const tabs: TabItem<AssessmentSubTab>[] = [
     { id: 'dashboard', label: 'Tổng quan phát triển', icon: BarChart3 },

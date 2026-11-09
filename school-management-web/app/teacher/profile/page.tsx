@@ -89,15 +89,9 @@ export default function TeacherProfilePage() {
       {/* Tiêu đề trang */}
       <div className="flex items-center justify-between">
         <div>
-          <span className="text-xs font-black tracking-wider text-orange-600 uppercase">
-            Hồ sơ tài khoản
-          </span>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight mt-1">
-            Thông tin cá nhân giáo viên
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+            Thông tin cá nhân
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Hồ sơ nhân sự và phân công nhiệm vụ được đồng bộ trực tiếp từ StaffService.
-          </p>
         </div>
 
         <button

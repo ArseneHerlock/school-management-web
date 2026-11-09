@@ -17,14 +17,25 @@ export function getApiBaseUrl(): string {
       localStorage.removeItem("custom_api_url");
     } catch {}
 
+    // Khi truy cập qua cáp USB (adb reverse localhost:3000) hoặc IP nội bộ,
+    // giữ nguyên origin để dữ liệu truyền trực tiếp qua cổng USB với tốc độ cao nhất (0ms)
+    const hostname = window.location.hostname;
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.0.")
+    ) {
+      return "";
+    }
+
     const isCapacitor =
       (window as any).Capacitor !== undefined ||
       window.location.protocol === "capacitor:" ||
-      window.location.protocol === "file:" ||
-      (window.location.hostname === "localhost" && window.location.port === "");
+      window.location.protocol === "file:";
 
     if (isCapacitor) {
-      return "http://localhost:3000";
+      return "https://app.kindergarteny26.online";
     }
   }
   return "";
@@ -81,12 +92,16 @@ export async function request<T>(
       headers.set("Content-Type", "application/json");
     }
 
+    const method = (requestOptions.method || "GET").toUpperCase();
+    const defaultCache = method === "GET" ? "default" : "no-store";
+    const cacheMode = requestOptions.cache || defaultCache;
+
     let response: Response;
     try {
       response = await fetch(fullUrl, {
+        cache: cacheMode,
         ...requestOptions,
         headers: headers,
-        cache: "no-store",
       });
     } catch (netErr) {
       throw netErr;

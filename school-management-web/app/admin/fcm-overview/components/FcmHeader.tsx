@@ -30,20 +30,9 @@ export function FcmHeader({
       <div className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-700">
-                BAN GIÁM HIỆU - CHUYÊN MÔN
-              </span>
-              <span className="flex items-center gap-1 text-xs text-slate-500">
-                <Compass size={13} className="text-indigo-500" /> Khảo sát & Phân loại học sinh đầu năm học (FCM 4 Nhóm)
-              </span>
-            </div>
-            <h1 className="mt-1 text-2xl font-black text-slate-800">
-              Phân nhóm mức độ rèn luyện & đặc điểm phát triển của trẻ
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+              Phân loại năng lực trẻ (FCM)
             </h1>
-            <p className="text-xs text-slate-500">
-              Phân loại khoa học bằng mô hình FCM để nắm đặc điểm trẻ, hỗ trợ biên chế xếp lớp cân đối và bàn giao cho giáo viên chủ nhiệm đồng hành.
-            </p>
           </div>
 
           {/* Actions & Date Selector */}

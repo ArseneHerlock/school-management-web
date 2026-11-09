@@ -60,14 +60,14 @@ export default function DiemDanhDashboard({
           <p className="mt-1 text-xs text-slate-400">Sau 08:30 sáng</p>
         </div>
 
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 uppercase">Vắng mặt / Xin nghỉ</span>
-            <span className="p-2 rounded-2xl bg-rose-50 text-rose-600">
+            <span className="p-2 rounded-2xl bg-emerald-50 text-emerald-600">
               <UserX size={18} />
             </span>
           </div>
-          <p className="mt-2 text-3xl font-black text-rose-600">{absentCount}</p>
+          <p className="mt-2 text-3xl font-black text-emerald-600">{absentCount}</p>
           <p className="mt-1 text-xs text-slate-400">Có phép & không phép</p>
         </div>
 
@@ -86,9 +86,9 @@ export default function DiemDanhDashboard({
       {/* 2 Bieu do chuyen can */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Bieu do theo tung Lop */}
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs flex flex-col justify-between">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3 border-b border-rose-50 pb-2">
+            <div className="flex items-center justify-between mb-3 border-b border-emerald-50 pb-2">
               <div>
                 <h3 className="text-sm font-black text-slate-800">Tỷ lệ chuyên cần theo từng Lớp</h3>
                 <p className="text-[11px] text-slate-400">Đối chiếu số trẻ có mặt và vắng mặt hôm nay</p>
@@ -144,9 +144,9 @@ export default function DiemDanhDashboard({
         </div>
 
         {/* Bieu do theo Khoi mam non */}
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs flex flex-col justify-between">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3 border-b border-rose-50 pb-2">
+            <div className="flex items-center justify-between mb-3 border-b border-emerald-50 pb-2">
               <div>
                 <h3 className="text-sm font-black text-slate-800">Chuyên cần theo Khối mầm non</h3>
                 <p className="text-[11px] text-slate-400">Nhà trẻ, Khối Mầm, Khối Chồi, Khối Lá</p>

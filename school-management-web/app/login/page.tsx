@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   Eye,
   EyeOff,
@@ -26,28 +26,51 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (event: FormEvent) => {
+  useEffect(() => {
+    const user = currentUser();
+    if (user && user.roles && user.roles.length > 0) {
+      if (user.roles.includes("ADMIN")) {
+        window.location.href = "/admin";
+      } else if (user.roles.includes("GIAO_VIEN")) {
+        window.location.href = "/teacher";
+      } else if (user.roles.includes("PHU_HUYNH")) {
+        window.location.href = "/parent";
+      }
+    }
+  }, []);
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    if (!userName.trim() || !password) {
+    const form = event.currentTarget;
+    const userInput = form.elements.namedItem("userName") as HTMLInputElement | null;
+    const pwdInput = form.elements.namedItem("password") as HTMLInputElement | null;
+    const targetUser = (userInput?.value ?? userName).trim();
+    const targetPwd = pwdInput?.value ?? password;
+
+    if (!targetUser || !targetPwd) {
       setError("Vui lòng nhập tên đăng nhập và mật khẩu.");
       return;
     }
 
     try {
       setLoading(true);
-      const result = await login(userName.trim(), password);
+      const result = await login(targetUser, targetPwd);
       if (result.requiresPasswordChange) {
-        router.push("/doi-mat-khau");
+        window.location.href = "/doi-mat-khau";
         return;
       }
 
       const user = currentUser();
-      const role = user?.roles?.[0];
-      if (role === "ADMIN") router.push("/admin");
-      else if (role === "GIAO_VIEN") router.push("/teacher");
-      else if (role === "PHU_HUYNH") router.push("/parent");
-      else router.push("/");
+      if (user?.roles?.includes("ADMIN")) {
+        window.location.href = "/admin";
+      } else if (user?.roles?.includes("GIAO_VIEN")) {
+        window.location.href = "/teacher";
+      } else if (user?.roles?.includes("PHU_HUYNH")) {
+        window.location.href = "/parent";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err) {
       setAccessToken(null);
       setPasswordChangeToken(null);
@@ -75,7 +98,13 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={submit} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              submit(e);
+            }}
+            className="space-y-4"
+          >
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold text-slate-700">
                 Tài khoản đăng nhập
@@ -86,8 +115,15 @@ export default function LoginPage() {
                   size={17}
                 />
                 <input
+                  name="userName"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const form = e.currentTarget.closest("form");
+                      if (form) submit({ preventDefault: () => {}, currentTarget: form } as any);
+                    }
+                  }}
                   placeholder="Nhập tên đăng nhập hoặc số điện thoại..."
                   className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-xs outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50 font-sans"
                   autoComplete="username"
@@ -105,9 +141,16 @@ export default function LoginPage() {
                   size={17}
                 />
                 <input
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const form = e.currentTarget.closest("form");
+                      if (form) submit({ preventDefault: () => {}, currentTarget: form } as any);
+                    }
+                  }}
                   placeholder="Nhập mật khẩu..."
                   className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-11 text-xs outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50 font-sans"
                   autoComplete="current-password"
@@ -130,6 +173,11 @@ export default function LoginPage() {
             )}
 
             <button
+              type="button"
+              onClick={(e) => {
+                const form = e.currentTarget.closest("form");
+                if (form) submit({ preventDefault: () => {}, currentTarget: form } as any);
+              }}
               disabled={loading}
               className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-xs font-bold text-white shadow-md shadow-rose-500/20 transition hover:from-rose-600 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer font-sans"
             >

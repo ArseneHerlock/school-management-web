@@ -33,6 +33,19 @@ export default function HoatDongFormModal({
       maxWidth="lg"
     >
       <form onSubmit={onSave} className="space-y-4">
+        {/* Phân loại cấp độ: Hoạt động của trường */}
+        <div className="flex items-center justify-between rounded-xl bg-indigo-50 border border-indigo-200 p-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+            <span className="text-xs font-bold text-indigo-900">
+              Cấp độ: Hoạt động của trường (Ban Giám Hiệu)
+            </span>
+          </div>
+          <span className="text-[11px] font-bold text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200">
+            Toàn trường
+          </span>
+        </div>
+
         <div>
           <label className="text-xs font-bold text-slate-700">
             Tên hoạt động rèn luyện *
@@ -48,8 +61,41 @@ export default function HoatDongFormModal({
               }))
             }
             placeholder="VD: Dã ngoại trang trại, Ngày hội thể thao, Lễ hội bánh chưng..."
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400 font-semibold text-slate-800"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400 font-semibold text-slate-800"
           />
+        </div>
+
+        {/* Bắt buộc chọn 1 trong 5 lĩnh vực phát triển */}
+        <div>
+          <label className="text-xs font-bold text-slate-700">
+            Lĩnh vực phát triển mầm non *
+          </label>
+          <select
+            required
+            value={formData.domainCode || "GDMN-PHYSICAL"}
+            onChange={(e) => {
+              const dCode = e.target.value;
+              const dNameMap: Record<string, string> = {
+                "GDMN-PHYSICAL": "Thể chất",
+                "GDMN-COGNITION": "Nhận thức",
+                "GDMN-LANGUAGE": "Ngôn ngữ",
+                "GDMN-SOCIAL-EMOTIONAL": "Tình cảm - Xã hội",
+                "GDMN-AESTHETIC": "Thẩm mỹ",
+              };
+              setFormData((p) => ({
+                ...p,
+                domainCode: dCode,
+                domainName: dNameMap[dCode] || "Thể chất",
+              }));
+            }}
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400 font-bold text-slate-800 bg-white"
+          >
+            <option value="GDMN-PHYSICAL">1. Thể chất (Vận động, thể lực, tự phục vụ)</option>
+            <option value="GDMN-COGNITION">2. Nhận thức (Khám phá, tư duy, toán học)</option>
+            <option value="GDMN-LANGUAGE">3. Ngôn ngữ (Giao tiếp, kể chuyện, đọc thơ)</option>
+            <option value="GDMN-SOCIAL-EMOTIONAL">4. Tình cảm - Xã hội (Hòa đồng, cảm xúc, quy tắc)</option>
+            <option value="GDMN-AESTHETIC">5. Thẩm mỹ (Vẽ, múa, hát, sáng tạo nghệ thuật)</option>
+          </select>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -66,7 +112,7 @@ export default function HoatDongFormModal({
                   minAgeMonths: Number(e.target.value),
                 }))
               }
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
             />
           </div>
           <div>
@@ -82,7 +128,7 @@ export default function HoatDongFormModal({
                   maxAgeMonths: Number(e.target.value),
                 }))
               }
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
             />
           </div>
         </div>
@@ -98,7 +144,7 @@ export default function HoatDongFormModal({
               setFormData((p) => ({ ...p, description: e.target.value }))
             }
             placeholder="Mô tả mục tiêu rèn luyện thể chất, ngôn ngữ, kỹ năng giao tiếp..."
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
           />
         </div>
 
@@ -113,7 +159,7 @@ export default function HoatDongFormModal({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-xl bg-rose-600 px-5 py-2 text-xs font-bold text-white hover:bg-rose-700 cursor-pointer"
+            className="rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white hover:bg-emerald-700 cursor-pointer"
           >
             {saving ? "Đang lưu..." : "Lưu hoạt động"}
           </button>

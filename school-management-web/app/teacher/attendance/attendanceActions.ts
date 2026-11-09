@@ -40,7 +40,7 @@ export async function submitLockMorningAction(
 export async function submitLateArrivalAction(
   childApiId: string,
   selectedDate: string,
-  data: { time: string; coAnTrua: boolean; note: string }
+  data: { time: string; note: string }
 ) {
   await fetch('/api/attendance/edge-cases', {
     method: 'POST',
@@ -50,7 +50,6 @@ export async function submitLateArrivalAction(
       hocSinhId: childApiId,
       date: selectedDate,
       time: data.time,
-      coAnTrua: data.coAnTrua,
       ghiChu: data.note,
     }),
   });

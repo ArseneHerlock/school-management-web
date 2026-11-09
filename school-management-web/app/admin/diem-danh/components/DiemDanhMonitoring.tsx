@@ -40,12 +40,12 @@ export default function DiemDanhMonitoring({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-3xl border border-rose-100 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-3xl border border-emerald-100 shadow-xs">
         <div className="flex flex-wrap items-center gap-2.5">
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
-            className="rounded-2xl border border-rose-200 bg-rose-50/40 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-rose-400"
+            className="rounded-2xl border border-emerald-200 bg-emerald-50/40 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-emerald-400"
           >
             <option value="ALL">Toàn trường (Tất cả các lớp)</option>
             {classes.map((c) => (
@@ -58,7 +58,7 @@ export default function DiemDanhMonitoring({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-2xl border border-rose-200 bg-rose-50/40 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-rose-400"
+            className="rounded-2xl border border-emerald-200 bg-emerald-50/40 px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-emerald-400"
           >
             <option value="ALL">Tất cả trạng thái điểm danh</option>
             <option value="PRESENT">Đang có mặt tại lớp</option>
@@ -74,21 +74,21 @@ export default function DiemDanhMonitoring({
               placeholder="Tìm theo tên bé, lớp..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              className="rounded-2xl border border-rose-200 py-1.5 pl-8 pr-3 text-xs outline-none focus:border-rose-400 w-48 sm:w-60"
+              className="rounded-2xl border border-emerald-200 py-1.5 pl-8 pr-3 text-xs outline-none focus:border-emerald-400 w-48 sm:w-60"
             />
           </div>
         </div>
 
         <span className="text-xs font-semibold text-slate-500">
-          Hiển thị: <b className="text-rose-600">{filteredStudents.length}</b> / {students.length} học sinh
+          Hiển thị: <b className="text-emerald-600">{filteredStudents.length}</b> / {students.length} học sinh
         </span>
       </div>
 
-      <div className="rounded-3xl border border-rose-100 bg-white overflow-hidden shadow-xs">
+      <div className="rounded-3xl border border-emerald-100 bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-rose-100 bg-rose-50/20 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+              <tr className="border-b border-emerald-100 bg-emerald-50/20 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
                 <th className="p-3.5">Học sinh</th>
                 <th className="p-3.5">Lớp / Khối</th>
                 <th className="p-3.5 text-center">Trạng thái điểm danh</th>
@@ -98,7 +98,7 @@ export default function DiemDanhMonitoring({
                 <th className="p-3.5 text-center">Lịch sử</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-rose-50">
+            <tbody className="divide-y divide-emerald-50">
               {filteredStudents.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-8 text-center text-xs text-slate-400">
@@ -113,7 +113,7 @@ export default function DiemDanhMonitoring({
                   const isAbsent = att.coBanGhi && (String(att.trangThai).toLowerCase().includes('vắng') || String(att.trangThai).toLowerCase().includes('nghỉ'))
 
                   return (
-                    <tr key={st.id} className="hover:bg-rose-50/20 transition">
+                    <tr key={st.id} className="hover:bg-emerald-50/20 transition">
                       <td className="p-3.5 font-bold text-slate-800">{st.tenHocSinh}</td>
                       <td className="p-3.5 text-slate-600">
                         <p className="font-semibold text-slate-700">{st.className}</p>
@@ -126,7 +126,7 @@ export default function DiemDanhMonitoring({
                             : isLate
                             ? 'bg-amber-50 text-amber-700'
                             : isAbsent
-                            ? 'bg-rose-50 text-rose-700'
+                            ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-slate-100 text-slate-500'
                         }`}>
                           {isPresent ? 'Có mặt' : isLate ? 'Đi muộn' : isAbsent ? 'Vắng mặt' : 'Chưa điểm danh'}

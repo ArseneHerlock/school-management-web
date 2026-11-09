@@ -38,7 +38,7 @@ export function DailyAuthForm({
       <div className="lg:col-span-2 space-y-6">
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs">
           <h2 className="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
-            <HeartHandshake className="text-teal-600" /> Tạo giấy ủy quyền đón hộ hôm nay
+            <HeartHandshake className="text-indigo-600" /> Tạo giấy ủy quyền đón hộ hôm nay
           </h2>
           <p className="text-xs text-slate-500 mb-6">
             Áp dụng khi Bố Mẹ bận việc đột xuất và nhờ người thân khác (ông bà, cô chú, bác ruột...) đến trường đón hộ hôm nay.
@@ -58,7 +58,7 @@ export function DailyAuthForm({
                   onChange={(e) =>
                     setDailyForm({ ...dailyForm, pickupPersonName: e.target.value })
                   }
-                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
                 />
               </div>
 
@@ -69,7 +69,7 @@ export function DailyAuthForm({
                 <select
                   value={dailyForm.relationship}
                   onChange={(e) => setDailyForm({ ...dailyForm, relationship: e.target.value })}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600 cursor-pointer"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600 cursor-pointer"
                 >
                   <option value="Bố">Bố</option>
                   <option value="Mẹ">Mẹ</option>
@@ -94,7 +94,7 @@ export function DailyAuthForm({
                   placeholder="Ví dụ: 0912 345 678"
                   value={dailyForm.phoneNumber}
                   onChange={(e) => setDailyForm({ ...dailyForm, phoneNumber: e.target.value })}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
                 />
               </div>
 
@@ -106,7 +106,7 @@ export function DailyAuthForm({
                   type="time"
                   value={dailyForm.expectedTime}
                   onChange={(e) => setDailyForm({ ...dailyForm, expectedTime: e.target.value })}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-teal-600"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-indigo-600"
                 />
               </div>
             </div>
@@ -120,14 +120,14 @@ export function DailyAuthForm({
                 placeholder="Ví dụ: Bác đi xe Wave đỏ biển số 29X... đón lúc 16h45 do bố mẹ bận đi công tác."
                 value={dailyForm.parentNote}
                 onChange={(e) => setDailyForm({ ...dailyForm, parentNote: e.target.value })}
-                className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 p-3 focus:outline-teal-600"
+                className="w-full text-xs sm:text-sm rounded-xl border border-slate-200 p-3 focus:outline-indigo-600"
               />
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-teal-600 text-white text-xs sm:text-sm font-bold shadow hover:bg-teal-700 transition flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-indigo-600 text-white text-xs sm:text-sm font-bold shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ShieldCheck size={16} /> Gửi giấy ủy quyền đón hôm nay
               </button>
@@ -140,7 +140,7 @@ export function DailyAuthForm({
       <div>
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs sticky top-6">
           <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Clock className="text-teal-600" size={18} /> Trạng thái đón hôm nay
+            <Clock className="text-indigo-600" size={18} /> Trạng thái đón hôm nay
           </h3>
 
           {todayAuth ? (
@@ -148,18 +148,18 @@ export function DailyAuthForm({
               <div
                 className={`p-4 rounded-2xl border ${
                   todayAuth.Status === 'DA_DON'
-                    ? 'bg-emerald-50 border-emerald-200'
+                    ? 'bg-indigo-50 border-indigo-200'
                     : 'bg-purple-50 border-purple-200'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-purple-700">
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-700">
                     {todayAuth.Relationship}
                   </span>
                   <span
                     className={`text-xs font-black px-2.5 py-0.5 rounded-full ${
                       todayAuth.Status === 'DA_DON'
-                        ? 'bg-emerald-200 text-emerald-800'
+                        ? 'bg-indigo-200 text-indigo-900'
                         : 'bg-purple-200 text-purple-900 animate-pulse'
                     }`}
                   >
@@ -181,13 +181,13 @@ export function DailyAuthForm({
                   </p>
                 )}
                 {todayAuth.ParentNote && (
-                  <p className="text-xs text-slate-500 italic mt-2 bg-white/80 p-2.5 rounded-xl border border-purple-100">
+                  <p className="text-xs text-slate-500 italic mt-2 bg-white/80 p-2.5 rounded-xl border border-indigo-100">
                     "{todayAuth.ParentNote}"
                   </p>
                 )}
 
                 {todayAuth.Status === 'DA_DON' && (
-                  <div className="mt-3 pt-3 border-t border-emerald-200 text-xs text-emerald-800 font-semibold space-y-1">
+                  <div className="mt-3 pt-3 border-t border-indigo-200 text-xs text-indigo-800 font-semibold space-y-1">
                     <div>
                       ✓ Giáo viên xác nhận:{' '}
                       <strong>{todayAuth.TeacherConfirmedBy || 'Giáo viên chủ nhiệm'}</strong>

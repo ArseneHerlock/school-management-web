@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Utensils, AlertCircle, X, Check, FileText } from 'lucide-react';
+import { Clock, AlertCircle, X, Check, FileText } from 'lucide-react';
 import { Child } from '../../data';
 
 interface TeacherLateArrivalModalProps {
   child: Child | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { time: string; coAnTrua: boolean; note: string }) => Promise<void>;
+  onSubmit: (data: { time: string; note: string }) => Promise<void>;
 }
 
 export const TeacherLateArrivalModal: React.FC<TeacherLateArrivalModalProps> = ({
@@ -18,7 +18,6 @@ export const TeacherLateArrivalModal: React.FC<TeacherLateArrivalModalProps> = (
   onSubmit,
 }) => {
   const [time, setTime] = useState('');
-  const [coAnTrua, setCoAnTrua] = useState(true);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +27,6 @@ export const TeacherLateArrivalModal: React.FC<TeacherLateArrivalModalProps> = (
       setTime(
         `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
       );
-      setCoAnTrua(true);
       setNote('');
     }
   }, [isOpen]);
@@ -41,7 +39,6 @@ export const TeacherLateArrivalModal: React.FC<TeacherLateArrivalModalProps> = (
     try {
       await onSubmit({
         time,
-        coAnTrua,
         note: note.trim(),
       });
       onClose();
@@ -98,54 +95,6 @@ export const TeacherLateArrivalModal: React.FC<TeacherLateArrivalModalProps> = (
                 onChange={(e) => setTime(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 pl-9 pr-3 py-2 text-xs font-semibold focus:border-orange-500 focus:outline-none"
               />
-            </div>
-          </div>
-
-          {/* Lựa chọn suất ăn trưa bán trú */}
-          <div>
-            <label className="block font-bold text-slate-700 mb-1.5">
-              Suất ăn trưa bán trú tại trường *
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setCoAnTrua(true)}
-                className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
-                  coAnTrua
-                    ? 'border-orange-500 bg-orange-50/70 text-orange-900 shadow-2xs'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold flex items-center gap-1.5">
-                    <Utensils size={13} className="text-orange-600" /> Ăn trưa tại trường
-                  </span>
-                  {coAnTrua && <Check size={14} className="text-orange-600" />}
-                </div>
-                <p className="text-[11px] text-slate-500 leading-tight">
-                  Báo Bếp chuẩn bị suất ăn dự phòng & kế toán tính tiền ăn.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCoAnTrua(false)}
-                className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
-                  !coAnTrua
-                    ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-2xs'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold flex items-center gap-1.5">
-                    <Check size={13} className="text-emerald-600" /> Bé đã ăn ở nhà
-                  </span>
-                  {!coAnTrua && <Check size={14} className="text-emerald-600" />}
-                </div>
-                <p className="text-[11px] text-slate-500 leading-tight">
-                  Không đăng ký suất ăn (giữ nguyên miễn giảm tiền ăn).
-                </p>
-              </button>
             </div>
           </div>
 

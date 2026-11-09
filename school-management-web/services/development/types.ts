@@ -14,6 +14,11 @@ export interface ActivityItem {
   maxAgeMonths?: number | null;
   isActive: boolean;
   createdAt: string;
+  scope?: "SCHOOL" | "CLASS";
+  classId?: string | null;
+  className?: string | null;
+  domainCode?: string;
+  domainName?: string;
   developmentCriteria: ActivityCriterion[];
 }
 
@@ -24,6 +29,10 @@ export interface CreateActivityInput {
   instructions?: string;
   minAgeMonths?: number;
   maxAgeMonths?: number;
+  scope?: "SCHOOL" | "CLASS";
+  classId?: string | null;
+  domainCode?: string;
+  domainName?: string;
 }
 
 export interface UpdateActivityInput extends CreateActivityInput {

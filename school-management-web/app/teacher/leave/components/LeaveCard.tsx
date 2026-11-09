@@ -18,23 +18,23 @@ export function LeaveCard({
   const isPending = statusInfo.key === 'pending';
 
   return (
-    <article className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs transition hover:shadow-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <article className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition hover:shadow-sm">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Thông tin học sinh và thời gian */}
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-700 font-black">
-            <CalendarDays size={22} />
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-orange-100 text-orange-700 font-black">
+            <CalendarDays size={18} />
           </div>
 
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="text-sm font-black text-slate-900">
+          <div className="min-w-0 space-y-0.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xs sm:text-sm font-black text-slate-900">
                 {application.childName}
               </h2>
               <span
-                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${statusInfo.badgeClass}`}
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusInfo.badgeClass}`}
               >
-                <StatusIcon size={12} />
+                <StatusIcon size={11} />
                 {statusInfo.label}
               </span>
             </div>
@@ -46,20 +46,20 @@ export function LeaveCard({
               </span>
             </p>
 
-            <p className="text-xs text-slate-500 flex items-center gap-1.5">
-              <span>Thời gian nghỉ:</span>
+            <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+              <span>Nghỉ:</span>
               <strong className="text-slate-800 font-mono">
                 {String(application.fromDate).slice(0, 10)}
               </strong>
-              <span>đến</span>
+              <span>→</span>
               <strong className="text-slate-800 font-mono">
                 {String(application.toDate).slice(0, 10)}
               </strong>
             </p>
 
             {application.note && (
-              <p className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-1.5 text-[11px] text-slate-600 mt-2">
-                Ghi chú phụ huynh: {application.note}
+              <p className="rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-1 text-[10px] text-slate-600 mt-1.5">
+                Ghi chú: {application.note}
               </p>
             )}
           </div>
@@ -67,27 +67,27 @@ export function LeaveCard({
 
         {/* Nút hành động Duyệt / Từ chối */}
         {isPending && (
-          <div className="flex shrink-0 items-center gap-2 border-t lg:border-t-0 pt-3 lg:pt-0">
+          <div className="flex shrink-0 items-center gap-2 border-t border-slate-100 lg:border-t-0 pt-2 lg:pt-0">
             <button
               disabled={isProcessing}
               onClick={() => onReviewApplication(application, false)}
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50/50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 transition disabled:opacity-50 cursor-pointer"
             >
-              <X size={15} />
+              <X size={13} />
               <span>Từ chối</span>
             </button>
 
             <button
               disabled={isProcessing}
               onClick={() => onReviewApplication(application, true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition disabled:opacity-50 cursor-pointer"
             >
               {isProcessing ? (
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 size={13} className="animate-spin" />
               ) : (
-                <Check size={15} />
+                <Check size={13} />
               )}
-              <span>Duyệt đơn nghỉ</span>
+              <span>Duyệt đơn</span>
             </button>
           </div>
         )}
@@ -95,10 +95,10 @@ export function LeaveCard({
 
       {/* Ghi chú đồng bộ */}
       {statusInfo.key === 'approved' && (
-        <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-100 px-3.5 py-2 text-[11px] font-medium text-emerald-800 flex items-center gap-2">
-          <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+        <div className="mt-3 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-[10px] font-medium text-emerald-800 flex items-center gap-1.5">
+          <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
           <span>
-            Đã xác nhận nghỉ học. Sổ điểm danh tự động ghi nhận vắng có phép cho trẻ.
+            Đã duyệt nghỉ học. Tự động ghi nhận vắng có phép vào sổ điểm danh.
           </span>
         </div>
       )}

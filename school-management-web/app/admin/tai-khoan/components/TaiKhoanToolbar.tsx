@@ -71,7 +71,7 @@ export const TaiKhoanToolbar: React.FC<TaiKhoanToolbarProps> = ({
           </span>
           {selectedCount > 0 && (
             <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">
-              <span className="font-bold text-rose-600">
+              <span className="font-bold text-emerald-600">
                 Đã chọn ({selectedCount})
               </span>
               <button

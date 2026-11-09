@@ -59,10 +59,7 @@ export default function TimetableHeader({
       {/* Row 1: Title & Grouped Date Navigation Controls (No wrapping breaking buttons) */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-3">
         <div>
-          <span className="text-[11px] font-bold text-sky-700 uppercase tracking-wider">
-            Lịch biểu & Thời khóa biểu
-          </span>
-          <h1 className="text-lg sm:text-2xl font-black tracking-tight text-slate-800">
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-800">
             Thời khóa biểu & Lịch sinh hoạt
           </h1>
         </div>

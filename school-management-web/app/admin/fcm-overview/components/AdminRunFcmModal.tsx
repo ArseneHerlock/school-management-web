@@ -98,7 +98,7 @@ export function AdminRunFcmModal({
             </span>
             <div>
               <h2 className="text-base font-black text-slate-800">
-                Chạy Phân Loại Trẻ Bằng Thuật Toán FCM
+                Phân Loại Đặc Điểm Phát Triển Của Trẻ
               </h2>
               <p className="text-xs text-slate-500">
                 Nghiệp vụ Ban Giám Hiệu: Khảo sát & phân cụm đặc trưng đầu năm học để xếp lớp
@@ -117,7 +117,7 @@ export function AdminRunFcmModal({
         {/* Content */}
         <div className="p-6 space-y-5 text-xs font-sans">
           {error && (
-            <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 p-3 text-rose-700">
+            <div className="flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 p-3 text-emerald-700">
               <AlertCircle size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
@@ -257,16 +257,16 @@ export function AdminRunFcmModal({
           <div className="rounded-2xl bg-indigo-50/70 border border-indigo-100 p-3.5 space-y-1.5 text-slate-600 leading-relaxed">
             <div className="flex items-center gap-1.5 font-black text-indigo-900 text-xs">
               <Compass size={14} className="text-indigo-600" />
-              <span>Dữ liệu khảo sát đầu năm & Thuật toán FCM</span>
+              <span>Dữ liệu khảo sát đặc điểm đầu vào</span>
             </div>
             <p className="text-[11px] text-slate-600">
-              Thuật toán tự động đọc tập dữ liệu từ <strong>Phiếu khảo sát đặc điểm phát triển đầu vào (Intake Survey)</strong> khi trẻ nhập học. Admin chỉ cần bấm nút để hệ thống tự động gom nhóm, phục vụ phân lớp đầu năm:
+              Hệ thống tự động tổng hợp từ <strong>Phiếu khảo sát đặc điểm phát triển đầu vào</strong> khi trẻ nhập học để phân nhóm phục vụ xếp lớp đầu năm:
             </p>
             <ul className="text-[11px] list-disc list-inside space-y-0.5 text-slate-700 font-medium pt-0.5">
-              <li><strong className="text-purple-700">Cụm 1:</strong> Phát triển Vượt trội / Năng khiếu nổi bật.</li>
-              <li><strong className="text-emerald-700">Cụm 2:</strong> Phát triển Đạt chuẩn / Khá, toàn diện.</li>
-              <li><strong className="text-amber-700">Cụm 3:</strong> Đang phát triển / Cần rèn luyện thêm kỹ năng.</li>
-              <li><strong className="text-rose-700">Cụm 4:</strong> Cần cô giáo và gia đình đặc biệt đồng hành hỗ trợ.</li>
+              <li><strong className="text-purple-700">Cụm 1:</strong> Phát triển Toàn diện / Vượt trội.</li>
+              <li><strong className="text-emerald-700">Cụm 2:</strong> Phát triển Đạt chuẩn / Vững vàng.</li>
+              <li><strong className="text-amber-700">Cụm 3:</strong> Phát triển Không đồng đều / Lệch pha.</li>
+              <li><strong className="text-emerald-700">Cụm 4:</strong> Có nguy cơ chậm phát triển / Cần hỗ trợ can thiệp sớm.</li>
             </ul>
           </div>
         </div>

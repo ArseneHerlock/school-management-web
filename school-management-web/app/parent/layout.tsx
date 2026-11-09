@@ -3,32 +3,18 @@
 import React, { useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import './parent.css';
-import {
-  getNews,
-  getFees,
-  getStudentsByParent,
-  getCurrentParentProfile,
-  saveParentProfile,
-  getStaff,
-} from '@/services';
-import { getClassById } from '@/services/classes';
-import { useApiQuery } from '@/lib/hooks/useApiQuery';
-import {
-  EMPTY_PARENT,
-  ACTIVE_CHILD,
-  ParentProfile,
-  ChildInfo,
-  MomentItem,
-} from './types';
+import { saveParentProfile } from '@/services';
+import { ACTIVE_CHILD, MomentItem } from './types';
 import { ParentContext } from './ParentContext';
 import ParentSidebar from './components/ParentSidebar';
 import ParentHeader from './components/ParentHeader';
 import LightboxModal from './components/LightboxModal';
 import ParentProfileModal from './components/ParentProfileModal';
 import LoadingScreen from '@/app/components/LoadingScreen';
-import { PARENT_HEADERS, formatNewsDate } from './layoutConfig';
+import { PARENT_HEADERS } from './layoutConfig';
 import { ParentBottomNav } from './components/ParentBottomNav';
 import { ParentChildSelector } from './components/ParentChildSelector';
+import { useParentLayoutData } from './useParentLayoutData';
 
 export default function ParentLayout({
   children: pageChildren,
@@ -40,154 +26,27 @@ export default function ParentLayout({
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [selected, setSelected] = useState<MomentItem | null>(null);
+  const [childId, setChildIdState] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    try {
+      return sessionStorage.getItem('parent_active_child_id') || '';
+    } catch {
+      return '';
+    }
+  });
 
-  const [childId, setChildId] = useState('');
+  const setChildId = (id: string) => {
+    setChildIdState(id);
+    try {
+      if (typeof window !== 'undefined' && id) {
+        sessionStorage.setItem('parent_active_child_id', id);
+      }
+    } catch {}
+  };
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
-  const profileQuery = useApiQuery(['parent', 'me'], getCurrentParentProfile);
-  const childrenQuery = useApiQuery(
-    ['parent', 'children', profileQuery.data?.id],
-    () => getStudentsByParent(profileQuery.data!.id),
-    { enabled: Boolean(profileQuery.data?.id) }
-  );
-  const classIds = useMemo(
-    () =>
-      [
-        ...new Set(
-          (childrenQuery.data ?? [])
-            .map((student: any) => student.lopId || student.LopId)
-            .filter(Boolean)
-        ),
-      ] as string[],
-    [childrenQuery.data]
-  );
-  const childClassesQuery = useApiQuery(
-    ['parent', 'child-classes', classIds],
-    () => Promise.all(classIds.map(getClassById)),
-    { enabled: classIds.length > 0 }
-  );
-  const staffQuery = useApiQuery(['parent', 'all-staff'], () => getStaff());
-  const currentYear = new Date().getFullYear();
-  const newsQuery = useApiQuery(['news', 'parent'], () =>
-    getNews({ trang: 1, soLuongMoiTrang: 20 })
-  );
-  const feesQuery = useApiQuery(['fees', `${currentYear}-${currentYear + 1}`], () =>
-    getFees(`${currentYear}-${currentYear + 1}`)
-  );
-
-  const parent = useMemo<ParentProfile>(() => {
-    const p: any = profileQuery.data;
-    if (!p) return EMPTY_PARENT;
-    return {
-      ...EMPTY_PARENT,
-      ...p,
-      id: p.id || p.Id || '',
-      hoTen: p.hoTen || p.HoTen || '',
-      soDienThoai: p.soDienThoai || p.SoDienThoai || '',
-      email: p.email || p.Email || '',
-      diaChi: p.diaChi || p.DiaChi || '',
-      moiQuanHe: p.moiQuanHe || p.MoiQuanHe || 'Phụ huynh',
-      ngheNghiep: p.ngheNghiep || p.NgheNghiep || '',
-      noiLamViec: p.noiLamViec || p.NoiLamViec || '',
-      cccd: p.cccd || p.CCCD || '',
-      ngaySinh: p.ngaySinh ? String(p.ngaySinh).slice(0, 10) : '',
-      gioiTinh: p.gioiTinh || p.GioiTinh || 'Nữ',
-      taiKhoanId: p.taiKhoanId || p.TaiKhoanId || '',
-    };
-  }, [profileQuery.data]);
-
-  const children = useMemo<ChildInfo[]>(() => {
-    const classesById = new Map(
-      (childClassesQuery.data ?? []).map((item: any) => [
-        String(item.id || item.Id),
-        item,
-      ])
-    );
-    const staffList: any[] = staffQuery.data ?? [];
-    const staffById = new Map<string, any>();
-    staffList.forEach((s) => {
-      const sId = String(s.staffId || s.StaffId || s.id || s.Id || '').toLowerCase();
-      if (sId) staffById.set(sId, s);
-    });
-
-    return (childrenQuery.data ?? []).map((student: any) => {
-      const id = student.studentId || student.StudentId || student.id || student.Id || '';
-      const classId = student.lopId || student.LopId || '';
-      const schoolClass: any = classesById.get(String(classId));
-      const hoTen = student.tenHocSinh || student.TenHocSinh || '';
-      const teacherStaffId = String(
-        schoolClass?.giaoVienChuNhiemId || schoolClass?.GiaoVienChuNhiemId || ''
-      ).toLowerCase();
-      const teacherName =
-        schoolClass?.tenGiaoVienChuNhiem || schoolClass?.TenGiaoVienChuNhiem || '';
-
-      const teacherStaff =
-        (teacherStaffId ? staffById.get(teacherStaffId) : null) ||
-        staffList.find((s) => {
-          const sName = String(s.fullName || s.FullName || '').trim().toLowerCase();
-          const tName = teacherName.trim().toLowerCase();
-          return (
-            sName &&
-            tName &&
-            (sName === tName ||
-              sName.replace(/^(cô|thầy)\s+/i, '') === tName.replace(/^(cô|thầy)\s+/i, ''))
-          );
-        });
-
-      const giaoVienUserId = String(
-        teacherStaff?.userId || teacherStaff?.UserId || ''
-      ).toLowerCase().trim();
-      const sdtGiaoVien = String(
-        teacherStaff?.phoneNumber || teacherStaff?.PhoneNumber || ''
-      ).trim();
-
-      return {
-        id,
-        hoTen,
-        lop: schoolClass?.tenLop || schoolClass?.TenLop || student.tenLop || student.TenLop || '',
-        classId,
-        khoi: schoolClass?.tenKhoi || schoolClass?.TenKhoi || '',
-        giaoVienChuNhiem: teacherName,
-        giaoVienStaffId: teacherStaffId,
-        giaoVienUserId,
-        sdtGiaoVien,
-        avatar: hoTen
-          .split(' ')
-          .map((word: string) => word[0])
-          .join('')
-          .slice(-2)
-          .toUpperCase(),
-        ngaySinh: String(student.ngaySinh || student.NgaySinh || '').slice(0, 10),
-        gioiTinh: student.gioiTinh || student.GioiTinh || '',
-        maHocSinh: id,
-      };
-    });
-  }, [childrenQuery.data, childClassesQuery.data, staffQuery.data]);
-
+  const { parent, children, news, fees, loading, refetchProfile } = useParentLayoutData();
   const parentId = parent.id;
-  const news = useMemo(() => {
-    const payload: any = newsQuery.data;
-    const items = Array.isArray(payload) ? payload : payload?.items || [];
-    return items.map((item: any) => ({
-      id: item.id || item.Id,
-      title: item.tieuDe || item.TieuDe || '',
-      category:
-        Number(item.phamVi ?? item.PhamVi) === 0
-          ? 'Toàn trường'
-          : Number(item.phamVi ?? item.PhamVi) === 1
-          ? 'Giáo viên'
-          : 'Phụ huynh',
-      date: formatNewsDate(item.ngayXuatBan || item.NgayXuatBan || item.ngayTao || item.NgayTao),
-      summary: item.tomTat || item.TomTat || '',
-      content: '',
-      icon: '',
-      badge: '',
-      isImportant: false,
-    }));
-  }, [newsQuery.data]);
-  const fees = feesQuery.data ?? [];
-  const loading =
-    profileQuery.isLoading || childrenQuery.isLoading || childClassesQuery.isLoading;
 
   const tab = useMemo(() => {
     const seg = pathname?.split('/')[2];
@@ -218,7 +77,6 @@ export default function ParentLayout({
       openCallModal: () => {},
       selectMoment: setSelected,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [parent, parentId, children, child, childId, news, fees]
   );
 
@@ -280,10 +138,7 @@ export default function ParentLayout({
           </main>
         </div>
 
-        <ParentBottomNav
-          pathname={pathname}
-          onOpenMenu={() => setOpen(true)}
-        />
+        <ParentBottomNav pathname={pathname} onOpenMenu={() => setOpen(true)} />
 
         <LightboxModal
           moment={selected}
@@ -296,7 +151,7 @@ export default function ParentLayout({
           parent={parent}
           onSave={async (p) => {
             await saveParentProfile(p);
-            await profileQuery.refetch();
+            await refetchProfile();
             setProfileOpen(false);
           }}
         />

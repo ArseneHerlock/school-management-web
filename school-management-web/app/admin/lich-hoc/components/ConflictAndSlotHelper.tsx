@@ -24,22 +24,22 @@ export default function ConflictAndSlotHelper({
   return (
     <div className="space-y-2">
       {conflicts.length > 0 ? (
-        <div className="rounded-2xl border-2 border-rose-400 bg-rose-50 p-3.5 space-y-2 shadow-xs">
-          <div className="flex items-center gap-2 text-rose-800 font-black text-xs">
-            <AlertTriangle size={17} className="text-rose-600 shrink-0" />
+        <div className="rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-3.5 space-y-2 shadow-xs">
+          <div className="flex items-center gap-2 text-emerald-800 font-black text-xs">
+            <AlertTriangle size={17} className="text-emerald-600 shrink-0" />
             <span>
               CẢNH BÁO: TRÙNG LỊCH ({conflicts.length} hoạt động bị chồng chéo):
             </span>
           </div>
-          <div className="space-y-1.5 text-xs text-rose-950">
+          <div className="space-y-1.5 text-xs text-emerald-950">
             {conflicts.map((c) => (
               <div
                 key={c.id}
-                className="bg-white p-2.5 rounded-xl border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1 shadow-2xs"
+                className="bg-white p-2.5 rounded-xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1 shadow-2xs"
               >
                 <div>
                   <span className="font-bold text-slate-800">{c.title}</span>
-                  <span className="text-rose-700 font-black ml-2">
+                  <span className="text-emerald-700 font-black ml-2">
                     ({c.startTime} - {c.endTime})
                   </span>
                   <p className="text-[11px] text-slate-500 mt-0.5">
@@ -47,14 +47,14 @@ export default function ConflictAndSlotHelper({
                     {c.location ? `• Địa điểm: ${c.location}` : ""}
                   </p>
                 </div>
-                <span className="shrink-0 text-[10px] font-black text-rose-700 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full">
+                <span className="shrink-0 text-[10px] font-black text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
                   Bị trùng khung giờ
                 </span>
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-rose-700 font-medium italic">
-            💡 Khuyên dùng: Hãy chọn một trong các khung giờ còn trống bên dưới để xếp lịch an toàn.
+          <p className="text-[11px] text-emerald-700 font-medium italic">
+            Chọn một trong các khung giờ còn trống bên dưới để xếp lịch.
           </p>
         </div>
       ) : startTime && endTime ? (

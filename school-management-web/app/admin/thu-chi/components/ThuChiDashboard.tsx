@@ -58,16 +58,16 @@ export default function ThuChiDashboard({
     <div className="space-y-6">
       {/* 4 Thẻ tài chính */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Dự toán thu mầm non</span>
-            <span className="p-2 rounded-xl bg-rose-50 text-rose-600"><DollarSign size={16} /></span>
+            <span className="p-2 rounded-xl bg-emerald-50 text-emerald-600"><DollarSign size={16} /></span>
           </div>
           <p className="mt-2 text-2xl font-black text-slate-800">{money(financialStats.totalEstimatedRevenue)} đ</p>
           <p className="mt-1 text-xs text-slate-400">Niên khóa: {schoolYear}</p>
         </div>
 
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Đã thực thu</span>
             <span className="p-2 rounded-xl bg-emerald-50 text-emerald-600"><CreditCard size={16} /></span>
@@ -76,7 +76,7 @@ export default function ThuChiDashboard({
           <p className="mt-1 text-xs text-emerald-600 font-semibold">{financialStats.collectionRate}% hoàn thành</p>
         </div>
 
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Công nợ còn tồn</span>
             <span className="p-2 rounded-xl bg-amber-50 text-amber-600"><AlertTriangle size={16} /></span>
@@ -85,7 +85,7 @@ export default function ThuChiDashboard({
           <p className="mt-1 text-xs text-slate-400">{financialStats.debtStudentsCount} học sinh chưa đóng</p>
         </div>
 
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-400 uppercase">Đã hoàn thành phí</span>
             <span className="p-2 rounded-xl bg-sky-50 text-sky-600"><Users size={16} /></span>
@@ -97,13 +97,13 @@ export default function ThuChiDashboard({
 
       {/* 2 Biểu đồ */}
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-rose-50 pb-3">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs">
+          <div className="flex items-center justify-between border-b border-emerald-50 pb-3">
             <div>
               <h3 className="text-sm font-black text-slate-800">Cơ cấu mức phí theo danh mục khoản thu</h3>
               <p className="text-[11px] text-slate-400">Học phí, Tiền ăn, Bán trú, Ngoại khóa...</p>
             </div>
-            <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">{schoolYear}</span>
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">{schoolYear}</span>
           </div>
 
           <div className="mt-4 h-64">
@@ -139,9 +139,9 @@ export default function ThuChiDashboard({
           </div>
         </div>
 
-        <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs flex flex-col justify-between">
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-rose-50 pb-3">
+            <div className="flex items-center justify-between border-b border-emerald-50 pb-3">
               <div>
                 <h3 className="text-sm font-black text-slate-800">Tỷ lệ thu hồi công nợ</h3>
                 <p className="text-[11px] text-slate-400">Trạng thái hoàn thành học phí</p>
@@ -195,7 +195,7 @@ export default function ThuChiDashboard({
 
           <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-center">
             {invoiceStatusChartData.map((item, idx) => (
-              <div key={idx} className="rounded-2xl bg-rose-50/30 p-2">
+              <div key={idx} className="rounded-2xl bg-emerald-50/30 p-2">
                 <div className="flex items-center justify-center gap-1.5">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="text-[10px] font-semibold text-slate-600">{item.name}</span>
@@ -208,8 +208,8 @@ export default function ThuChiDashboard({
       </div>
 
       {/* Bảng Hóa đơn */}
-      <div className="rounded-3xl border border-rose-100 bg-white overflow-hidden shadow-xs">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-rose-100 p-4">
+      <div className="rounded-3xl border border-emerald-100 bg-white overflow-hidden shadow-xs">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-100 p-4">
           <div>
             <h3 className="text-sm font-black text-slate-800">Hóa đơn phát hành gần đây</h3>
             <p className="text-[11px] text-slate-400">Các đợt thu học phí mầm non</p>
@@ -223,7 +223,7 @@ export default function ThuChiDashboard({
             </button>
             <button
               onClick={() => { setInvoiceStatusFilter('DEBT'); setInvoicePage(1); }}
-              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${invoiceStatusFilter === 'DEBT' ? 'bg-white text-rose-600 shadow-xs' : 'text-slate-500'}`}
+              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${invoiceStatusFilter === 'DEBT' ? 'bg-white text-emerald-600 shadow-xs' : 'text-slate-500'}`}
             >
               Còn nợ
             </button>
@@ -239,7 +239,7 @@ export default function ThuChiDashboard({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-rose-100 bg-rose-50/20 text-slate-500 text-[10px] uppercase">
+              <tr className="border-b border-emerald-100 bg-emerald-50/20 text-slate-500 text-[10px] uppercase">
                 <th className="p-3.5">Mã HĐ</th>
                 <th className="p-3.5">Học sinh</th>
                 <th className="p-3.5">Tổng tiền</th>
@@ -248,10 +248,10 @@ export default function ThuChiDashboard({
                 <th className="p-3.5 text-center">Chi tiết</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-rose-50">
+            <tbody className="divide-y divide-emerald-50">
               {paginatedInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-rose-50/20 transition">
-                  <td className="p-3.5 font-bold text-rose-600">{inv.invoiceNumber}</td>
+                <tr key={inv.id} className="hover:bg-emerald-50/20 transition">
+                  <td className="p-3.5 font-bold text-emerald-600">{inv.invoiceNumber}</td>
                   <td className="p-3.5 font-semibold text-slate-800">{(inv as any).studentName || inv.childId || 'Học sinh'}</td>
                   <td className="p-3.5 font-bold text-slate-800">{money(inv.totalAmount)} đ</td>
                   <td className="p-3.5 text-emerald-600 font-bold">{money(inv.paidAmount)} đ</td>
@@ -278,7 +278,7 @@ export default function ThuChiDashboard({
           </table>
         </div>
 
-        <div className="p-3 border-t border-rose-100 flex justify-end">
+        <div className="p-3 border-t border-emerald-100 flex justify-end">
           <Pagination
             currentPage={invoicePage}
             pageSize={8}

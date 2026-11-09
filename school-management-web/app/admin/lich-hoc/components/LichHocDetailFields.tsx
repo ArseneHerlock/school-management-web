@@ -38,7 +38,7 @@ export default function LichHocDetailFields({
               onChange={() =>
                 setForm((p: any) => ({ ...p, isSchoolWide: true, classId: "" }))
               }
-              className="text-rose-600 focus:ring-rose-500"
+              className="text-emerald-600 focus:ring-emerald-500"
             />
             <span>Toàn trường</span>
           </label>
@@ -53,7 +53,7 @@ export default function LichHocDetailFields({
                   classId: classes[0]?.id || "",
                 }))
               }
-              className="text-rose-600 focus:ring-rose-500"
+              className="text-emerald-600 focus:ring-emerald-500"
             />
             <span>Theo từng lớp</span>
           </label>
@@ -64,7 +64,7 @@ export default function LichHocDetailFields({
             onChange={(e) =>
               setForm((p: any) => ({ ...p, classId: e.target.value }))
             }
-            className="mt-2 w-full rounded-xl border border-rose-200 p-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-rose-400"
+            className="mt-2 w-full rounded-xl border border-emerald-200 p-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-emerald-400"
           >
             {classes.map((c) => (
               <option key={c.id} value={c.id}>
@@ -84,7 +84,7 @@ export default function LichHocDetailFields({
             onChange={(e) =>
               setForm((p: any) => ({ ...p, date: e.target.value }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs font-bold text-slate-800 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs font-bold text-slate-800 outline-none focus:border-emerald-400"
           />
         </div>
         <div>
@@ -95,7 +95,7 @@ export default function LichHocDetailFields({
             onChange={(e) =>
               setForm((p: any) => ({ ...p, startTime: e.target.value }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs font-bold text-slate-800 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs font-bold text-slate-800 outline-none focus:border-emerald-400"
           />
         </div>
         <div>
@@ -106,7 +106,7 @@ export default function LichHocDetailFields({
             onChange={(e) =>
               setForm((p: any) => ({ ...p, endTime: e.target.value }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs font-bold text-slate-800 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs font-bold text-slate-800 outline-none focus:border-emerald-400"
           />
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function LichHocDetailFields({
             onChange={(e) =>
               setForm((p: any) => ({ ...p, type: Number(e.target.value) }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-emerald-400"
           >
             {SCHEDULE_TYPES.map((item) => (
               <option key={item.value} value={item.value}>
@@ -141,7 +141,7 @@ export default function LichHocDetailFields({
               setForm((p: any) => ({ ...p, location: e.target.value }))
             }
             placeholder="VD: Phòng Nghệ thuật A201, Sân cỏ..."
-            className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
           />
         </div>
       </div>
@@ -157,7 +157,7 @@ export default function LichHocDetailFields({
             setForm((p: any) => ({ ...p, teacherName: e.target.value }))
           }
           placeholder="VD: Cô Nguyễn Thị Hoa..."
-          className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+          className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
         />
       </div>
 
@@ -170,7 +170,7 @@ export default function LichHocDetailFields({
             setForm((p: any) => ({ ...p, description: e.target.value }))
           }
           placeholder="Ghi chú chi tiết về bài học, mục tiêu hoặc chuẩn bị đạo cụ..."
-          className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+          className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
         />
       </div>
     </>

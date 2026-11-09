@@ -37,11 +37,7 @@ export function NhanSuHeader({
     <div className="space-y-5">
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="admin-eyebrow">NHÂN SỰ & TÀI KHOẢN</p>
           <h1 className="admin-title">Quản lý nhân sự</h1>
-          <p className="admin-subtitle">
-            Hồ sơ giáo viên/nhân sự, tài khoản đăng nhập và phân công lớp.
-          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={onRefresh} className="admin-btn admin-btn-secondary">

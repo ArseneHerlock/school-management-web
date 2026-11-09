@@ -6,6 +6,7 @@ import { StudentPickupItem } from './types';
 export function useTeacherPickup() {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [currentClassName, setCurrentClassName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [students, setStudents] = useState<StudentPickupItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -28,9 +29,11 @@ export function useTeacherPickup() {
 
         if (cls && cls.length > 0) {
           setClasses(cls);
-          const teacherClassId = (teacherCtx?.cls as any)?.id || (teacherCtx?.cls as any)?.Id;
-          const defaultClassId = teacherClassId || cls[0].id;
-          setSelectedClassId(defaultClassId);
+          const teacherClass = teacherCtx?.cls || cls[0];
+          const teacherClassId = (teacherClass as any)?.id || (teacherClass as any)?.Id || cls[0].id;
+          const teacherClassName = (teacherClass as any)?.tenLop || (teacherClass as any)?.TenLop || cls[0].tenLop || 'Lớp Mầm 1';
+          setSelectedClassId(teacherClassId);
+          setCurrentClassName(teacherClassName);
         }
       } catch (err) {
         console.error('Lỗi khởi tạo lớp học:', err);
@@ -155,7 +158,7 @@ export function useTeacherPickup() {
   return {
     classes,
     selectedClassId,
-    setSelectedClassId,
+    currentClassName,
     loading,
     students,
     searchQuery,

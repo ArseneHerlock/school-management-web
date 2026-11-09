@@ -4,6 +4,7 @@ import React from 'react';
 import { useYearEndAwards } from './useYearEndAwards';
 import { YearEndAwardsHeader } from './components/YearEndAwardsHeader';
 import { YearEndAwardsActionBar } from './components/YearEndAwardsActionBar';
+import { YearEndAwardsCriteriaTable } from './components/YearEndAwardsCriteriaTable';
 import { YearEndAwardsTable } from './components/YearEndAwardsTable';
 
 export default function TeacherYearEndAwardsPage() {
@@ -27,7 +28,7 @@ export default function TeacherYearEndAwardsPage() {
   } = useYearEndAwards();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 font-sans">
+    <div className="mx-auto max-w-6xl space-y-6 font-sans max-w-full min-w-0 overflow-x-hidden">
       <YearEndAwardsHeader
         classNameStr={className}
         schoolYear={schoolYear}
@@ -45,6 +46,8 @@ export default function TeacherYearEndAwardsPage() {
         onApplyAllSuggestions={handleApplyAllSuggestions}
         onSave={handleSave}
       />
+
+      <YearEndAwardsCriteriaTable />
 
       <YearEndAwardsTable
         loading={loading}

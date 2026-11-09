@@ -57,24 +57,13 @@ export default function LoadingScreen({
     <div
       className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${t.bg} backdrop-blur-md transition-all duration-300`}
     >
-      <div className="flex flex-col items-center p-8 text-center max-w-sm rounded-3xl bg-white/95 shadow-2xl border border-slate-100">
-        <div className="relative mb-5 flex items-center justify-center">
-          <div className="absolute h-16 w-16 rounded-full animate-ping opacity-25 bg-current text-slate-400" />
-          <Loader2 className={`h-12 w-12 animate-spin ${t.spinner}`} />
+      <div className="flex flex-col items-center p-6 text-center max-w-xs rounded-3xl bg-white/95 shadow-xl border border-slate-100">
+        <div className="relative mb-4 flex items-center justify-center">
+          <Loader2 className={`h-10 w-10 animate-spin ${t.spinner}`} />
         </div>
-        <h3 className={`text-base font-black tracking-tight ${t.title}`}>
+        <h3 className={`text-sm font-black tracking-tight ${t.title}`}>
           {message}
         </h3>
-        {subMessage && (
-          <p className="mt-2 text-xs font-medium text-slate-500 leading-relaxed">
-            {subMessage}
-          </p>
-        )}
-        <div
-          className={`mt-5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${t.badge}`}
-        >
-          School Management
-        </div>
       </div>
     </div>
   );

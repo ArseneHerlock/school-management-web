@@ -15,21 +15,13 @@ export function AlbumHeader({
   onOpenPostModal,
 }: AlbumHeaderProps) {
   return (
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-orange-100 bg-white p-6 shadow-xs">
+    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-orange-100 bg-white p-5 sm:p-6 shadow-xs">
       <div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-            NHẬT KÝ HÌNH ẢNH LỚP HỌC
-          </span>
-          <span className="text-xs text-slate-400 font-bold">
-            · Lớp {classNameTitle}
-          </span>
-        </div>
-        <h1 className="text-2xl font-black text-slate-800 mt-1">
-          Album Hoạt Động & Sinh Hoạt Lớp
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+          Album ảnh {classNameTitle ? `— ${classNameTitle}` : ''}
         </h1>
-        <p className="mt-1 text-xs text-slate-500">
-          Tổng số: <b>{totalPhotos}</b> hình ảnh hoạt động. Giáo viên có thể đăng tải và quản lý album theo chủ đề, tháng và từng học sinh.
+        <p className="mt-0.5 text-xs text-slate-500 font-medium">
+          {totalPhotos} hình ảnh
         </p>
       </div>
 

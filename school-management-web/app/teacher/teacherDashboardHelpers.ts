@@ -1,6 +1,26 @@
 import { Student } from '@/services/students';
 import { AttendanceRecord } from '@/services/attendance';
+import { currentUser } from '@/services/client';
 import { SafetyItem } from './components/dashboard/ClassroomSafetyWatchlist';
+
+export function getInitialDashboardCache() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const user = currentUser();
+    if (!user?.id) return null;
+    const storedStaff = sessionStorage.getItem(`teacher_staff_${user.id}`);
+    const storedClass = sessionStorage.getItem(`teacher_class_${user.id}`);
+    const storedStudents = sessionStorage.getItem(`teacher_students_${user.id}`);
+    if (storedClass) {
+      return {
+        staff: storedStaff ? JSON.parse(storedStaff) : null,
+        classItem: JSON.parse(storedClass),
+        students: storedStudents ? JSON.parse(storedStudents) : [],
+      };
+    }
+  } catch {}
+  return null;
+}
 
 export function buildTeachersInClass(staffMember: any, matchedClass: any) {
   const teachersInClass: Array<{ id: string; name: string; role: string; avatar: string; color?: string }> = [];

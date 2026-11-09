@@ -39,7 +39,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning className="overflow-x-hidden antialiased font-sans bg-[#fff7f7] text-slate-800">
+      <body
+        suppressHydrationWarning
+        className="overflow-x-hidden antialiased font-sans bg-[#fff7f7] text-slate-800"
+      >
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

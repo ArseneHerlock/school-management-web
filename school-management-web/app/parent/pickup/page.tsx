@@ -155,15 +155,15 @@ export default function ParentPickupPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12 font-sans">
       {/* Banner đầu trang */}
-      <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 text-teal-100 text-xs font-semibold uppercase tracking-wider mb-2">
+          <div className="flex items-center gap-2 text-indigo-100 text-xs font-semibold uppercase tracking-wider mb-2">
             <ShieldCheck size={16} /> An toàn đón trả bé
           </div>
           <h1 className="text-2xl sm:text-3xl font-black">
             Quản lý người đón bé {child?.hoTen || ''}
           </h1>
-          <p className="text-teal-50 text-sm mt-1 max-w-2xl">
+          <p className="text-indigo-50 text-sm mt-1 max-w-2xl">
             Quản lý thông tin Bố Mẹ và những người thân được gia đình ủy quyền đón bé.
             Nhà trường đối chiếu thông tin và số điện thoại trước khi bàn giao trẻ nhằm đảm bảo an toàn tuyệt đối.
           </p>
@@ -174,14 +174,14 @@ export default function ParentPickupPage() {
       </div>
 
       {toastMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
+        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+            <CheckCircle2 size={18} className="text-indigo-600 shrink-0" />
             <span>{toastMessage}</span>
           </div>
           <button
             onClick={() => setToastMessage(null)}
-            className="text-emerald-500 hover:text-emerald-700 cursor-pointer font-bold"
+            className="text-indigo-500 hover:text-indigo-700 cursor-pointer font-bold"
           >
             ✕
           </button>
@@ -194,7 +194,7 @@ export default function ParentPickupPage() {
           onClick={() => setActiveSubTab('REGISTERED')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition cursor-pointer ${
             activeSubTab === 'REGISTERED'
-              ? 'bg-teal-600 text-white shadow-xs'
+              ? 'bg-indigo-600 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-100'
           }`}
         >
@@ -205,7 +205,7 @@ export default function ParentPickupPage() {
           onClick={() => setActiveSubTab('DAILY')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition relative cursor-pointer ${
             activeSubTab === 'DAILY'
-              ? 'bg-teal-600 text-white shadow-xs'
+              ? 'bg-indigo-600 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-100'
           }`}
         >
@@ -219,7 +219,7 @@ export default function ParentPickupPage() {
           onClick={() => setActiveSubTab('HISTORY')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition cursor-pointer ${
             activeSubTab === 'HISTORY'
-              ? 'bg-teal-600 text-white shadow-xs'
+              ? 'bg-indigo-600 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-100'
           }`}
         >

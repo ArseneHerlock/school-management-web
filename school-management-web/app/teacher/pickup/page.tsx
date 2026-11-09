@@ -8,9 +8,7 @@ import { PickupList } from './components/PickupList';
 
 export default function TeacherPickupPage() {
   const {
-    classes,
-    selectedClassId,
-    setSelectedClassId,
+    currentClassName,
     loading,
     students,
     searchQuery,
@@ -30,9 +28,7 @@ export default function TeacherPickupPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16 font-sans">
       <PickupHeader
-        classes={classes}
-        selectedClassId={selectedClassId}
-        setSelectedClassId={setSelectedClassId}
+        className={currentClassName}
         toastMessage={toastMessage}
         setToastMessage={setToastMessage}
       />

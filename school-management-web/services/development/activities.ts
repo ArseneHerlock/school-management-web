@@ -80,3 +80,16 @@ export async function unlinkActivityCriterion(
 ): Promise<void> {
   await api.delete("activity", `/api/activities/${id}/criteria/${criterionId}`);
 }
+
+export async function getActivitiesWithCriteria(params?: {
+  classId?: string;
+  scope?: "SCHOOL" | "CLASS";
+}): Promise<any[]> {
+  const q = new URLSearchParams();
+  if (params?.classId) q.set("classId", params.classId);
+  if (params?.scope) q.set("scope", params.scope);
+  const qs = q.toString() ? `?${q.toString()}` : "";
+  return await api
+    .get<any[]>("development", `/api/development/activities-with-criteria${qs}`)
+    .catch(() => []);
+}

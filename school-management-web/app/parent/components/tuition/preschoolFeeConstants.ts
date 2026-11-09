@@ -1,0 +1,52 @@
+export const PRESCHOOL_FEE_BREAKDOWN = [
+  {
+    name: 'Học phí mầm non (Miễn 100% theo Nghị định 238/2025/NĐ-CP)',
+    amount: 0,
+    originalAmount: 160000,
+    chargeType: 1,
+    isMeal: false,
+    isExempt: true,
+  },
+  {
+    name: 'Tiền ăn bán trú mầm non (Bữa chính trưa + bữa xế - 45.000 đ/ngày)',
+    amount: 900000,
+    originalAmount: 900000,
+    chargeType: 2,
+    isMeal: true,
+  },
+  {
+    name: 'Dịch vụ chăm sóc & nuôi dưỡng bán trú (Theo Nghị quyết HĐND)',
+    amount: 350000,
+    originalAmount: 350000,
+    chargeType: 4,
+    isMeal: false,
+  },
+  {
+    name: 'Dịch vụ nước uống tinh khiết cho học sinh',
+    amount: 20000,
+    originalAmount: 20000,
+    chargeType: 6,
+    isMeal: false,
+  },
+  {
+    name: 'Học phẩm & học liệu phục vụ học tập, vui chơi trải nghiệm',
+    amount: 30000,
+    originalAmount: 30000,
+    chargeType: 6,
+    isMeal: false,
+  },
+  {
+    name: 'Trang thiết bị, đồ dùng bán trú cá nhân (chăn, gối, khay ăn)',
+    amount: 20000,
+    originalAmount: 20000,
+    chargeType: 6,
+    isMeal: false,
+  },
+  {
+    name: 'Hoạt động làm quen tiếng Anh & Ngoại khóa năng khiếu (Tự nguyện)',
+    amount: 200000,
+    originalAmount: 200000,
+    chargeType: 5,
+    isMeal: false,
+  },
+];

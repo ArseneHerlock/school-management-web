@@ -49,12 +49,6 @@ export default function TeacherScheduleEvaluationModal({
       maxWidth="4xl"
     >
       <div className="space-y-4 font-sans">
-        {/* Helper guide */}
-        <div className="rounded-xl bg-orange-50/70 border border-orange-200 p-3 text-xs text-orange-900 flex items-start justify-between gap-3">
-          <p>
-            <strong>Hướng dẫn:</strong> Bấm vào nút chỉ số để chuyển đổi trạng thái (<span className="text-emerald-700 font-bold">Đạt</span> / <span className="text-rose-700 font-bold">Cần rèn luyện</span>). Nhập nhận xét cho từng bé; những nhận xét này sẽ được <strong>phụ huynh theo dõi trực tiếp</strong> trên lịch và <strong>tự động tổng hợp vào Sổ Bé Ngoan</strong> cuối tháng.
-          </p>
-        </div>
 
         <div className="rounded-2xl border border-orange-100 bg-white overflow-hidden shadow-2xs">
           <div className="overflow-x-auto max-h-[460px]">

@@ -9,21 +9,13 @@ interface MedicationHeaderProps {
 
 export function MedicationHeader({ classNameStr, loading, onRefresh }: MedicationHeaderProps) {
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-orange-100 text-orange-600">
-            <Pill size={18} />
-          </span>
-          <span className="text-xs font-bold uppercase tracking-wider text-orange-600">
-            Sổ Dặn Thuốc & Quản Lý Y Tế Lớp
-          </span>
-        </div>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-800">
-          Theo Dõi Uống Thuốc & Sức Khỏe - {classNameStr}
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+          Dặn thuốc & Y tế {classNameStr ? `— ${classNameStr}` : ''}
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Ngày {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+          {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
         </p>
       </div>
 

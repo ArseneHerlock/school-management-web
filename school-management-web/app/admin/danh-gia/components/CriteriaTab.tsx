@@ -36,7 +36,7 @@ export default function CriteriaTab({
           </div>
           <button
             onClick={onOpenCreateDomain}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-50 transition"
           >
             <Plus size={15} /> Thêm Lĩnh vực
           </button>
@@ -44,10 +44,10 @@ export default function CriteriaTab({
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {domains.map((dom) => (
-            <div key={dom.id} className="rounded-2xl border border-rose-100 bg-white p-4 shadow-xs">
+            <div key={dom.id} className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                     {dom.code}
                   </span>
                   <h4 className="mt-1 text-sm font-bold text-slate-800">{dom.name}</h4>
@@ -63,7 +63,7 @@ export default function CriteriaTab({
                   </button>
                   <button
                     onClick={() => onDeleteDomain(dom)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600"
+                    className="p-1.5 text-slate-400 hover:text-emerald-600"
                     title="Xóa"
                   >
                     <Trash2 size={13} />
@@ -73,7 +73,7 @@ export default function CriteriaTab({
             </div>
           ))}
           {domains.length === 0 && (
-            <div className="col-span-full rounded-2xl border border-dashed border-rose-200 bg-white p-8 text-center text-xs text-slate-400">
+            <div className="col-span-full rounded-2xl border border-dashed border-emerald-200 bg-white p-8 text-center text-xs text-slate-400">
               Chưa có lĩnh vực phát triển nào
             </div>
           )}
@@ -89,17 +89,17 @@ export default function CriteriaTab({
           </div>
           <button
             onClick={onOpenCreateCriterion}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:from-rose-600 hover:to-rose-700 transition"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:from-emerald-600 hover:to-emerald-700 transition"
           >
             <Plus size={15} /> Thêm Tiêu chí
           </button>
         </div>
 
-        <div className="rounded-3xl border border-rose-100 bg-white overflow-hidden shadow-xs">
+        <div className="rounded-3xl border border-emerald-100 bg-white overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-rose-100 bg-rose-50/30 text-slate-500 uppercase text-[10px] tracking-wider">
+                <tr className="border-b border-emerald-100 bg-emerald-50/30 text-slate-500 uppercase text-[10px] tracking-wider">
                   <th className="p-3.5">Mã</th>
                   <th className="p-3.5">Tên tiêu chí</th>
                   <th className="p-3.5">Lĩnh vực</th>
@@ -108,12 +108,12 @@ export default function CriteriaTab({
                   <th className="p-3.5 text-center">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-rose-50">
+              <tbody className="divide-y divide-emerald-50">
                 {criteria.map((c) => {
                   const dom = domains.find((d) => d.id === c.developmentDomainId)
                   return (
-                    <tr key={c.id} className="hover:bg-rose-50/20 transition">
-                      <td className="p-3.5 font-bold text-rose-600">{c.code}</td>
+                    <tr key={c.id} className="hover:bg-emerald-50/20 transition">
+                      <td className="p-3.5 font-bold text-emerald-600">{c.code}</td>
                       <td className="p-3.5 font-semibold text-slate-800">{c.name}</td>
                       <td className="p-3.5 text-slate-500">
                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
@@ -139,7 +139,7 @@ export default function CriteriaTab({
                           </button>
                           <button
                             onClick={() => onDeleteCriterion(c)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600"
+                            className="p-1.5 text-slate-400 hover:text-emerald-600"
                             title="Xóa"
                           >
                             <Trash2 size={13} />

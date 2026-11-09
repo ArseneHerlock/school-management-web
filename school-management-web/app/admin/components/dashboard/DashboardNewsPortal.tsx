@@ -17,14 +17,14 @@ export function DashboardNewsPortal({
       <section className="admin-card p-5 lg:col-span-2">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <Newspaper size={18} className="text-rose-600" />
+            <Newspaper size={18} className="text-emerald-600" />
             <h2 className="font-black text-slate-800">
               Thông báo & Bản tin Nội bộ
             </h2>
           </div>
           <button
             onClick={() => onNavigate("tin-tuc")}
-            className="text-xs font-bold text-rose-600 hover:text-rose-700 cursor-pointer"
+            className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
           >
             Xem tất cả <ArrowRight size={13} className="inline" />
           </button>
@@ -36,7 +36,7 @@ export function DashboardNewsPortal({
               <div
                 key={n.id || i}
                 onClick={() => onNavigate("tin-tuc")}
-                className="rounded-2xl border border-slate-200/80 p-3.5 hover:bg-rose-50/40 hover:border-rose-300 transition cursor-pointer"
+                className="rounded-2xl border border-slate-200/80 p-3.5 hover:bg-emerald-50/40 hover:border-emerald-300 transition cursor-pointer"
               >
                 <p className="text-xs font-black text-slate-800 line-clamp-2">
                   {n.tieuDe || n.title || "Thông báo từ Ban Giám Hiệu"}
@@ -57,40 +57,37 @@ export function DashboardNewsPortal({
         <div>
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
             <ShieldCheck size={18} className="text-emerald-600" />
-            <h2 className="font-black text-slate-800">
-              Cổng Chức Năng Ban Giám Hiệu
+            <h2 className="font-bold text-slate-800">
+              Cổng chức năng quản trị
             </h2>
           </div>
-          <p className="mt-2 text-xs text-slate-500">
-            Phân quyền chuẩn: Giám sát toàn trường, chỉ đạo chuyên môn, xuất báo cáo Bộ/Sở.
-          </p>
         </div>
 
         <div className="mt-4 space-y-2">
           <button
             onClick={() => onNavigate("hoc-sinh")}
-            className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
+            className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer"
           >
             <span>Hồ sơ & Phân lớp Học sinh</span>
             <ArrowRight size={13} />
           </button>
           <button
             onClick={() => onNavigate("phu-huynh")}
-            className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
+            className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer"
           >
             <span>Quản lý Tài khoản Phụ huynh</span>
             <ArrowRight size={13} />
           </button>
           <button
             onClick={() => onNavigate("nhan-su")}
-            className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
+            className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer"
           >
             <span>Hồ sơ Giáo viên & Nhân sự</span>
             <ArrowRight size={13} />
           </button>
           <button
             onClick={() => onNavigate("bao-cao")}
-            className="w-full flex items-center justify-between rounded-xl bg-rose-600 p-2.5 text-xs font-bold text-white hover:bg-rose-700 transition cursor-pointer"
+            className="w-full flex items-center justify-between rounded-xl bg-emerald-600 p-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer"
           >
             <span>Trung tâm Báo cáo Tổng hợp</span>
             <ArrowRight size={13} />

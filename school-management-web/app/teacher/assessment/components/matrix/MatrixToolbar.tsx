@@ -16,6 +16,8 @@ interface MatrixToolbarProps {
   dirtyCount: number;
   isSaving: boolean;
   onOpenConfirmSave: () => void;
+  viewMode?: 'cards' | 'grid';
+  onViewModeChange?: (mode: 'cards' | 'grid') => void;
 }
 
 export function MatrixToolbar({
@@ -30,13 +32,15 @@ export function MatrixToolbar({
   dirtyCount,
   isSaving,
   onOpenConfirmSave,
+  viewMode = 'cards',
+  onViewModeChange,
 }: MatrixToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 sm:gap-4 bg-white p-3.5 sm:p-5 rounded-3xl border border-slate-200 shadow-2xs max-w-full min-w-0">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 sm:pb-4 min-w-0">
+    <div className="flex flex-col gap-3 sm:gap-4 bg-white p-3 sm:p-5 rounded-3xl border border-slate-200 shadow-2xs max-w-full min-w-0">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-slate-100 pb-3 min-w-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
           <label className="text-xs font-black text-slate-700 whitespace-nowrap">
-            Hoạt động giáo dục trên lớp:
+            Hoạt động giáo dục:
           </label>
           <select
             value={selectedActivityId}
@@ -52,34 +56,65 @@ export function MatrixToolbar({
           </select>
         </div>
 
-        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={onToggleAuditMode}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold border transition cursor-pointer text-center truncate ${
-              auditMode
-                ? 'border-indigo-400 bg-indigo-50 text-indigo-700'
-                : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            {auditMode ? '✓ Đang bật kiểm toán' : 'Chế độ kiểm toán'}
-          </button>
+        {/* View Mode Toggle + Action Buttons */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto flex-wrap">
+          {/* Segmented Switch */}
+          {onViewModeChange && (
+            <div className="inline-flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200/80 shrink-0">
+              <button
+                type="button"
+                onClick={() => onViewModeChange('cards')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'cards'
+                    ? 'bg-white text-orange-600 shadow-2xs font-black'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Từng trẻ
+              </button>
+              <button
+                type="button"
+                onClick={() => onViewModeChange('grid')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-orange-600 shadow-2xs font-black'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Ma trận
+              </button>
+            </div>
+          )}
 
-          <button
-            onClick={onOpenConfirmSave}
-            disabled={dirtyCount === 0 || isSaving}
-            className={`flex items-center justify-center gap-1.5 px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black transition shadow-xs cursor-pointer truncate ${
-              dirtyCount > 0
-                ? 'bg-orange-500 hover:bg-orange-600 text-white animate-pulse'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            {isSaving ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : (
-              <Save size={13} />
-            )}
-            <span>Lưu ({dirtyCount})</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={onToggleAuditMode}
+              className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold border transition cursor-pointer text-center whitespace-nowrap ${
+                auditMode
+                  ? 'border-indigo-400 bg-indigo-50 text-indigo-700'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {auditMode ? '✓ Kiểm toán' : 'Kiểm toán'}
+            </button>
+
+            <button
+              onClick={onOpenConfirmSave}
+              disabled={dirtyCount === 0 || isSaving}
+              className={`flex items-center justify-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black transition shadow-xs cursor-pointer whitespace-nowrap ${
+                dirtyCount > 0
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white animate-pulse'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              {isSaving ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Save size={13} />
+              )}
+              <span>Lưu ({dirtyCount})</span>
+            </button>
+          </div>
         </div>
       </div>
 

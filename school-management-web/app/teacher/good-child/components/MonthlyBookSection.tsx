@@ -35,14 +35,14 @@ export function MonthlyBookSection({
   onToggleDeliverAllClass,
 }: MonthlyBookSectionProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200">
+    <div className="space-y-3 min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
         <div>
           <h3 className="text-sm font-extrabold text-slate-900">
             Sổ Bé Ngoan Tháng {month}/{year}
           </h3>
-          <p className="text-xs text-slate-500">
-            Bé tích lũy đủ 4 hoa nhỏ của 4 tuần sẽ tự động nhận huy hiệu Ngôi Sao Bé Ngoan Tháng.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Bé đạt đủ 4 phiếu hoa của 4 tuần sẽ tự động nhận huy hiệu Ngôi Sao Bé Ngoan Tháng.
           </p>
         </div>
 
@@ -50,10 +50,10 @@ export function MonthlyBookSection({
           type="button"
           disabled={deliveringClass}
           onClick={onToggleDeliverAllClass}
-          className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer shadow-xs disabled:opacity-50 ${
+          className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer shadow-xs disabled:opacity-50 shrink-0 ${
             classDelivery.isDelivered
               ? 'bg-rose-600 hover:bg-rose-700 text-white'
-              : 'bg-slate-800 hover:bg-slate-900 text-white'
+              : 'bg-orange-600 hover:bg-orange-700 text-white'
           }`}
         >
           {deliveringClass ? (
@@ -65,8 +65,8 @@ export function MonthlyBookSection({
           )}
           <span>
             {classDelivery.isDelivered
-              ? `Thu Hồi Sổ Cả Lớp (${classDelivery.deliveredCount}/${classDelivery.totalCount || childrenList.length})`
-              : `Bàn Giao Sổ Cả Lớp Cho PH (${classDelivery.deliveredCount}/${classDelivery.totalCount || childrenList.length})`}
+              ? `Thu hồi sổ cả lớp (${classDelivery.deliveredCount}/${classDelivery.totalCount || childrenList.length})`
+              : `Bàn giao sổ cho PH (${classDelivery.deliveredCount}/${classDelivery.totalCount || childrenList.length})`}
           </span>
         </button>
       </div>

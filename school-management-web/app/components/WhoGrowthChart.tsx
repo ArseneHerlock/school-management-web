@@ -103,24 +103,24 @@ export const WhoGrowthChart: React.FC<WhoGrowthChartProps> = ({
       <WhoSummaryCards lanDo={lanDo} />
 
       {/* Tabs chuyển đổi & Xu hướng */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-2xs">
+        <div className="grid grid-cols-3 sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
           {(["HAZ", "WAZ", "WHZ"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black transition cursor-pointer ${
+              className={`px-2 sm:px-3 py-1.5 rounded-lg text-xs font-black transition cursor-pointer text-center truncate ${
                 activeTab === tab
                   ? "bg-white text-indigo-700 shadow-2xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               {tab === "HAZ"
-                ? "Chiều cao (HAZ)"
+                ? "Chiều cao"
                 : tab === "WAZ"
-                ? "Cân nặng (WAZ)"
-                : "Thể trạng (WHZ)"}
+                ? "Cân nặng"
+                : "Thể trạng"}
             </button>
           ))}
         </div>

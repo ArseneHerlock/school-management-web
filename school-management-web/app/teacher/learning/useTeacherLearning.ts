@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { api, getMediaUrl, currentUser } from '@/services';
+import { api, currentUser } from '@/services';
 import { getActivities, ActivityItem } from '@/services/development';
 import { loadLiveTeacherChildren, loadLiveTeacherContext, Child } from '../data';
 import { PRODUCT_CATEGORIES, LearningProductItem } from './types';
@@ -10,11 +10,8 @@ import {
   calculateChildMonths,
   filterChildProducts,
 } from './learningFilters';
-import {
-  uploadProductMediaFile,
-  submitChildProduct,
-  deleteChildProduct,
-} from './productActions';
+import { deleteChildProduct } from './productActions';
+import { useProductForm } from './useProductForm';
 
 export function useTeacherLearning() {
   const [children, setChildren] = useState<Child[]>([]);
@@ -30,20 +27,6 @@ export function useTeacherLearning() {
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('ALL');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('Tất cả');
 
-  const [showAddForm, setShowAddForm] = useState<boolean>(false);
-  const [productTitle, setProductTitle] = useState<string>('');
-  const [productActivityId, setProductActivityId] = useState<string>('');
-  const [productActivityTitle, setProductActivityTitle] = useState<string>('');
-  const [productDate, setProductDate] = useState<string>(() =>
-    new Date().toISOString().slice(0, 10)
-  );
-  const [productCategory, setProductCategory] = useState<string>(PRODUCT_CATEGORIES[0]);
-  const [productComment, setProductComment] = useState<string>('');
-  const [uploadedMediaId, setUploadedMediaId] = useState<string>('');
-  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string>('');
-  const [uploadingFile, setUploadingFile] = useState<boolean>(false);
-  const [submittingProduct, setSubmittingProduct] = useState<boolean>(false);
-
   const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
 
@@ -54,6 +37,13 @@ export function useTeacherLearning() {
 
   const activeUserId = currentUser()?.id;
   const isUserAdmin = currentUser()?.roles.includes('ADMIN');
+
+  const refreshProducts = async () => {
+    const productsRes = await api.get<any>('learning', '/api/learning/products?pageSize=100').catch(() => []);
+    setAllProducts(Array.isArray(productsRes) ? productsRes : (productsRes as any)?.items || []);
+  };
+
+  const form = useProductForm(selectedChild, classInfo, setToast, refreshProducts);
 
   const loadData = async () => {
     setLoading(true);
@@ -67,15 +57,7 @@ export function useTeacherLearning() {
       setClassInfo(context.cls);
       setChildren(loadedChildren || []);
       setActivities(actRes?.items || []);
-
-      const productsRes = await api
-        .get<any>('learning', '/api/learning/products?pageSize=100')
-        .catch(() => []);
-      const itemsList = Array.isArray(productsRes)
-        ? productsRes
-        : (productsRes as any)?.items || [];
-
-      setAllProducts(itemsList);
+      await refreshProducts();
     } catch (err: any) {
       setToast({
         text: err instanceof Error ? err.message : 'Không thể tải dữ liệu sản phẩm học tập.',
@@ -166,76 +148,6 @@ export function useTeacherLearning() {
     setProductSearch('');
   };
 
-  const handleFileUpload = async (file: File) => {
-    setUploadingFile(true);
-    setToast(null);
-    try {
-      const res = await uploadProductMediaFile(file);
-      setUploadedMediaId(res.mediaId);
-      setMediaPreviewUrl(res.previewUrl);
-      setToast({ text: `Đã tải lên tệp "${file.name}" thành công!`, type: 'success' });
-    } catch (err: any) {
-      setToast({
-        text: err instanceof Error ? err.message : 'Tải tệp lên thất bại. Vui lòng thử lại.',
-        type: 'error',
-      });
-    } finally {
-      setUploadingFile(false);
-    }
-  };
-
-  const handleSubmitProduct = async () => {
-    if (!selectedChild) return;
-    const targetChildId = selectedChild.apiId || String(selectedChild.id);
-
-    if (!productTitle.trim()) {
-      setToast({ text: 'Vui lòng nhập tiêu đề sản phẩm của bé.', type: 'error' });
-      return;
-    }
-    if (!uploadedMediaId) {
-      setToast({ text: 'Vui lòng chọn hình ảnh hoặc video sản phẩm của bé.', type: 'error' });
-      return;
-    }
-
-    setSubmittingProduct(true);
-    try {
-      await submitChildProduct({
-        targetChildId,
-        childName: selectedChild.name,
-        classInfo,
-        productTitle,
-        productActivityId,
-        productActivityTitle,
-        productCategory,
-        productDate,
-        productComment,
-        uploadedMediaId,
-      });
-
-      setProductTitle('');
-      setProductActivityId('');
-      setProductActivityTitle('');
-      setProductComment('');
-      setUploadedMediaId('');
-      setMediaPreviewUrl('');
-      setShowAddForm(false);
-      setToast({
-        text: `Đã lưu sản phẩm "${productTitle.trim()}" cho bé ${selectedChild.name} thành công!`,
-        type: 'success',
-      });
-
-      const productsRes = await api.get<any>('learning', '/api/learning/products?pageSize=100').catch(() => []);
-      setAllProducts(Array.isArray(productsRes) ? productsRes : (productsRes as any)?.items || []);
-    } catch (err: any) {
-      setToast({
-        text: err instanceof Error ? err.message : 'Không thể lưu sản phẩm của bé.',
-        type: 'error',
-      });
-    } finally {
-      setSubmittingProduct(false);
-    }
-  };
-
   const handleDeleteProduct = async (productId: string, createdBy?: string) => {
     if (!isUserAdmin && createdBy && activeUserId && createdBy !== activeUserId) {
       setToast({
@@ -277,24 +189,7 @@ export function useTeacherLearning() {
     setSelectedMonthFilter,
     selectedCategoryFilter,
     setSelectedCategoryFilter,
-    showAddForm,
-    setShowAddForm,
-    productTitle,
-    setProductTitle,
-    productActivityId,
-    setProductActivityId,
-    productDate,
-    setProductDate,
-    productCategory,
-    setProductCategory,
-    productComment,
-    setProductComment,
-    uploadedMediaId,
-    setUploadedMediaId,
-    mediaPreviewUrl,
-    setMediaPreviewUrl,
-    uploadingFile,
-    submittingProduct,
+    ...form,
     lightboxOpen,
     setLightboxOpen,
     lightboxIndex,
@@ -313,10 +208,7 @@ export function useTeacherLearning() {
     filteredChildProducts,
     hasChildActiveFilter,
     resetChildFilters,
-    handleFileUpload,
-    handleSubmitProduct,
     handleDeleteProduct,
-    setProductActivityTitle,
     className: classInfo?.tenLop || 'Lớp của cô',
   };
 }

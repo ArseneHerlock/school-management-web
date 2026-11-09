@@ -32,7 +32,7 @@ export function SpecialConditionModal({
               Khai Báo Bệnh Lý & Dị Ứng Của Bé
             </h3>
             <p className="text-xs text-slate-500">
-              Thông tin này giúp giáo viên và nhà bếp lưu ý chăm sóc an toàn.
+              Thông tin này giúp giáo viên lưu ý chăm sóc an toàn.
             </p>
           </div>
           <button
@@ -120,7 +120,7 @@ export function SpecialConditionModal({
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Kiêng cữ ăn uống (Báo cho nhà bếp)
+              Kiêng cữ dị ứng (nếu có)
             </label>
             <input
               type="text"

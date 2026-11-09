@@ -64,8 +64,8 @@ export default function DanhGiaMatrix({
       : 0;
 
   return (
-    <div className="rounded-3xl border border-rose-100 bg-white p-5 shadow-xs space-y-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between pb-4 border-b border-rose-100">
+    <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-xs space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between pb-4 border-b border-emerald-100">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-extrabold text-slate-800">
@@ -84,7 +84,7 @@ export default function DanhGiaMatrix({
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-500 font-medium">Lớp:</span>
             <select
-              className="rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-rose-400"
+              className="rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-emerald-400"
               value={adminMatrixClassId}
               onChange={(e) => setAdminMatrixClassId(e.target.value)}
             >
@@ -99,7 +99,7 @@ export default function DanhGiaMatrix({
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-500 font-medium">Hoạt động:</span>
             <select
-              className="rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-rose-400"
+              className="rounded-xl border border-emerald-200/80 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-emerald-400"
               value={adminMatrixActivityId}
               onChange={(e) => setAdminMatrixActivityId(e.target.value)}
             >
@@ -125,7 +125,7 @@ export default function DanhGiaMatrix({
 
       <div className="overflow-x-auto max-h-[500px]">
         <table className="w-full text-left text-xs border-collapse">
-          <thead className="sticky top-0 z-10 bg-rose-50/90 backdrop-blur-xs border-b border-rose-100 text-slate-700">
+          <thead className="sticky top-0 z-10 bg-emerald-50/90 backdrop-blur-xs border-b border-emerald-100 text-slate-700">
             <tr>
               <th className="p-3 min-w-[160px] font-bold text-slate-800">
                 Học sinh
@@ -148,7 +148,7 @@ export default function DanhGiaMatrix({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-rose-50">
+          <tbody className="divide-y divide-emerald-50">
             {adminMatrixStudents.map((st) => (
               <MatrixTableRow
                 key={st.id}
@@ -173,12 +173,12 @@ export default function DanhGiaMatrix({
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-rose-50">
+      <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-emerald-50">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1 font-bold text-emerald-700">
             <CheckCircle2 size={14} /> Đạt tiêu chí
           </span>
-          <span className="flex items-center gap-1 font-bold text-rose-700">
+          <span className="flex items-center gap-1 font-bold text-emerald-700">
             <XCircle size={14} /> Cần rèn luyện thêm
           </span>
           <span className="flex items-center gap-1 text-slate-400 font-medium">

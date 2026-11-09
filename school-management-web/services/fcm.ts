@@ -11,7 +11,7 @@ export interface FCMClusterMeta {
 export const FCM_CLUSTERS: Record<number, FCMClusterMeta> = {
   1: {
     id: 1,
-    name: "Nhóm 1: Phát triển Vượt trội / Toàn diện",
+    name: "Cụm 1: Phát triển Toàn diện / Vượt trội",
     tag: "Vượt trội",
     color: "#8b5cf6", // purple
     badgeBg: "bg-purple-100",
@@ -21,7 +21,7 @@ export const FCM_CLUSTERS: Record<number, FCMClusterMeta> = {
   },
   2: {
     id: 2,
-    name: "Nhóm 2: Phát triển Đạt chuẩn / Khá",
+    name: "Cụm 2: Phát triển Đạt chuẩn / Vững vàng",
     tag: "Đạt chuẩn",
     color: "#10b981", // emerald
     badgeBg: "bg-emerald-100",
@@ -31,23 +31,23 @@ export const FCM_CLUSTERS: Record<number, FCMClusterMeta> = {
   },
   3: {
     id: 3,
-    name: "Nhóm 3: Đang phát triển / Cần rèn luyện",
-    tag: "Mức khá",
+    name: "Cụm 3: Phát triển Không đồng đều / Lệch pha",
+    tag: "Lệch pha",
     color: "#f59e0b", // amber
     badgeBg: "bg-amber-100",
     badgeText: "text-amber-800",
     description:
-      "Bé có nhận thức khá tốt nhưng kỹ năng cảm xúc, ngôn ngữ hoặc sự kiên nhẫn khi chơi cùng bạn còn chậm hơn một chút.",
+      "Bé phát triển tốt ở một số lĩnh vực nhưng có sự chênh lệch ở các kỹ năng khác.",
   },
   4: {
     id: 4,
-    name: "Nhóm 4: Cần cô giáo & gia đình đồng hành",
-    tag: "Cần đồng hành",
+    name: "Cụm 4: Có nguy cơ chậm phát triển / Cần hỗ trợ can thiệp sớm",
+    tag: "Cần hỗ trợ",
     color: "#ef4444", // rose
     badgeBg: "bg-rose-100",
     badgeText: "text-rose-700",
     description:
-      "Bé cần cô giáo và gia đình dành thêm thời gian quan tâm, trò chuyện để thúc đẩy ngôn ngữ, vận động và tự phục vụ.",
+      "Bé có điểm phát triển thấp hơn ngưỡng chuẩn ở nhiều lĩnh vực, cần sự theo dõi và phối hợp chặt chẽ.",
   },
 };
 

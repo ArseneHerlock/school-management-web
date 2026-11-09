@@ -1,7 +1,7 @@
 export const CATEGORIES = [
   'Hoạt động học tập',
   'Vui chơi ngoài trời',
-  'Bữa ăn - Giấc ngủ',
+  'Nề nếp - Giấc ngủ',
   'Sự kiện & Dã ngoại',
 ]
 

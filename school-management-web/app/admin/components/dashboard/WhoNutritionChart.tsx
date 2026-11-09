@@ -70,9 +70,9 @@ export function WhoNutritionChart({
       shortLabel: "Nhẹ cân nặng",
       value: whoNutrition.severelyUnderweightCount || 0,
       color: "#f43f5e",
-      dotColor: "bg-rose-500",
-      textColor: "text-rose-700",
-      borderColor: "border-rose-100 bg-rose-50/50",
+      dotColor: "bg-emerald-500",
+      textColor: "text-emerald-700",
+      borderColor: "border-emerald-100 bg-emerald-50/50",
     },
     {
       id: "GAY_COM",
@@ -136,27 +136,24 @@ export function WhoNutritionChart({
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
               <HeartPulse size={16} />
             </span>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-black text-slate-800 truncate">
-                Thể trạng Trẻ em (9 Chuẩn WHO)
+              <h3 className="text-sm sm:text-base font-bold text-slate-800 truncate">
+                Thể trạng học sinh (WHO)
               </h3>
-              <p className="text-[11px] text-slate-400 truncate">
-                Đánh giá toàn diện 9 phân loại thể trạng & dinh dưỡng WHO 2006
-              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-            <span className="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-black text-rose-700 border border-rose-200">
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700 border border-emerald-200">
               {whoNutrition.measuredCount}/{whoNutrition.totalStudents} trẻ đã đo
             </span>
             {onNavigate && (
               <button
                 onClick={() => onNavigate("suc-khoe")}
-                className="text-xs font-bold text-rose-700 hover:text-rose-800 flex items-center gap-0.5 cursor-pointer"
+                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-0.5 cursor-pointer"
               >
                 <span className="hidden sm:inline">Sổ y tế</span>
                 <ArrowRight size={13} />
@@ -248,7 +245,7 @@ export function WhoNutritionChart({
 
       <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
         <span className="flex items-center gap-1 text-slate-600 font-medium truncate">
-          <Info size={12} className="text-rose-500 shrink-0" />
+          <Info size={12} className="text-emerald-500 shrink-0" />
           <span>Theo 9 phân loại chuẩn lứa tuổi & giới tính WHO 2006</span>
         </span>
         <span className="font-bold text-emerald-700 shrink-0 ml-2">

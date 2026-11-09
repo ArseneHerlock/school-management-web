@@ -19,6 +19,7 @@ export async function getAssessments(params?: {
   criterionId?: string;
   page?: number;
   pageSize?: number;
+  useBatch?: boolean;
 }): Promise<{
   total: number;
   page: number;
@@ -28,8 +29,8 @@ export async function getAssessments(params?: {
   const trimmedChildId = toValidGuidOrNull(params?.childId);
   const trimmedCriterionId = toValidGuidOrNull(params?.criterionId);
 
-  // Khi tải danh sách đánh giá toàn trường (hoặc pageSize lớn), ưu tiên gọi batch endpoint để lấy đầy đủ dữ liệu 8 tháng
-  if (!trimmedChildId && !trimmedCriterionId) {
+  // Chỉ khi gọi chỉ định useBatch=true (báo cáo trường hoặc xuất file) mới gọi endpoint tải toàn bộ 25,000 bản ghi 8 tháng
+  if (params?.useBatch && !trimmedChildId && !trimmedCriterionId) {
     try {
       const batchRes = await api.get<any>("development", "/api/development/assessment-batch");
       const batchItems = Array.isArray(batchRes?.items) ? batchRes.items : (Array.isArray(batchRes) ? batchRes : []);

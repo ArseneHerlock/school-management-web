@@ -9,6 +9,7 @@ import FatherInfoSection from "./components/FatherInfoSection";
 import MotherInfoSection from "./components/MotherInfoSection";
 import HouseholdInfoSection from "./components/HouseholdInfoSection";
 import ChildInfoSection from "./components/ChildInfoSection";
+import IntakeSurveySection from "./components/IntakeSurveySection";
 
 export default function DangKyNhapHocPage() {
   const {
@@ -17,6 +18,7 @@ export default function DangKyNhapHocPage() {
     submitted,
     errorMsg,
     handleChange,
+    handleSurveyChange,
     handleSubmit,
     resetForm,
   } = useAdmissionForm();
@@ -82,6 +84,12 @@ export default function DangKyNhapHocPage() {
 
           {/* 4. Thông tin Trẻ mầm non */}
           <ChildInfoSection form={form} onChange={handleChange} />
+
+          {/* 5. Khảo sát năng lực ban đầu 31 chỉ số theo 5 lĩnh vực */}
+          <IntakeSurveySection
+            surveyValues={form.khaoSatDauVao || {}}
+            onSurveyChange={handleSurveyChange}
+          />
 
           {/* Cam kết của phụ huynh học sinh */}
           <div className="pt-2 text-xs text-slate-700 space-y-2 italic">

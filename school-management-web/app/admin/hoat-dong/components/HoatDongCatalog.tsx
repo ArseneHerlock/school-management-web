@@ -17,6 +17,9 @@ import { ActivityItem, CriterionItem } from "@/services/development";
 interface HoatDongCatalogProps {
   activities: ActivityItem[];
   criteria: CriterionItem[];
+  classesList?: any[];
+  classFilter: string;
+  setClassFilter: (val: string) => void;
   search: string;
   setSearch: (val: string) => void;
   statusFilter: "ALL" | "ACTIVE" | "INACTIVE";
@@ -31,6 +34,9 @@ interface HoatDongCatalogProps {
 export default function HoatDongCatalog({
   activities,
   criteria,
+  classesList = [],
+  classFilter,
+  setClassFilter,
   search,
   setSearch,
   statusFilter,
@@ -45,6 +51,8 @@ export default function HoatDongCatalog({
     return activities.filter((act) => {
       if (statusFilter === "ACTIVE" && !act.isActive) return false;
       if (statusFilter === "INACTIVE" && act.isActive) return false;
+      if (classFilter === "SCHOOL" && act.scope === "CLASS") return false;
+      if (classFilter !== "ALL" && classFilter !== "SCHOOL" && act.classId !== classFilter) return false;
       if (search) {
         const q = search.toLowerCase();
         if (
@@ -55,12 +63,12 @@ export default function HoatDongCatalog({
       }
       return true;
     });
-  }, [activities, statusFilter, search]);
+  }, [activities, statusFilter, classFilter, search]);
 
   return (
     <div className="space-y-4">
       {/* Search & Status filter */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-3xl border border-rose-100 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-3xl border border-emerald-100 shadow-xs">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search
@@ -72,9 +80,24 @@ export default function HoatDongCatalog({
               placeholder="Tìm tên hoạt động, mã..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="rounded-2xl border border-rose-200 py-1.5 pl-9 pr-3 text-xs outline-none focus:border-rose-400 w-52 sm:w-64"
+              className="rounded-2xl border border-emerald-200 py-1.5 pl-9 pr-3 text-xs outline-none focus:border-emerald-400 w-52 sm:w-64"
             />
           </div>
+
+          {/* Lọc theo lớp học / toàn trường */}
+          <select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            className="rounded-2xl border border-emerald-200 py-1.5 px-3 text-xs outline-none focus:border-emerald-400 font-bold text-slate-700 bg-white cursor-pointer"
+          >
+            <option value="ALL">Toàn bộ hoạt động (Trường & Lớp)</option>
+            <option value="SCHOOL">Chỉ hoạt động của trường</option>
+            {classesList.map((c: any) => (
+              <option key={c.id} value={c.id}>
+                Lớp: {c.name || c.tenLop}
+              </option>
+            ))}
+          </select>
 
           <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 text-xs">
             <button
@@ -101,7 +124,7 @@ export default function HoatDongCatalog({
               onClick={() => setStatusFilter("INACTIVE")}
               className={`rounded-lg px-2.5 py-1 font-bold ${
                 statusFilter === "INACTIVE"
-                  ? "bg-white shadow-xs text-rose-600"
+                  ? "bg-white shadow-xs text-emerald-600"
                   : "text-slate-500"
               }`}
             >
@@ -111,7 +134,7 @@ export default function HoatDongCatalog({
         </div>
 
         <span className="text-xs font-semibold text-slate-500">
-          Hiển thị: <b className="text-rose-600">{filtered.length}</b> hoạt động
+          Hiển thị: <b className="text-emerald-600">{filtered.length}</b> hoạt động
         </span>
       </div>
 
@@ -122,13 +145,27 @@ export default function HoatDongCatalog({
           return (
             <div
               key={act.id}
-              className="rounded-3xl border border-rose-100 bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition"
+              className="rounded-3xl border border-emerald-100 bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <span className="rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-black text-rose-600">
+                  <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">
                     {act.code}
                   </span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {act.scope === "CLASS" ? (
+                      <span className="rounded-md bg-purple-50 text-purple-700 px-2 py-0.5 text-[10px] font-bold border border-purple-200">
+                        Hoạt động lớp: {act.className || "Lớp riêng"}
+                      </span>
+                    ) : (
+                      <span className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-bold border border-blue-200">
+                        Hoạt động của trường
+                      </span>
+                    )}
+                    <span className="rounded-md bg-amber-50 text-amber-800 px-2 py-0.5 text-[10px] font-bold border border-amber-200">
+                      {act.domainName || "Thể chất"}
+                    </span>
+                  </div>
                   <button
                     onClick={() => onToggleActive(act)}
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
@@ -162,14 +199,14 @@ export default function HoatDongCatalog({
                 </div>
 
                 {/* Tiêu chí gắn liền */}
-                <div className="mt-3.5 pt-3 border-t border-rose-50">
+                <div className="mt-3.5 pt-3 border-t border-emerald-50">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <span className="font-bold text-slate-600">
                       Tiêu chí phát triển ({linkedCount})
                     </span>
                     <button
                       onClick={() => onOpenLinkModal(act)}
-                      className="text-[11px] font-bold text-rose-600 hover:underline flex items-center gap-1"
+                      className="text-[11px] font-bold text-emerald-600 hover:underline flex items-center gap-1"
                     >
                       <Tag size={11} /> Gắn tiêu chí
                     </button>
@@ -182,7 +219,7 @@ export default function HoatDongCatalog({
                       return (
                         <span
                           key={dc.id}
-                          className="rounded-lg bg-rose-50/60 px-2 py-0.5 text-[10px] font-semibold text-rose-700 truncate max-w-[140px]"
+                          className="rounded-lg bg-emerald-50/60 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 truncate max-w-[140px]"
                         >
                           {found?.name || "Tiêu chí"}
                         </span>
@@ -201,7 +238,7 @@ export default function HoatDongCatalog({
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                 <button
                   onClick={() => onOpenSchedule(act)}
-                  className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:from-rose-600 hover:to-amber-600 transition"
+                  className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-emerald-500 to-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:from-emerald-600 hover:to-amber-600 transition"
                 >
                   <CalendarPlus size={13} /> Lên lịch
                 </button>
@@ -215,7 +252,7 @@ export default function HoatDongCatalog({
                   </button>
                   <button
                     onClick={() => onDelete(act)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600"
+                    className="p-1.5 text-slate-400 hover:text-emerald-600"
                     title="Xóa"
                   >
                     <Trash2 size={13} />
@@ -227,7 +264,7 @@ export default function HoatDongCatalog({
         })}
 
         {filtered.length === 0 && (
-          <div className="col-span-full rounded-3xl border border-dashed border-rose-200 bg-white p-12 text-center text-slate-400">
+          <div className="col-span-full rounded-3xl border border-dashed border-emerald-200 bg-white p-12 text-center text-slate-400">
             <Sparkles size={36} className="mx-auto mb-2 text-slate-300" />
             <p className="font-bold">Chưa có hoạt động nào trong ngân hàng</p>
             <p className="text-xs text-slate-400 mt-1">

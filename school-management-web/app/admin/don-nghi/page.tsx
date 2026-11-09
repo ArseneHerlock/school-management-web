@@ -44,28 +44,25 @@ export default function DonNghiPage() {
     <section className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black">Đơn xin nghỉ</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Duyệt đơn nghỉ của phụ huynh và giáo viên từ LeaveService.
-          </p>
+          <h1 className="text-xl sm:text-2xl font-bold">Đơn xin nghỉ</h1>
         </div>
         <button
           onClick={load}
-          className="rounded-xl border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 transition-colors"
+          className="rounded-xl border border-emerald-200 p-2 text-emerald-600 hover:bg-emerald-50 transition-colors"
         >
           <RefreshCw size={17} />
         </button>
       </div>
 
       {msg && (
-        <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">
+        <div className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
           {msg}
         </div>
       )}
 
       <div className="card-frame overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-rose-50 text-left text-xs text-rose-700">
+          <thead className="bg-emerald-50 text-left text-xs text-emerald-700">
             <tr>
               <th className="p-3">Đối tượng</th>
               <th className="p-3">Từ</th>
@@ -75,7 +72,7 @@ export default function DonNghiPage() {
               <th className="p-3 text-right">Xử lý</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-rose-50">
+          <tbody className="divide-y divide-emerald-50">
             {loading ? (
               <tr>
                 <td colSpan={6} className="p-8 text-center text-slate-400">
@@ -112,7 +109,7 @@ export default function DonNghiPage() {
                       </button>
                       <button
                         onClick={() => void review(r.id, false)}
-                        className="rounded-lg bg-rose-50 p-2 text-rose-700 hover:bg-rose-100 transition-colors"
+                        className="rounded-lg bg-emerald-50 p-2 text-emerald-700 hover:bg-emerald-100 transition-colors"
                         title="Từ chối"
                       >
                         <X size={16} />

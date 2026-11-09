@@ -31,28 +31,28 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-4"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-3 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
           <div>
             <p className="admin-eyebrow">HỒ SƠ HỌC SINH</p>
-            <h2 className="text-xl font-black text-slate-900">{detail.tenHocSinh}</h2>
+            <h2 className="text-base sm:text-xl font-black text-slate-900">{detail.tenHocSinh}</h2>
           </div>
-          <button type="button" onClick={onClose} className="icon-btn">
+          <button type="button" onClick={onClose} className="icon-btn cursor-pointer">
             <X size={18} />
           </button>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3.5 sm:mt-5 grid gap-2 sm:gap-3 grid-cols-2">
           {detailFields.map(([label, value]) => (
-            <div key={label} className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs font-medium text-slate-400">{label}</p>
-              <p className="mt-1 font-semibold text-slate-800">{value}</p>
+            <div key={label} className="rounded-xl sm:rounded-2xl bg-slate-50 p-2.5 sm:p-3.5">
+              <p className="text-[10px] sm:text-xs font-medium text-slate-400">{label}</p>
+              <p className="mt-0.5 sm:mt-1 font-bold text-xs sm:text-sm text-slate-800 truncate">{value}</p>
             </div>
           ))}
         </div>
@@ -83,14 +83,14 @@ export const StudentCreateModal: React.FC<StudentCreateModalProps> = ({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-4">
-      <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-3 sm:p-4">
+      <div className="w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <div>
             <p className="admin-eyebrow">HỒ SƠ TRẺ</p>
-            <h2 className="text-xl font-black text-slate-900">Thêm học sinh</h2>
+            <h2 className="text-base sm:text-xl font-black text-slate-900">Thêm học sinh</h2>
           </div>
-          <button type="button" onClick={onClose} className="icon-btn">
+          <button type="button" onClick={onClose} className="icon-btn cursor-pointer">
             <X size={18} />
           </button>
         </div>

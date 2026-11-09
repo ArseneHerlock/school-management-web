@@ -25,6 +25,30 @@ interface AdminHeaderProps {
   mounted: boolean;
 }
 
+const SHORT_TITLES: Record<string, string> = {
+  "Hồ sơ tuyển sinh": "Tuyển sinh",
+  "Hồ sơ học sinh": "Học sinh",
+  "Sức khỏe & Dinh dưỡng": "Sức khỏe",
+  "Sổ theo dõi y tế đặc biệt": "Y tế đặc biệt",
+  "Hồ sơ phụ huynh": "Phụ huynh",
+  "Quản lý cán bộ - giáo viên": "Nhân sự",
+  "Giám sát chuyên cần toàn trường": "Chuyên cần",
+  "Thời khóa biểu & Lịch sinh hoạt": "Lịch sinh hoạt",
+  "Theo dõi thi đua bé ngoan": "Thi đua bé ngoan",
+  "Tổng kết & Khen thưởng cuối năm": "Khen thưởng",
+  "Đánh giá sự phát triển của trẻ": "Đánh giá trẻ",
+  "Phân loại năng lực trẻ": "Phân loại năng lực",
+  "Bản tin & Thông báo": "Bản tin",
+  "Sổ liên lạc & Danh bạ": "Sổ liên lạc",
+  "Quản lý thu chi học phí": "Thu chi",
+  "Báo cáo chuyên môn & Thống kê": "Báo cáo",
+  "Quản trị tài khoản & Phân quyền": "Tài khoản",
+  "Giám sát đơn xin nghỉ học": "Đơn nghỉ học",
+  "Danh sách lớp học": "Lớp học",
+  "Quản lý khối lớp": "Khối lớp",
+  "Kế hoạch & Sự kiện": "Kế hoạch sự kiện",
+};
+
 export default function AdminHeader({
   pageTitle,
   menu,
@@ -60,9 +84,9 @@ export default function AdminHeader({
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 sm:h-18 items-center gap-2 sm:gap-3 border-b border-rose-100 bg-white/95 px-3 sm:px-6 backdrop-blur-xl pt-[calc(env(safe-area-inset-top,0px)+2px)]">
+    <header className="sticky top-0 z-30 flex h-16 sm:h-18 items-center gap-2 sm:gap-3 border-b border-emerald-100 bg-white/95 px-3 sm:px-6 backdrop-blur-xl pt-[calc(env(safe-area-inset-top,0px)+2px)]">
       <button
-        className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 lg:hidden shrink-0 cursor-pointer"
+        className="rounded-xl p-2 text-slate-500 hover:bg-emerald-50 lg:hidden shrink-0 cursor-pointer"
         onClick={onOpenMobile}
       >
         <Menu size={20} />
@@ -72,7 +96,12 @@ export default function AdminHeader({
       <div className="flex items-center gap-1.5 sm:gap-2 text-xs min-w-0 flex-1 sm:flex-initial">
         <span className="hidden md:inline font-medium text-slate-400">Quản trị</span>
         <ChevronRight size={14} className="hidden md:inline text-slate-300" />
-        <span className="font-extrabold text-sm sm:text-base text-slate-800 truncate">{pageTitle}</span>
+        <span className="font-extrabold text-sm sm:text-base text-slate-800 truncate sm:hidden">
+          {SHORT_TITLES[pageTitle] || pageTitle}
+        </span>
+        <span className="font-extrabold text-sm sm:text-base text-slate-800 truncate hidden sm:inline">
+          {pageTitle}
+        </span>
       </div>
 
       {/* Search Bar */}
@@ -86,14 +115,14 @@ export default function AdminHeader({
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleSearchSubmit}
           placeholder="Tìm học sinh, lớp, giáo viên, phòng ban... Nhấn Enter"
-          className="h-10 w-full rounded-2xl border border-rose-200/80 bg-rose-50/30 pl-10 pr-4 text-xs font-medium text-slate-800 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-500/10"
+          className="h-10 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/30 pl-10 pr-4 text-xs font-medium text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-3 focus:ring-emerald-500/15"
         />
       </div>
 
       {/* Quick chat & notification */}
       <Link
         href="/admin/lien-lac"
-        className="rounded-xl p-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition"
+        className="rounded-xl p-2.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 transition"
         title="Tin nhắn trao đổi"
       >
         <MessageSquare size={18} />
@@ -101,38 +130,38 @@ export default function AdminHeader({
 
       <Link
         href="/admin/tin-tuc"
-        className="relative rounded-xl p-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition"
+        className="relative rounded-xl p-2.5 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 transition"
         title="Thông báo toàn trường"
       >
         <BellRing size={18} />
-        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white" />
+        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
       </Link>
 
       {/* User Dropdown */}
       <div className="relative">
         <button
           onClick={() => setUserOpen(!userOpen)}
-          className="flex items-center gap-2 rounded-2xl p-1.5 hover:bg-rose-50/50 transition cursor-pointer"
+          className="flex items-center gap-2 rounded-2xl p-1.5 hover:bg-emerald-50/60 transition cursor-pointer"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 text-xs font-bold text-white shadow-xs">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-xs font-bold text-white shadow-xs">
             {userInitials}
           </div>
           <span className="hidden text-left lg:block">
             <span className="block text-xs font-bold text-slate-800">
               {mounted ? user?.name || "Quản trị viên" : "Quản trị viên"}
             </span>
-            <span className="block text-[10px] text-rose-500 font-semibold">
+            <span className="block text-[10px] text-emerald-600 font-semibold">
               Quản trị viên
             </span>
           </span>
         </button>
 
         {userOpen && (
-          <div className="absolute right-0 top-12 w-52 rounded-2xl border border-rose-100 bg-white p-1.5 shadow-xl">
+          <div className="absolute right-0 top-12 w-52 rounded-2xl border border-emerald-100 bg-white p-1.5 shadow-xl">
             <Link
               href="/admin/nhan-su"
               onClick={() => setUserOpen(false)}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition"
             >
               <UserRound size={15} />
               Hồ sơ nhân sự
@@ -140,7 +169,7 @@ export default function AdminHeader({
             <Link
               href="/admin/tai-khoan"
               onClick={() => setUserOpen(false)}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition"
             >
               <UserCog size={15} />
               Quản lý tài khoản
@@ -151,7 +180,7 @@ export default function AdminHeader({
                 logout();
                 router.replace("/login");
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"
             >
               <LogOut size={15} />
               Đăng xuất

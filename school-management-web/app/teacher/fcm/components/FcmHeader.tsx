@@ -27,26 +27,11 @@ export function FcmHeader({
         </div>
       )}
 
-      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-orange-100 text-orange-700">
-              <Layers size={18} />
-            </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-700">
-              HỒ SƠ PHÂN CỤM & ĐẶC ĐIỂM HỌC SINH
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              <ShieldCheck size={12} />
-              Bàn giao từ Ban Giám Hiệu
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800">
-            Hồ Sơ Đặc Điểm Phân Cụm Học Sinh - {classNameStr}
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Phân loại năng lực trẻ {classNameStr ? `— ${classNameStr}` : ''}
           </h1>
-          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-            Kết quả phân loại đặc trưng của Ban Giám Hiệu bàn giao cho lớp đầu năm học. Cô giáo theo dõi đặc điểm 4 nhóm để có kế hoạch sư phạm phù hợp: giúp các bé nhóm 3, 4 khắc phục điểm còn yếu và giúp bé nhóm 1, 2 duy trì phát huy thế mạnh.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">

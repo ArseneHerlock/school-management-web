@@ -28,12 +28,12 @@ export const StaffDetailModal: React.FC<StaffDetailModalProps> = ({
   if (!selected) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-3xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-3 sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-auto rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-2xl">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <h2 className="text-xl font-black text-slate-800">Hồ sơ nhân sự</h2>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:text-slate-600">
-            <X size={20} />
+          <h2 className="text-base sm:text-xl font-black text-slate-800">Hồ sơ nhân sự</h2>
+          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:text-slate-600 cursor-pointer">
+            <X size={18} />
           </button>
         </div>
 
@@ -148,12 +148,12 @@ export const StaffCreateModal: React.FC<StaffCreateModalProps> = ({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-3xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-3 sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-auto rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-2xl">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <h2 className="text-xl font-black text-slate-800">Thêm nhân sự & cấp tài khoản</h2>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:text-slate-600">
-            <X size={20} />
+          <h2 className="text-base sm:text-xl font-black text-slate-800">Thêm nhân sự & cấp tài khoản</h2>
+          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:text-slate-600 cursor-pointer">
+            <X size={18} />
           </button>
         </div>
 

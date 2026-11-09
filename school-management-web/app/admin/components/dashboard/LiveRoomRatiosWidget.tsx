@@ -39,18 +39,15 @@ export const LiveRoomRatiosWidget: React.FC<LiveRoomRatiosWidgetProps> = ({
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
               <ShieldCheck size={16} />
             </span>
-            <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-800 truncate">
-              Định biên An toàn Trẻ / Giáo viên theo Phòng
+            <h2 className="text-sm sm:text-base font-bold text-slate-800 truncate">
+              Định biên Trẻ / Cô theo phòng
             </h2>
           </div>
-          <p className="mt-0.5 text-[11px] sm:text-xs text-slate-500 truncate">
-            Giám sát thời gian thực Trẻ/Cô theo Thông tư 19/2023 Bộ GD&ĐT
-          </p>
         </div>
 
         <button
           onClick={() => onNavigateClass()}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 transition self-start sm:self-auto cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition self-start sm:self-auto cursor-pointer shrink-0"
         >
           <span>Xem tất cả lớp học</span>
           <ArrowRight size={13} />
@@ -128,7 +125,7 @@ export const LiveRoomRatiosWidget: React.FC<LiveRoomRatiosWidgetProps> = ({
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate">
                         {room.roomName}
                       </p>
-                      <h3 className="text-xs sm:text-sm font-black text-slate-800 truncate group-hover:text-rose-600 transition">
+                      <h3 className="text-xs sm:text-sm font-black text-slate-800 truncate group-hover:text-emerald-600 transition">
                         {room.className}
                       </h3>
                       <p className="text-[10px] font-medium text-slate-500 truncate">{room.ageGroup}</p>

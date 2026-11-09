@@ -21,64 +21,50 @@ export function YearEndAwardSpotlight({
 
   if (isApproved) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-6 text-white shadow-lg">
-        <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-10">
-          <Trophy size={160} />
-        </div>
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur text-amber-200">
-              <Award size={32} />
-            </div>
-            <div>
-              <span className="inline-block rounded-full bg-white/25 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-white">
-                KHEN THƯỞNG CUỐI NĂM • ĐÃ PHÊ DUYỆT
-              </span>
-              <h3 className="mt-1 text-xl font-black sm:text-2xl">
-                Danh hiệu: {yearEndAward.AwardTitle || yearEndAward.awardTitle}
-              </h3>
-              <p className="mt-0.5 text-xs text-amber-100">
-                Năm học: {yearEndAward.SchoolYear || yearEndAward.schoolYear} | Mã Giấy Khen:{' '}
-                <span className="font-mono font-bold text-white">
-                  {yearEndAward.CertificateCode ||
-                    yearEndAward.certificateCode ||
-                    'GK-CHÍNH-THỨC'}
-                </span>
-              </p>
-            </div>
+      <div className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-500 to-orange-500 p-3.5 sm:p-4 text-white shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0 max-w-full">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0">
+            <Trophy size={20} />
           </div>
-          <button
-            onClick={onOpenCertModal}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs font-black text-amber-900 shadow-md hover:bg-amber-50 transition cursor-pointer"
-          >
-            <Award size={16} className="text-amber-600" />
-            Xem & Tải Giấy Khen Về Máy
-          </button>
+          <div className="min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-100">
+              Khen thưởng cuối năm học
+            </span>
+            <h3 className="text-sm sm:text-base font-extrabold truncate">
+              {yearEndAward.AwardTitle || yearEndAward.awardTitle}
+            </h3>
+            <p className="text-[11px] text-amber-100 mt-0.5">
+              Năm học {yearEndAward.SchoolYear || yearEndAward.schoolYear} • Mã:{' '}
+              <span className="font-mono font-bold text-white">
+                {yearEndAward.CertificateCode || yearEndAward.certificateCode || 'GK-CHÍNH-THỨC'}
+              </span>
+            </p>
+          </div>
         </div>
+        <button
+          onClick={onOpenCertModal}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-bold text-orange-900 shadow hover:bg-amber-50 transition cursor-pointer shrink-0"
+        >
+          <Award size={14} className="text-orange-600" />
+          <span>Xem giấy khen</span>
+        </button>
       </div>
     );
   }
 
   if (isSubmitted) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-sky-200 bg-gradient-to-r from-sky-50 via-indigo-50/70 to-amber-50/60 p-5 shadow-xs">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-sm">
-              <Award size={24} />
-            </div>
-            <div>
-              <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-sky-800">
-                <Clock size={11} /> ĐÃ TRÌNH BAN GIÁM HIỆU • CHỜ CẤP GIẤY KHEN
-              </span>
-              <h3 className="mt-1 text-base sm:text-lg font-black text-slate-800">
-                Danh hiệu đề xuất: {yearEndAward.AwardTitle || yearEndAward.awardTitle}
-              </h3>
-              <p className="mt-0.5 text-xs text-slate-600">
-                Năm học: {yearEndAward.SchoolYear || yearEndAward.schoolYear} • Cô giáo chủ nhiệm đã trình hồ sơ thi đua của bé lên Ban Giám Hiệu. Giấy khen điện tử sẽ mở ngay khi Ban Giám Hiệu phê duyệt.
-              </p>
-            </div>
-          </div>
+      <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-3 sm:p-3.5 text-slate-800 shadow-2xs flex items-center gap-3 min-w-0 max-w-full">
+        <div className="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+          <Clock size={16} />
+        </div>
+        <div className="min-w-0 text-xs">
+          <span className="font-bold text-sky-800 uppercase text-[10px]">
+            Hồ sơ khen thưởng đang chờ BGH phê duyệt
+          </span>
+          <p className="font-semibold text-slate-700 truncate">
+            Danh hiệu đề xuất: {yearEndAward.AwardTitle || yearEndAward.awardTitle}
+          </p>
         </div>
       </div>
     );

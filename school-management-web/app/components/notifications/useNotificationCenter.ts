@@ -19,6 +19,23 @@ import { NotificationCenterProps } from "./notificationTypes";
 
 const EMPTY_CHILDREN: ParentChildSummary[] = [];
 
+function getInitialNotifsCache(role: string) {
+  if (typeof window === "undefined") return null;
+  try {
+    const user = currentUser();
+    if (!user?.id) return null;
+    const stored = sessionStorage.getItem(`notif_cache_${user.id}_${role}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Giữ cache trong 180s (3 phút)
+      if (Date.now() - (parsed.timestamp || 0) < 180_000) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return null;
+}
+
 export function useNotificationCenter({
   role,
   childrenList = EMPTY_CHILDREN,
@@ -26,22 +43,32 @@ export function useNotificationCenter({
   onCountsChange,
 }: NotificationCenterProps) {
   const router = useRouter();
+  const initialCache = getInitialNotifsCache(role);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>(
+    initialCache?.list || []
+  );
   const [activeFilter, setActiveFilter] = useState<
     "all" | "urgent" | "activity" | "contact"
   >("all");
   const [toastAlerts, setToastAlerts] = useState<AppNotification[]>([]);
   const [liveConnected, setLiveConnected] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const initialLoadedRef = useRef(false);
+  const initialLoadedRef = useRef(Boolean(initialCache));
 
   const childrenListRef = useRef<ParentChildSummary[]>(childrenList);
   childrenListRef.current = childrenList;
 
   const onCountsChangeRef = useRef(onCountsChange);
   onCountsChangeRef.current = onCountsChange;
+
+  // Khởi tạo ngay badge counts từ cache (0ms)
+  useEffect(() => {
+    if (initialCache?.counts) {
+      onCountsChangeRef.current?.(initialCache.counts);
+    }
+  }, []);
 
   const inFlightRef = useRef(false);
   const pendingReloadRef = useRef(false);
@@ -74,12 +101,22 @@ export function useNotificationCenter({
           (n) => !n.read && n.category === "leave"
         ).length;
 
-        onCountsChangeRef.current?.({
+        const counts = {
           unreadTotal,
           urgentUnread,
           unreadMessages,
           pendingLeaves,
-        });
+        };
+
+        onCountsChangeRef.current?.(counts);
+
+        // Lưu SessionStorage để mở trang tiếp theo không phải quét lại
+        try {
+          sessionStorage.setItem(
+            `notif_cache_${user.id}_${role}`,
+            JSON.stringify({ list, counts, timestamp: Date.now() })
+          );
+        } catch {}
 
         const freshToasts = getUnseenToastNotifications(user.id, list, true);
         if (freshToasts.length > 0) {
@@ -111,9 +148,21 @@ export function useNotificationCenter({
   const loadNotificationsRef = useRef(loadNotifications);
   loadNotificationsRef.current = loadNotifications;
 
+  // TRÌ HOÃN (DEFER) QUÉT THÔNG BÁO:
+  // Không cho chuông thông báo bắn request đồng thời cùng lúc màn hình chính đang tải
   useEffect(() => {
-    void loadNotifications(false);
-  }, [loadNotifications]);
+    // Nếu là phụ huynh mà chưa có danh sách trẻ, chờ danh sách trẻ nạp xong
+    if (role === "parent" && childrenList.length === 0) {
+      return;
+    }
+
+    const delayMs = initialCache ? 1500 : 650;
+    const timer = setTimeout(() => {
+      void loadNotifications(true);
+    }, delayMs);
+
+    return () => clearTimeout(timer);
+  }, [loadNotifications, role, childrenList.length]);
 
   useEffect(() => {
     let eventSource: EventSource | null = null;

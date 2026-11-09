@@ -38,15 +38,6 @@ const ACTION_ITEMS: ActionItem[] = [
     badgeText: 'Đầu giờ',
   },
   {
-    icon: Soup,
-    label: 'Báo ăn bán trú',
-    sublabel: 'Chốt số lượng suất ăn nhà bếp',
-    path: '/teacher/attendance',
-    colorClass: 'text-amber-700',
-    bgClass: 'bg-amber-50 hover:bg-amber-100/90 border-amber-200/80',
-    badgeText: 'Trước 08:30',
-  },
-  {
     icon: Pill,
     label: 'Sổ dặn thuốc uống',
     sublabel: 'Đơn dặn thuốc phụ huynh gửi',

@@ -84,7 +84,6 @@ export default function StatCard({
           </span>
         )}
       </div>
-      {subtitle && <p className="mt-1 text-xs text-slate-400">{subtitle}</p>}
     </div>
   );
 }

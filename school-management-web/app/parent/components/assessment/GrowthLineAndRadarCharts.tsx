@@ -34,7 +34,11 @@ export function GrowthLineAndRadarCharts({
   radarScores,
 }: GrowthLineAndRadarChartsProps) {
   const getRadarVal = (vnKey: string, camelKey: string, fallback: number) => {
-    const val = radarScores?.[vnKey] ?? radarScores?.[camelKey] ?? fallback;
+    const val =
+      radarScores?.[vnKey] ??
+      radarScores?.[camelKey] ??
+      (vnKey === 'Thẩm mỹ' ? radarScores?.['Thẩm mĩ'] : undefined) ??
+      fallback;
     const num = Number(val);
     return num > 1 ? num / 100 : num;
   };

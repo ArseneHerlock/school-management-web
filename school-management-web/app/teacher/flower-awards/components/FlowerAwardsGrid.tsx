@@ -33,7 +33,7 @@ export function FlowerAwardsGrid({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 min-w-0 max-w-full">
       {studentsList.map((student) => {
         const studentRecord = getRecordForStudent(student.id);
         const smallFlowers = studentRecord?.dailyFlowerCount || 0;
@@ -51,45 +51,45 @@ export function FlowerAwardsGrid({
             key={student.id}
             type="button"
             onClick={() => onOpenAwardModal(student)}
-            className="group flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-5 text-left shadow-xs transition hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-md cursor-pointer"
+            className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-3 sm:p-3.5 text-left shadow-2xs transition hover:border-orange-400 hover:shadow-xs cursor-pointer"
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 font-black text-xs text-white shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 font-black text-xs text-white shadow-2xs shrink-0">
                     {initials}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm font-black text-slate-900 group-hover:text-rose-600 transition truncate">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-orange-600 transition truncate max-w-[140px]">
                       {student.tenHocSinh}
                     </h3>
                     <p className="text-[10px] text-slate-400">
-                      {studentRecord ? 'Đã tạo sổ tháng' : 'Chưa mở sổ tháng'}
+                      {studentRecord ? 'Đã tạo sổ tháng' : 'Chưa mở sổ'}
                     </p>
                   </div>
                 </div>
-                <ChevronRight size={17} className="text-slate-300 group-hover:text-rose-500" />
+                <ChevronRight size={15} className="text-slate-300 group-hover:text-orange-500 shrink-0" />
               </div>
 
               {/* Tiến độ hoa */}
-              <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-2xl bg-rose-50/80 p-2.5 border border-rose-100 flex items-center justify-between">
-                  <span className="font-bold text-rose-700 flex items-center gap-1">
-                    <span>🌹</span> Hoa nhỏ
+              <div className="mt-2.5 grid grid-cols-2 gap-1.5 text-xs">
+                <div className="rounded-xl bg-orange-50/70 p-2 border border-orange-100 flex items-center justify-between">
+                  <span className="font-bold text-orange-800 text-[11px] flex items-center gap-1">
+                    <span>🌸</span> Cờ tuần
                   </span>
-                  <strong className="text-rose-800 font-black">{smallFlowers} / 4</strong>
+                  <strong className="text-orange-900 font-black text-xs">{smallFlowers} / 4</strong>
                 </div>
 
-                <div className="rounded-2xl bg-amber-50/80 p-2.5 border border-amber-100 flex items-center justify-between">
-                  <span className="font-bold text-amber-700 flex items-center gap-1">
-                    <span>🏅</span> Hoa lớn
+                <div className="rounded-xl bg-amber-50/70 p-2 border border-amber-100 flex items-center justify-between">
+                  <span className="font-bold text-amber-800 text-[11px] flex items-center gap-1">
+                    <span>⭐</span> Sao tháng
                   </span>
-                  <strong className="text-amber-800 font-black">{bigFlowers}</strong>
+                  <strong className="text-amber-900 font-black text-xs">{bigFlowers}</strong>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 text-[10px] font-bold text-slate-400 text-center border-t border-slate-100 pt-2.5">
+            <div className="mt-2 text-[10px] font-bold text-orange-600 text-center border-t border-slate-100 pt-2">
               Bấm để xem lịch sử & tặng hoa
             </div>
           </button>

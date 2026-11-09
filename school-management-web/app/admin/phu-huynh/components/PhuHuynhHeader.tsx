@@ -41,11 +41,7 @@ export function PhuHuynhHeader({
     <div className="space-y-5">
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="admin-eyebrow">GIA ĐÌNH & LIÊN KẾT</p>
           <h1 className="admin-title">Quản lý phụ huynh</h1>
-          <p className="admin-subtitle">
-            Hồ sơ đầy đủ, tài khoản, con đang học, lớp hiện tại và giáo viên phụ trách lớp.
-          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={onRefresh} className="admin-btn admin-btn-secondary">

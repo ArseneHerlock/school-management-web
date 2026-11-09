@@ -27,6 +27,7 @@ import { getAccessToken, currentUser } from "@/services";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import AdminSidebar, { MenuItem } from "./components/layout/AdminSidebar";
 import AdminHeader from "./components/layout/AdminHeader";
+import AdminBottomNav from "./components/layout/AdminBottomNav";
 import "./admin.css";
 
 const ADMIN_MENU: MenuItem[] = [
@@ -48,7 +49,7 @@ const ADMIN_MENU: MenuItem[] = [
   { id: "fcm-overview", label: "Phân loại năng lực trẻ", icon: BarChart3, group: "Chuyên môn & Đánh giá" },
   { id: "tin-tuc", label: "Bản tin & Thông báo", icon: Bell, group: "Thông tin & Truyền thông" },
   { id: "lien-lac", label: "Sổ liên lạc & Danh bạ", icon: MessageCircle, group: "Thông tin & Truyền thông" },
-  { id: "thu-chi", label: "Quản lý học phí & Tiền ăn", icon: Receipt, group: "Tài chính - Kế toán" },
+  { id: "thu-chi", label: "Quản lý thu chi học phí", icon: Receipt, group: "Tài chính - Kế toán" },
   { id: "bao-cao", label: "Báo cáo chuyên môn & Thống kê", icon: BarChart3, group: "Quản trị hệ thống" },
   { id: "tai-khoan", label: "Quản trị tài khoản & Phân quyền", icon: KeyRound, group: "Quản trị hệ thống" },
   { id: "don-nghi", label: "Giám sát đơn xin nghỉ học", icon: ClipboardList, group: "Quản trị hệ thống" },
@@ -77,25 +78,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const activeUser = currentUser();
 
     if (!activeToken || !activeUser) {
-      router.replace("/login");
+      window.location.href = "/login";
       return;
     }
 
     if (!activeUser.roles.includes("ADMIN")) {
-      alert("Bạn không có quyền truy cập trang Quản trị viên!");
       if (activeUser.roles.includes("GIAO_VIEN")) {
-        router.replace("/teacher");
+        window.location.href = "/teacher";
       } else if (activeUser.roles.includes("PHU_HUYNH")) {
-        router.replace("/parent");
+        window.location.href = "/parent";
       } else {
-        router.replace("/login");
+        window.location.href = "/login";
       }
       return;
     }
 
     setUser(activeUser);
     setAuthorized(true);
-  }, [router]);
+  }, []);
 
   const activeId = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-[#fff7f7] font-sans antialiased text-slate-800 overflow-hidden">
+    <div className="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-slate-50 font-sans antialiased text-slate-800 lg:overflow-hidden">
       <AdminSidebar
         menu={ADMIN_MENU}
         groups={GROUPS}
@@ -127,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         mounted={mounted}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader
           pageTitle={pageTitle}
           menu={ADMIN_MENU}
@@ -136,10 +136,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           mounted={mounted}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 lg:pb-6 font-sans">
+        <main className="flex-1 lg:overflow-y-auto p-3 sm:p-5 md:p-6 pb-24 lg:pb-6 font-sans">
           <div className="max-w-7xl mx-auto w-full">{children}</div>
         </main>
       </div>
+
+      <AdminBottomNav
+        pathname={pathname}
+        onOpenMenu={() => setMobileOpen(true)}
+      />
     </div>
   );
 }

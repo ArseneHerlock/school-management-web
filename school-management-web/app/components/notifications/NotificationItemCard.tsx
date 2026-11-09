@@ -50,30 +50,30 @@ export default function NotificationItemCard({
       {/* Main Body */}
       <div className="min-w-0 flex-1">
         {/* Top Badges & Timestamp */}
-        <div className="flex items-center justify-between gap-1.5 mb-0.5">
-          <div className="flex items-center gap-1.5 truncate">
+        <div className="flex items-center justify-between gap-1.5 mb-1">
+          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden flex-wrap">
             {item.badgeText && (
               <span
-                className={`inline-flex items-center rounded-md border px-1.5 py-0.2 text-[9px] font-black uppercase tracking-tight shrink-0 ${styles.badge}`}
+                className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tight shrink-0 ${styles.badge}`}
               >
                 {item.badgeText}
               </span>
             )}
             {item.childName && (
-              <span className="inline-flex items-center rounded-md bg-slate-100/90 px-1.5 py-0.2 text-[10px] font-bold text-slate-700 truncate">
+              <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-slate-700 truncate max-w-[90px] sm:max-w-[140px]">
                 {item.childName}
               </span>
             )}
           </div>
-          <span className="text-[10px] font-medium text-slate-400 shrink-0 ml-1">
+          <span className="text-[10px] font-medium text-slate-400 shrink-0 whitespace-nowrap ml-auto">
             {formatRelativeTime(item.timestamp)}
           </span>
         </div>
 
         {/* Title */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-start gap-1.5">
           <p
-            className={`text-xs leading-snug truncate ${
+            className={`text-xs sm:text-[13px] leading-snug flex-1 line-clamp-2 ${
               item.read
                 ? "font-semibold text-slate-700"
                 : "font-black text-slate-900 group-hover:text-indigo-600"
@@ -83,7 +83,7 @@ export default function NotificationItemCard({
           </p>
           {!item.read && (
             <span
-              className={`h-1.5 w-1.5 rounded-full shrink-0 ${styles.dot}`}
+              className={`h-2 w-2 rounded-full shrink-0 mt-0.5 ${styles.dot}`}
               title="Chưa đọc"
             />
           )}

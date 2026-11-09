@@ -31,22 +31,11 @@ export function TeacherChildrenList({
   return (
     <div className="space-y-6">
       {/* Header Trang */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-3xl border border-orange-100 bg-white p-6 shadow-xs">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-3xl border border-orange-100 bg-white p-5 sm:p-6 shadow-xs">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
-              GÓC SẢN PHẨM HỌC TẬP CỦA BÉ
-            </span>
-            <span className="text-xs text-slate-400 font-semibold">
-              · Lớp {classNameTitle}
-            </span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-800 mt-1">
-            Sản Phẩm & Sáng Tạo Của Từng Bé
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Sản phẩm học tập {classNameTitle ? `— ${classNameTitle}` : ''}
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Chọn một học sinh trong danh sách lớp bên dưới để xem hoặc đăng hình ảnh, video sản phẩm của riêng bé đó.
-          </p>
         </div>
 
         <button

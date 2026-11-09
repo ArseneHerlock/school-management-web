@@ -108,7 +108,7 @@ export default function NewsListView({
   return (
     <div className="space-y-4 w-full max-w-7xl mx-auto font-sans px-2 sm:px-4 overflow-x-hidden">
       {/* Top Breadcrumb Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5 text-xs text-slate-500">
+      <div className="hidden sm:flex items-center justify-between gap-2 border-b border-slate-200 pb-2.5 text-xs text-slate-500">
         <div className="flex items-center gap-1.5 font-medium">
           <Home size={14} className="text-slate-600" />
           <span className="hover:text-blue-700 cursor-pointer">Trang chủ</span>

@@ -39,13 +39,10 @@ export const TuitionLedgerWidget: React.FC<TuitionLedgerWidgetProps> = ({
             <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-100 text-blue-700 shrink-0">
               <Wallet size={16} />
             </span>
-            <h2 className="text-base sm:text-lg font-black text-slate-800 truncate">
-              Sổ quỹ Học phí & Bán trú ({ledger.periodLabel})
+            <h2 className="text-base sm:text-lg font-bold text-slate-800 truncate">
+              Thu chi học phí & Bán trú ({ledger.periodLabel})
             </h2>
           </div>
-          <p className="mt-1 text-xs text-slate-500 truncate">
-            Giám sát tiền ăn bán trú, dịch vụ hỗ trợ giáo dục theo NQ HĐND (Miễn 100% học phí theo NĐ 238)
-          </p>
         </div>
 
         <button

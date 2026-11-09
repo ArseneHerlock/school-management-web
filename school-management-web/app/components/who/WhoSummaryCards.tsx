@@ -81,37 +81,46 @@ export default function WhoSummaryCards({ lanDo }: WhoSummaryCardsProps) {
   if (!lanDo) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
       {summaryCards.map((c) => {
         const Icon = c.icon;
         return (
           <div
             key={c.id}
-            className={`rounded-2xl border p-4 shadow-2xs ${c.theme.border}`}
+            className={`rounded-xl sm:rounded-2xl border p-2.5 sm:p-4 shadow-2xs ${c.theme.border} flex flex-col justify-between`}
           >
-            <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center justify-between gap-1">
+                <span
+                  className={`text-[9px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1 ${c.theme.title} truncate`}
+                >
+                  <Icon size={13} className="shrink-0" /> <span className="truncate">{c.label}</span>
+                </span>
+                <span
+                  className={`text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-0.5 rounded-full font-bold border shadow-2xs shrink-0 ${c.theme.badge} hidden sm:inline-block`}
+                >
+                  {c.conclusion}
+                </span>
+              </div>
+              <div className="mt-1.5 sm:mt-2 text-sm sm:text-2xl font-black text-slate-800 leading-tight">
+                {c.val || "--"}{" "}
+                {c.unit && (
+                  <span className="text-[10px] sm:text-sm font-semibold text-slate-500">
+                    {c.unit}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="mt-1 sm:hidden">
               <span
-                className={`text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${c.theme.title}`}
-              >
-                <Icon size={16} /> {c.label}
-              </span>
-              <span
-                className={`text-xs px-2.5 py-0.5 rounded-full font-bold border shadow-2xs ${c.theme.badge}`}
+                className={`text-[8px] px-1.5 py-0.2 rounded-full font-bold border ${c.theme.badge} truncate block text-center`}
               >
                 {c.conclusion}
               </span>
             </div>
-            <div className="mt-2 text-2xl font-black text-slate-800">
-              {c.val || "--"}{" "}
-              {c.unit && (
-                <span className="text-sm font-semibold text-slate-500">
-                  {c.unit}
-                </span>
-              )}
-            </div>
             {c.isExtreme && (
-              <p className="mt-1 text-[10px] text-rose-600 font-semibold italic">
-                * Cảnh báo: Số đo có dấu hiệu bất thường. Cần kiểm tra lại số đo.
+              <p className="mt-1 text-[9px] text-rose-600 font-semibold italic hidden sm:block">
+                * Số đo bất thường
               </p>
             )}
           </div>

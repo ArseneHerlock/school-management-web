@@ -38,6 +38,8 @@ export default function AssessmentDashboard({
   domainBreakdown = [],
 }: AssessmentDashboardProps) {
   const hasAssessmentData = generalStats.totalAssessed > 0
+  const hasAnyScore = radarChartData.some((d) => (d['Điểm phát triển (%)'] || d.score || 0) > 0)
+  const showEmptyRadar = radarChartData.length === 0 || (!hasAssessmentData && !hasAnyScore)
 
   return (
     <div className="space-y-6">
@@ -114,7 +116,7 @@ export default function AssessmentDashboard({
               </span>
             </div>
 
-            {!hasAssessmentData || radarChartData.length === 0 ? (
+            {showEmptyRadar ? (
               <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-rose-200 bg-rose-50/20 p-6 text-center text-xs text-slate-500">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-xs text-rose-500 mb-2 border border-rose-100">
                   <Sparkles size={20} />
@@ -127,25 +129,27 @@ export default function AssessmentDashboard({
             ) : (
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarChartData}>
+                  <RadarChart data={radarChartData} outerRadius="70%">
                     <PolarGrid stroke="#f1f5f9" />
                     <PolarAngleAxis
                       dataKey="domain"
-                      tick={{ fill: '#475569', fontSize: 10, fontWeight: 700 }}
+                      tick={{ fill: '#334155', fontSize: 11, fontWeight: 700 }}
                     />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: '#94a3b8' }} />
                     <Radar
                       name="Điểm phát triển (%)"
                       dataKey="Điểm phát triển (%)"
                       stroke="#f43f5e"
                       fill="#f43f5e"
-                      fillOpacity={0.4}
+                      fillOpacity={0.35}
                     />
                     <Tooltip
+                      formatter={(val: any) => [`${val}% Đạt chuẩn`, 'Mức độ phát triển']}
                       contentStyle={{
                         borderRadius: '1rem',
                         borderColor: '#e2e8f0',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                        fontSize: '11px',
                       }}
                     />
                   </RadarChart>

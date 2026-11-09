@@ -34,7 +34,7 @@ export function YearEndAwardsTable({
 
   return (
     <>
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden font-sans">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden font-sans max-w-full">
         {loading ? (
           <div className="py-16 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
             <Loader2 size={24} className="animate-spin text-orange-500" />
@@ -45,15 +45,15 @@ export function YearEndAwardsTable({
             Không có dữ liệu học sinh trong lớp.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700">
+          <div className="overflow-x-auto w-full max-w-full">
+            <table className="min-w-[760px] w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="py-3.5 px-4">Học sinh</th>
                   <th className="py-3.5 px-4">1. Chuyên cần cả năm</th>
                   <th className="py-3.5 px-4">2. Sức khỏe theo Quý (WHO)</th>
                   <th className="py-3.5 px-4">3. Hoạt động cả năm</th>
-                  <th className="py-3.5 px-4">Gợi ý tự động</th>
+                  <th className="py-3.5 px-4">Phân loại tiêu chuẩn</th>
                   <th className="py-3.5 px-4 min-w-[200px]">Danh hiệu chính thức</th>
                   <th className="py-3.5 px-4">Ghi chú</th>
                 </tr>
@@ -159,7 +159,7 @@ export function YearEndAwardsTable({
                         )}
                       </td>
 
-                      {/* Gợi ý tự động dựa trên 3 tiêu chí */}
+                      {/* Phân loại tiêu chuẩn dựa trên 3 tiêu chí */}
                       <td className="py-3.5 px-4">
                         <div className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded-lg text-[11px]">
                           <Award size={12} className="text-orange-500" />
@@ -171,7 +171,7 @@ export function YearEndAwardsTable({
                             onClick={() => onTitleChange(item.childId, item.suggestedTitle)}
                             className="block text-[10px] text-indigo-600 hover:text-indigo-800 hover:underline font-semibold mt-0.5 cursor-pointer"
                           >
-                            Áp dụng gợi ý
+                            Áp dụng tiêu chuẩn
                           </button>
                         )}
                       </td>

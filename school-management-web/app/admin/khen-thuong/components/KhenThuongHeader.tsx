@@ -28,20 +28,9 @@ export function KhenThuongHeader({
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">
-              BAN GIÁM HIỆU PHÊ DUYỆT
-            </span>
-            <span className="flex items-center gap-1 text-xs text-slate-500">
-              <Award size={13} className="text-amber-600" /> Khen thưởng tổng kết năm học
-            </span>
-          </div>
-          <h1 className="mt-1 text-2xl font-black text-slate-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
             Khen thưởng cuối năm
           </h1>
-          <p className="text-xs text-slate-500">
-            Thẩm định hồ sơ thi đua từ các lớp, phê duyệt danh hiệu, cấp phát Giấy Khen Điện Tử
-          </p>
         </div>
 
         {/* School Year & Semester Controls */}
@@ -81,7 +70,7 @@ export function KhenThuongHeader({
 
       {/* Messages */}
       {error && (
-        <div className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-bold text-rose-700">
+        <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-bold text-emerald-700">
           <AlertTriangle size={16} />
           {error}
         </div>

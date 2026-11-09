@@ -50,7 +50,7 @@ export default function ThuChiFees({
       )
     }
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
         <BookOpen size={10} /> Bắt buộc
       </span>
     )
@@ -59,11 +59,11 @@ export default function ThuChiFees({
   return (
     <div className="space-y-6">
       {/* Khung chính sách & Tiêu chuẩn học phí mầm non */}
-      <div className="rounded-3xl border border-rose-100 bg-gradient-to-r from-rose-50/70 via-amber-50/40 to-sky-50/50 p-5 shadow-xs">
+      <div className="rounded-3xl border border-emerald-100 bg-gradient-to-r from-emerald-50/70 via-amber-50/40 to-sky-50/50 p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="rounded-xl bg-rose-500 text-white p-1.5 shadow-sm">
+              <span className="rounded-xl bg-emerald-500 text-white p-1.5 shadow-sm">
                 <Info size={16} />
               </span>
               <h3 className="text-base font-black text-slate-800">
@@ -71,23 +71,19 @@ export default function ThuChiFees({
               </h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed max-w-4xl">
-              Danh mục các khoản thu được chuẩn hóa theo <strong>Nghị định số 238/2025/NĐ-CP</strong> (trẻ mầm non được <strong>miễn 100% học phí chính khóa</strong>) và <strong>Nghị quyết HĐND cấp tỉnh</strong> về danh mục dịch vụ phục vụ, hỗ trợ hoạt động giáo dục bán trú.
-              Bao gồm: <strong>Tiền ăn bán trú</strong> (hoàn trả khi nghỉ), <strong>Chăm sóc & nuôi dưỡng bán trú</strong>, <strong>Nước uống</strong>, <strong>Học phẩm</strong> và các <strong>Dịch vụ tự nguyện</strong> (Xe ô tô đưa đón, Ngoại khóa năng khiếu).
+              Danh mục các khoản thu được chuẩn hóa theo <strong>Nghị định số 238/2025/NĐ-CP</strong> (trẻ mầm non được <strong>miễn 100% học phí chính khóa</strong>) và <strong>Nghị quyết HĐND cấp tỉnh</strong> về danh mục dịch vụ phục vụ, hỗ trợ hoạt động giáo dục.
+              Bao gồm: <strong>Chăm sóc & nuôi dưỡng</strong>, <strong>Nước uống</strong>, <strong>Học phẩm</strong> và các <strong>Dịch vụ tự nguyện</strong> (Xe ô tô đưa đón, Ngoại khóa năng khiếu).
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-slate-600 font-semibold">
               <span className="flex items-center gap-1 text-emerald-700">
-                <CheckCircle2 size={13} /> Suất ăn bán trú: <strong>45.000 đ/ngày</strong> (Hoàn trả trực tiếp khi có đơn xin nghỉ phép hợp lệ)
-              </span>
-              <span>•</span>
-              <span className="text-slate-700">
-                Định mức dịch vụ bán trú cơ bản: <strong>{money(coreFeesTotal || 1520000)} đ/tháng</strong>
+                <CheckCircle2 size={13} /> Quy chuẩn dịch vụ cơ bản: <strong>{money(coreFeesTotal || 1520000)} đ/tháng</strong>
               </span>
             </div>
           </div>
 
           <button
             onClick={onOpenCreateFee}
-            className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:from-rose-600 hover:to-rose-700 transition shrink-0"
+            className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:from-emerald-600 hover:to-emerald-700 transition shrink-0"
           >
             <Plus size={15} /> Thêm khoản thu mới
           </button>
@@ -97,17 +93,17 @@ export default function ThuChiFees({
       {/* Grid danh sách các khoản thu mầm non */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {fees.map((fee) => (
-          <div key={fee.id} className="rounded-3xl border border-rose-100 bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition group">
+          <div key={fee.id} className="rounded-3xl border border-emerald-100 bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition group">
             <div>
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                       {ChargeTypeLabels[fee.chargeType] || 'Khoản thu mầm non'}
                     </span>
                     {getFeeNatureBadge(fee)}
                   </div>
-                  <h4 className="font-extrabold text-slate-800 text-sm group-hover:text-rose-600 transition">
+                  <h4 className="font-extrabold text-slate-800 text-sm group-hover:text-emerald-600 transition">
                     {fee.name}
                   </h4>
                 </div>
@@ -115,18 +111,18 @@ export default function ThuChiFees({
                   <button onClick={() => onOpenEditFee(fee)} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition" title="Sửa">
                     <Edit3 size={14} />
                   </button>
-                  <button onClick={() => onDeleteFee(fee)} className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="Xóa">
+                  <button onClick={() => onDeleteFee(fee)} className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 transition" title="Xóa">
                     <Trash2 size={14} />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl bg-rose-50/40 p-3.5 border border-rose-100/50">
+              <div className="mt-4 rounded-2xl bg-emerald-50/40 p-3.5 border border-emerald-100/50">
                 <div className="flex items-baseline justify-between">
                   <span className="text-[11px] text-slate-400 font-semibold uppercase">Định mức thu</span>
                   <span className="text-[11px] text-slate-500 font-bold">/ {fee.unit || 'tháng'}</span>
                 </div>
-                <p className="text-xl font-black text-rose-600 mt-0.5">{money(fee.amount)} đ</p>
+                <p className="text-xl font-black text-emerald-600 mt-0.5">{money(fee.amount)} đ</p>
               </div>
 
               <p className="mt-3 text-xs text-slate-600 leading-relaxed line-clamp-3">
@@ -142,7 +138,7 @@ export default function ThuChiFees({
         ))}
 
         {fees.length === 0 && (
-          <div className="col-span-full rounded-3xl border border-dashed border-rose-200 bg-white p-12 text-center text-slate-400">
+          <div className="col-span-full rounded-3xl border border-dashed border-emerald-200 bg-white p-12 text-center text-slate-400">
             <Layers size={36} className="mx-auto mb-2 text-slate-300" />
             <p className="font-bold">Chưa có danh mục khoản thu nào</p>
             <p className="text-xs text-slate-400 mt-1">Bấm "Thêm khoản thu mới" để bắt đầu thiết lập biểu phí.</p>

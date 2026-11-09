@@ -124,22 +124,22 @@ export function FcmVisualCharts({
                   wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
                 />
                 <Bar
-                  dataKey="Nhóm 1"
+                  dataKey="Cụm 1"
                   stackId="a"
                   fill={CLUSTER_CONFIG[1].color}
                 />
                 <Bar
-                  dataKey="Nhóm 2"
+                  dataKey="Cụm 2"
                   stackId="a"
                   fill={CLUSTER_CONFIG[2].color}
                 />
                 <Bar
-                  dataKey="Nhóm 3"
+                  dataKey="Cụm 3"
                   stackId="a"
                   fill={CLUSTER_CONFIG[3].color}
                 />
                 <Bar
-                  dataKey="Nhóm 4"
+                  dataKey="Cụm 4"
                   stackId="a"
                   fill={CLUSTER_CONFIG[4].color}
                 />

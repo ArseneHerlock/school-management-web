@@ -35,10 +35,10 @@ export default function CriterionEditForm({
   return (
     <form
       onSubmit={onSave}
-      className="rounded-2xl border border-rose-200 bg-rose-50/40 p-3.5 space-y-2.5"
+      className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3.5 space-y-2.5"
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-black text-rose-700">
+        <span className="text-xs font-black text-emerald-700">
           {editingCriterion
             ? "Chỉnh sửa tiêu chí đánh giá"
             : "Thêm tiêu chí đánh giá mới"}
@@ -64,7 +64,7 @@ export default function CriterionEditForm({
               setCritForm((p) => ({ ...p, name: e.target.value }))
             }
             placeholder="VD: Trẻ hát đúng giai điệu, phối hợp nhóm..."
-            className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-2.5 py-2 text-xs font-semibold outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 bg-white px-2.5 py-2 text-xs font-semibold outline-none focus:border-emerald-400"
           />
         </div>
         <div>
@@ -79,7 +79,7 @@ export default function CriterionEditForm({
                 developmentDomainId: e.target.value,
               }))
             }
-            className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-2.5 py-2 text-xs font-semibold outline-none focus:border-rose-400"
+            className="mt-1 w-full rounded-xl border border-emerald-200 bg-white px-2.5 py-2 text-xs font-semibold outline-none focus:border-emerald-400"
           >
             {domains.map((d) => (
               <option key={d.id} value={d.id}>
@@ -100,7 +100,7 @@ export default function CriterionEditForm({
             setCritForm((p) => ({ ...p, description: e.target.value }))
           }
           placeholder="Mô tả biểu hiện đạt của trẻ trong hoạt động..."
-          className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-rose-400"
+          className="mt-1 w-full rounded-xl border border-emerald-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-emerald-400"
         />
       </div>
       <div className="flex justify-end gap-2 pt-1">
@@ -114,7 +114,7 @@ export default function CriterionEditForm({
         <button
           type="submit"
           disabled={savingCriterion}
-          className="rounded-lg bg-rose-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-rose-700 cursor-pointer"
+          className="rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 cursor-pointer"
         >
           {savingCriterion
             ? "Đang lưu..."

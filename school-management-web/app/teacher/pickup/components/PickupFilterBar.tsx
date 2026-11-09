@@ -29,7 +29,7 @@ export function PickupFilterBar({
           placeholder="Tìm tên bé, tên người đón, SĐT..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-xl text-xs sm:text-sm border border-slate-200 focus:outline-teal-600 bg-slate-50/60"
+          className="w-full pl-10 pr-4 py-2 rounded-xl text-xs sm:text-sm border border-slate-200 focus:outline-orange-500 bg-slate-50/60"
         />
         {searchQuery && (
           <button
@@ -46,7 +46,7 @@ export function PickupFilterBar({
           onClick={() => setFilterType('ALL')}
           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             filterType === 'ALL'
-              ? 'bg-slate-800 text-white'
+              ? 'bg-orange-600 text-white shadow-xs'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
@@ -66,8 +66,8 @@ export function PickupFilterBar({
           onClick={() => setFilterType('PICKED_UP')}
           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
             filterType === 'PICKED_UP'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              ? 'bg-orange-600 text-white shadow-xs'
+              : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
           }`}
         >
           Đã đón ({pickedUpCount})

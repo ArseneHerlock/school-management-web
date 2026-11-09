@@ -177,14 +177,6 @@ export const TeacherHealthEntry: React.FC<TeacherHealthEntryProps> = ({
         setStatusFilter={setStatusFilter}
       />
 
-      {/* Hướng dẫn nghiệp vụ */}
-      <div className="flex items-center gap-2 rounded-2xl bg-amber-50/80 border border-amber-200 px-4 py-2.5 text-xs text-amber-900 font-medium">
-        <Info size={16} className="text-amber-600 shrink-0" />
-        <span>
-          <strong>Lưu ý:</strong> Giáo viên nhập <strong>Cân nặng (kg)</strong> và <strong>Chiều cao (cm)</strong> theo đợt cân đo. Hệ thống sẽ tự động cập nhật phân loại thể trạng của từng bé vào sổ y tế.
-        </span>
-      </div>
-
       {/* Ô tìm kiếm & Bộ lọc trạng thái WHO */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2.5 flex-1">

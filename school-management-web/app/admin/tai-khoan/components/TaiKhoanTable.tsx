@@ -79,7 +79,7 @@ export const TaiKhoanTable: React.FC<TaiKhoanTableProps> = ({
                   className="text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   {allOnPage && rows.length > 0 ? (
-                    <CheckSquare size={16} className="text-rose-600" />
+                    <CheckSquare size={16} className="text-emerald-600" />
                   ) : (
                     <Square size={16} />
                   )}
@@ -100,7 +100,7 @@ export const TaiKhoanTable: React.FC<TaiKhoanTableProps> = ({
               return (
                 <tr
                   key={u.id}
-                  className={isChecked ? "bg-rose-50/30" : undefined}
+                  className={isChecked ? "bg-emerald-50/30" : undefined}
                 >
                   <td className="text-center">
                     <button
@@ -108,7 +108,7 @@ export const TaiKhoanTable: React.FC<TaiKhoanTableProps> = ({
                       className="text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
                       {isChecked ? (
-                        <CheckSquare size={16} className="text-rose-600" />
+                        <CheckSquare size={16} className="text-emerald-600" />
                       ) : (
                         <Square size={16} />
                       )}

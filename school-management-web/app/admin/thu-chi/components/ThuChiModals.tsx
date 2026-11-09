@@ -79,7 +79,7 @@ export default function ThuChiModals({
               value={feeForm.name}
               onChange={(e) => setFeeForm((p: any) => ({ ...p, name: e.target.value }))}
               placeholder="VD: Tiền ăn bán trú mầm non, Học phí chính khóa..."
-              className="mt-1 w-full rounded-2xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-2xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
             />
           </div>
 
@@ -89,7 +89,7 @@ export default function ThuChiModals({
               <select
                 value={feeForm.chargeType}
                 onChange={(e) => setFeeForm((p: any) => ({ ...p, chargeType: Number(e.target.value) }))}
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
               >
                 {chargeTypeOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -106,7 +106,7 @@ export default function ThuChiModals({
                 value={feeForm.amount}
                 onChange={(e) => setFeeForm((p: any) => ({ ...p, amount: Number(e.target.value) }))}
                 placeholder="VD: 1500000"
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
               />
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function ThuChiModals({
               value={feeForm.description}
               onChange={(e) => setFeeForm((p: any) => ({ ...p, description: e.target.value }))}
               placeholder="Ghi rõ thành phần cấu thành khoản phí, chính sách hoàn trả (nếu có)..."
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
             />
           </div>
 
@@ -132,7 +132,7 @@ export default function ThuChiModals({
             <button
               onClick={onSaveFee}
               disabled={isSubmitting || !feeForm.name || !feeForm.amount}
-              className="rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-xs font-bold text-white hover:from-rose-600 hover:to-rose-700 disabled:opacity-50 shadow-sm"
+              className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs font-bold text-white hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 shadow-sm"
             >
               {isSubmitting ? 'Đang lưu...' : 'Lưu khoản thu'}
             </button>
@@ -149,14 +149,14 @@ export default function ThuChiModals({
       >
         <div className="space-y-4">
           {/* Header tóm tắt */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-2xl bg-rose-50/40 p-3.5 border border-rose-100 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-2xl bg-emerald-50/40 p-3.5 border border-emerald-100 text-xs">
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Mã phiếu</span>
               <p className="font-extrabold text-slate-800">{selectedInvoice?.invoiceNumber || '-'}</p>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Tổng mức thu</span>
-              <p className="font-extrabold text-rose-600 text-sm">{money(selectedInvoice?.totalAmount)} đ</p>
+              <p className="font-extrabold text-emerald-600 text-sm">{money(selectedInvoice?.totalAmount)} đ</p>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Đã thực nộp</span>
@@ -170,7 +170,7 @@ export default function ThuChiModals({
                     <CheckCircle2 size={11} /> Đã hoàn thành
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 font-bold text-rose-700 bg-rose-100/70 px-2 py-0.5 rounded-full text-[10px]">
+                  <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full text-[10px]">
                     <AlertCircle size={11} /> Còn nợ {money(selectedInvoice?.outstandingAmount || selectedInvoice?.totalAmount)} đ
                   </span>
                 )}
@@ -181,7 +181,7 @@ export default function ThuChiModals({
           {/* Bảng kê chi tiết 6 khoản thu mầm non theo hóa đơn */}
           <div className="space-y-2">
             <h5 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <BookOpen size={14} className="text-rose-500" />
+              <BookOpen size={14} className="text-emerald-500" />
               Bảng kê chi tiết cơ cấu các khoản thu:
             </h5>
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
@@ -197,7 +197,7 @@ export default function ThuChiModals({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {STANDARD_INVOICE_ITEMS.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-rose-50/20 transition">
+                    <tr key={idx} className="hover:bg-emerald-50/20 transition">
                       <td className="py-2 px-3 text-center text-slate-400 font-semibold">{idx + 1}</td>
                       <td className="py-2 px-3 font-bold text-slate-800">{item.name}</td>
                       <td className="py-2 px-3 text-slate-500 text-[11px]">{item.type}</td>
@@ -207,10 +207,10 @@ export default function ThuChiModals({
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-rose-50/30 font-black border-t border-rose-100 text-xs">
+                  <tr className="bg-emerald-50/30 font-black border-t border-emerald-100 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-right text-slate-700">Tổng cộng hóa đơn dịch vụ bán trú:</td>
                     <td className="py-2.5 px-3 text-right text-slate-800">{money(selectedInvoice?.totalAmount || 1520000)} đ</td>
-                    <td className="py-2.5 px-3 text-right text-rose-600">{money(selectedInvoice?.totalAmount || 1520000)} đ</td>
+                    <td className="py-2.5 px-3 text-right text-emerald-600">{money(selectedInvoice?.totalAmount || 1520000)} đ</td>
                   </tr>
                 </tfoot>
               </table>

@@ -27,40 +27,29 @@ export function YearEndAwardsHeader({
         </div>
       )}
 
-      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3 max-w-full overflow-hidden">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-orange-100 text-orange-700">
-              <GraduationCap size={18} />
-            </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-700">
-              TỔNG KẾT BẾ GIẢNG NĂM HỌC
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800">
-            Khen Thưởng Cuối Năm - {classNameStr}
+          <h1 className="text-base sm:text-xl font-black text-slate-800 leading-tight">
+            Khen thưởng cuối năm {classNameStr ? `— ${classNameStr}` : ''}
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Xét duyệt danh hiệu thi đua tổng kết dựa trên số liệu chuyên cần, thể trạng và năng lực thực tế của học sinh.
-          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full md:w-auto">
           <select
             value={schoolYear}
             onChange={(e) => setSchoolYear(e.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 outline-none cursor-pointer"
+            className="w-full rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer bg-slate-50"
           >
-            <option value="2025-2026">Năm học 2025-2026</option>
-            <option value="2026-2027">Năm học 2026-2027</option>
+            <option value="2025-2026">2025–2026</option>
+            <option value="2026-2027">2026–2027</option>
           </select>
 
           <select
             value={semester}
             onChange={(e) => setSemester(Number(e.target.value))}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 outline-none cursor-pointer"
+            className="w-full rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer bg-slate-50"
           >
-            <option value={0}>Tổng kết Cả Năm</option>
+            <option value={0}>Cả Năm</option>
             <option value={1}>Học kỳ 1</option>
             <option value={2}>Học kỳ 2</option>
           </select>

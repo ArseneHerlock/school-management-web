@@ -19,17 +19,17 @@ interface TeacherTodayScheduleProps {
 
 export const TeacherTodaySchedule: React.FC<TeacherTodayScheduleProps> = ({ schedule }) => {
   return (
-    <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex flex-col h-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-            <CalendarDays size={18} />
+    <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs flex flex-col h-full">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-100 text-orange-600 shrink-0">
+            <CalendarDays size={16} />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-800">
+            <h3 className="text-xs sm:text-sm font-extrabold text-slate-800">
               Lịch trình giảng dạy hôm nay
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-[11px] text-slate-400 hidden sm:block">
               Theo thời khóa biểu của lớp phụ trách
             </p>
           </div>

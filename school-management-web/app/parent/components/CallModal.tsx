@@ -99,7 +99,7 @@ export default function CallModal({
   const secs = String(callSeconds % 60).padStart(2, '0');
 
   return (
-    <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-[80] flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-slate-700 text-white rounded-3xl w-full max-w-sm p-6 sm:p-7 shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
         {/* Background Ambient Glow */}
         <div className="absolute -top-16 -right-16 w-36 h-36 bg-sky-500/20 rounded-full blur-2xl pointer-events-none"></div>

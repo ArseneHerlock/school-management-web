@@ -127,7 +127,7 @@ export function FcmChildrenTable({
                 );
               } else if (child.Trend === "ATTENTION") {
                 trendBadge = (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                     <AlertTriangle size={11} /> Cần lưu ý
                   </span>
                 );

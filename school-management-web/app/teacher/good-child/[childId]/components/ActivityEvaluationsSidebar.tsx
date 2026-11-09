@@ -164,7 +164,7 @@ export function ActivityEvaluationsSidebar({
               Chưa có nhận xét hoạt động nào của bé {childDisplayName} trong tháng {month}/{year}.
             </p>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Hãy chấm điểm và ghi nhận xét cho bé tại trang Đánh giá hoạt động, hệ thống sẽ tự động tổng hợp các nhận xét đó về đây để làm gợi ý ghi Sổ Bé Ngoan.
+              Hãy chấm điểm và ghi nhận xét cho bé tại trang Đánh giá hoạt động, hệ thống sẽ tự động tổng hợp các nhận xét đó về đây để ghi vào Sổ Bé Ngoan.
             </p>
             <Link
               href="/teacher/assessment?tab=matrix"

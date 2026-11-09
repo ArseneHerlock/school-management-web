@@ -168,11 +168,7 @@ export default function HocSinhPage() {
     <section className="space-y-5">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="admin-eyebrow">HỒ SƠ TRẺ</p>
           <h1 className="admin-title">Quản lý học sinh</h1>
-          <p className="admin-subtitle">
-            Quản lý hồ sơ trẻ, lớp học và trạng thái học tập.
-          </p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
@@ -193,9 +189,9 @@ export default function HocSinhPage() {
 
       <HocSinhStats students={studentsList} />
 
-      <div className="admin-card p-4">
-        <div className="grid gap-3 md:grid-cols-4">
-          <div className="relative md:col-span-1">
+      <div className="admin-card p-3 sm:p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+          <div className="col-span-2 md:col-span-1 relative">
             <Search
               size={17}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"

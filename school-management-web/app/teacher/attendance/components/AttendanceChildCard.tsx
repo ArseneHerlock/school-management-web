@@ -53,7 +53,7 @@ export function AttendanceChildCard({
 }: AttendanceChildCardProps) {
   return (
     <div
-      className={`flex flex-col justify-between rounded-3xl border p-4 transition-all duration-200 shadow-xs ${
+      className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-4 transition-all duration-200 shadow-xs ${
         earlyPickupInfo
           ? 'bg-rose-50/50 border-rose-200 ring-1 ring-rose-300/40'
           : isCheckedOut && mode === 'VE'
@@ -139,7 +139,7 @@ export function AttendanceChildCard({
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+      <div className="mt-2.5 pt-2 sm:mt-4 sm:pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
         {mode === 'DEN' ? (
           <>
             {isLocked ? (

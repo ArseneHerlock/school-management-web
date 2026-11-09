@@ -22,15 +22,7 @@ export default function SucKhoeHeader({
     <>
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="admin-eyebrow">
-            QUẢN TRỊ Y TẾ & THỂ TRẠNG HỌC SINH (CHUẨN WHO 0 - 5 TUỔI)
-          </p>
-          <h1 className="admin-title">
-            Giám Sát Thể Trạng & Khám Sức Khỏe Toàn Trường
-          </h1>
-          <p className="admin-subtitle">
-            Đánh giá toàn diện theo 3 chỉ số WHO: HAZ (Thấp còi), WAZ (Nhẹ cân), WHZ (Thể trạng). Xem báo cáo tổng quan toàn trường và chi tiết biểu đồ đường cong tăng trưởng.
-          </p>
+          <h1 className="admin-title">Sức khỏe & Thể trạng</h1>
         </div>
         <button
           onClick={onRefresh}

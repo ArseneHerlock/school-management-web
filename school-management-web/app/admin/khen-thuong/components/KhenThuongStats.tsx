@@ -31,13 +31,13 @@ export function KhenThuongStats({ stats }: KhenThuongStatsProps) {
         <p className="mt-1 text-[10px] text-amber-700/80">Thành tích nổi trội toàn diện</p>
       </div>
 
-      <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-3.5 shadow-sm">
-        <p className="text-[10px] font-bold uppercase text-rose-700">2. Bé Khỏe - Bé Ngoan</p>
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3.5 shadow-sm">
+        <p className="text-[10px] font-bold uppercase text-emerald-700">2. Bé Khỏe - Bé Ngoan</p>
         <div className="mt-1.5 flex items-baseline justify-between">
-          <span className="text-xl font-black text-rose-600">{stats.beKhoeBeNgoan || 0}</span>
-          <Sparkles size={16} className="text-rose-500" />
+          <span className="text-xl font-black text-emerald-600">{stats.beKhoeBeNgoan || 0}</span>
+          <Sparkles size={16} className="text-emerald-500" />
         </div>
-        <p className="mt-1 text-[10px] text-rose-600/80">Thể chất khỏe, chăm ngoan</p>
+        <p className="mt-1 text-[10px] text-emerald-600/80">Thể chất khỏe, chăm ngoan</p>
       </div>
 
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3.5 shadow-sm">

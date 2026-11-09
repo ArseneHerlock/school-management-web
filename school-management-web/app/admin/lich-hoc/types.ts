@@ -62,10 +62,10 @@ export const TYPE_COLORS: Record<
     badge: "bg-emerald-600 text-white",
   },
   5: {
-    bg: "bg-rose-50/90 hover:bg-rose-200",
-    border: "border-rose-200",
-    text: "text-rose-950",
-    badge: "bg-rose-500 text-white",
+    bg: "bg-emerald-50/90 hover:bg-emerald-200",
+    border: "border-emerald-200",
+    text: "text-emerald-950",
+    badge: "bg-emerald-500 text-white",
   },
   6: {
     bg: "bg-slate-50/90 hover:bg-slate-100/90",

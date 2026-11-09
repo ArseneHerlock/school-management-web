@@ -63,7 +63,7 @@ export default function ActivityLinkModals({
             <div>
               <label className="text-xs font-bold text-slate-600">Mã hoạt động</label>
               <input
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
                 value={activityForm.code}
                 onChange={(e) => setActivityForm((p: any) => ({ ...p, code: e.target.value }))}
                 placeholder="VD: ACT-01"
@@ -72,7 +72,7 @@ export default function ActivityLinkModals({
             <div>
               <label className="text-xs font-bold text-slate-600">Tên hoạt động</label>
               <input
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
                 value={activityForm.name}
                 onChange={(e) => setActivityForm((p: any) => ({ ...p, name: e.target.value }))}
                 placeholder="VD: Xếp hình sáng tạo"
@@ -83,7 +83,7 @@ export default function ActivityLinkModals({
             <label className="text-xs font-bold text-slate-600">Mô tả mục tiêu</label>
             <textarea
               rows={2}
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
               value={activityForm.description}
               onChange={(e) => setActivityForm((p: any) => ({ ...p, description: e.target.value }))}
             />
@@ -98,7 +98,7 @@ export default function ActivityLinkModals({
             <button
               onClick={onSaveActivity}
               disabled={isSubmitting}
-              className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700"
+              className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700"
             >
               {isSubmitting ? 'Đang lưu...' : 'Lưu hoạt động'}
             </button>
@@ -116,7 +116,7 @@ export default function ActivityLinkModals({
           <div>
             <label className="text-xs font-bold text-slate-600">Chọn tiêu chí phát triển</label>
             <select
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
               value={selectedCriterionIdToLink}
               onChange={(e) => setSelectedCriterionIdToLink(e.target.value)}
             >
@@ -132,7 +132,7 @@ export default function ActivityLinkModals({
             <label className="text-xs font-bold text-slate-600">Hướng dẫn quan sát</label>
             <textarea
               rows={3}
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none focus:border-rose-400"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none focus:border-emerald-400"
               value={observationGuide}
               onChange={(e) => setObservationGuide(e.target.value)}
               placeholder="Gợi ý cô giáo quan sát khi bé thực hiện..."
@@ -148,7 +148,7 @@ export default function ActivityLinkModals({
             <button
               onClick={onSaveLink}
               disabled={isSubmitting || !selectedCriterionIdToLink}
-              className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:opacity-50"
+              className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
             >
               {isSubmitting ? 'Đang lưu...' : 'Xác nhận gán'}
             </button>

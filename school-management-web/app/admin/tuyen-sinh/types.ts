@@ -29,6 +29,7 @@ export interface EnrollmentApp {
   TrangThai: "ChoDuyet" | "DaNhapHoc" | "TuChoi" | string;
   KhoiMongMuon: string;
   GhiChu: string;
+  KhaoSatDauVao?: any;
   CreatedAt: string;
 }
 

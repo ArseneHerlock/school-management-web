@@ -28,13 +28,13 @@ export default function GoodChildStats({
         <p className="mt-1 text-[11px] text-slate-500">Được lập sổ theo dõi</p>
       </div>
 
-      <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-4 shadow-sm">
-        <p className="text-[11px] font-bold uppercase text-rose-700">Tổng hoa nhỏ thứ 6</p>
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm">
+        <p className="text-[11px] font-bold uppercase text-emerald-700">Tổng hoa nhỏ thứ 6</p>
         <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-2xl font-black text-rose-600">{totalDailyFlowers}</span>
-          <Flower2 size={18} className="text-rose-500" />
+          <span className="text-2xl font-black text-emerald-600">{totalDailyFlowers}</span>
+          <Flower2 size={18} className="text-emerald-500" />
         </div>
-        <p className="mt-1 text-[11px] text-rose-600/80">Phát định kỳ mỗi thứ Sáu</p>
+        <p className="mt-1 text-[11px] text-emerald-600/80">Phát định kỳ mỗi thứ Sáu</p>
       </div>
 
       <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4 shadow-sm">

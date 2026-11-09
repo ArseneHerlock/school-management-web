@@ -53,7 +53,7 @@ export default function GoodChildTable({
               placeholder="Tìm tên bé..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48 rounded-xl border border-slate-200 py-1.5 pl-8 pr-3 text-xs text-slate-700 outline-none focus:border-rose-500"
+              className="w-48 rounded-xl border border-slate-200 py-1.5 pl-8 pr-3 text-xs text-slate-700 outline-none focus:border-emerald-500"
             />
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function GoodChildTable({
                         size={15}
                         className={
                           idx < r.dailyCount
-                            ? "text-rose-500 fill-rose-500"
+                            ? "text-emerald-500 fill-emerald-500"
                             : "text-slate-200"
                         }
                       />

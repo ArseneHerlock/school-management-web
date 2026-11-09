@@ -71,7 +71,7 @@ export default function ConditionsTable({
                 <span
                   className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
                     cond.MucDoNguyHiem === 3
-                      ? "bg-rose-600 text-white"
+                      ? "bg-emerald-600 text-white"
                       : cond.MucDoNguyHiem === 2
                       ? "bg-amber-500 text-white"
                       : "bg-slate-200 text-slate-700"
@@ -92,7 +92,7 @@ export default function ConditionsTable({
                   </div>
                 )}
                 {cond.LuuYAnUong && (
-                  <div className="text-rose-700 font-semibold mt-1">
+                  <div className="text-emerald-700 font-semibold mt-1">
                     <strong>Kiêng ăn:</strong> {cond.LuuYAnUong}
                   </div>
                 )}

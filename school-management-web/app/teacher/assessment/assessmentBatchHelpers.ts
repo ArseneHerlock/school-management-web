@@ -1,5 +1,8 @@
 import { currentUser } from '@/services';
-import { ActivityItem, DomainItem, CriterionItem } from '@/services/development';
+import { ActivityItem, CriterionItem } from '@/services/development';
+import { StandardDomain, GDMN_5_DOMAINS, resolveStandardDomain } from './gdmnDomains';
+export * from './gdmnDomains';
+export * from './studentCompetencyHelpers';
 
 export function findFocusedActivity(actItems: ActivityItem[], focusedObj: any) {
   if (!focusedObj) return null;
@@ -21,7 +24,7 @@ export function findFocusedActivity(actItems: ActivityItem[], focusedObj: any) {
     const keywords = [
       'âm nhạc', 'hát', 'múa', 'vận động', 'thể chất', 'thể thao',
       'tạo hình', 'vẽ', 'mỹ thuật', 'khám phá', 'ngoài trời', 'dã ngoại',
-      'toán', 'chữ cái', 'văn học', 'kể chuyện', 'kỹ năng'
+      'toán', 'chữ cái', 'văn học', 'kể chuyện', 'kỹ năng',
     ];
     const matchedKw = keywords.find((kw) => cleanTitle.includes(kw));
     if (matchedKw) {
@@ -141,40 +144,53 @@ export function calculateClassBreakdown(
       .filter((c) => c.developmentDomainId === act.id || (c as any).activityId === act.id)
       .map((c) => c.id);
     let passSlots = 0, failSlots = 0, unassessedSlots = 0;
+    const failStudentSet = new Set<string>();
+
     classStudents.forEach((st) => {
       const sId = st.id || st.Id;
+      let hasFail = false;
       actCritIds.forEach((cId) => {
         const res = matrix[sId]?.[cId]?.result;
         if (res === true || res === 'true' || res === 1) passSlots++;
-        else if (res === false || res === 'false' || res === 0) failSlots++;
-        else unassessedSlots++;
+        else if (res === false || res === 'false' || res === 0) {
+          failSlots++;
+          hasFail = true;
+        } else {
+          unassessedSlots++;
+        }
       });
+      if (hasFail) failStudentSet.add(sId);
     });
-    const shortName = act.name.length > 20 ? act.name.slice(0, 18) + '...' : act.name;
-    return { shortName, fullName: act.name, passSlots, failSlots, unassessedSlots };
-  });
-}
 
-export function calculateRadarData(
-  student: any | null,
-  activities: ActivityItem[],
-  allCriteria: CriterionItem[],
-  matrix: Record<string, Record<string, any>>
-) {
-  if (!student || !activities || activities.length === 0) return [];
-  const stId = student.id || student.Id;
-  const targetActs = activities.slice(0, 6);
-  return targetActs.map((act) => {
-    const actCritIds = allCriteria
-      .filter((c) => c.developmentDomainId === act.id || (c as any).activityId === act.id)
-      .map((c) => c.id);
-    let pass = 0;
-    actCritIds.forEach((cId) => {
-      const r = matrix[stId]?.[cId]?.result;
-      if (r === true || r === 'true' || r === 1) pass++;
-    });
-    const score = actCritIds.length > 0 ? Math.round((pass / actCritIds.length) * 100) : 0;
-    const shortName = act.name.length > 14 ? act.name.slice(0, 12) + '...' : act.name;
-    return { domain: shortName, score };
+    const totalSlots = passSlots + failSlots + unassessedSlots;
+    const passRate = totalSlots > 0 ? Math.round((passSlots / totalSlots) * 100) : 0;
+    const failRate = totalSlots > 0 ? Math.round((failSlots / totalSlots) * 100) : 0;
+    const unassessedRate = totalSlots > 0 ? Math.max(0, 100 - passRate - failRate) : 0;
+
+    const domain = resolveStandardDomain(act);
+    const shortName = act.name.length > 20 ? act.name.slice(0, 18) + '...' : act.name;
+
+    return {
+      id: act.id,
+      code: act.code,
+      shortName,
+      fullName: act.name,
+      domain,
+      domainShortName: domain.shortName,
+      domainColor: domain.color,
+      domainBadgeBg: domain.badgeBg,
+      domainBadgeText: domain.badgeText,
+      domainBadgeBorder: domain.badgeBorder,
+      criteriaCount: actCritIds.length,
+      studentCount: classStudents.length,
+      failStudentsCount: failStudentSet.size,
+      passSlots,
+      failSlots,
+      unassessedSlots,
+      totalSlots,
+      passRate,
+      failRate,
+      unassessedRate,
+    };
   });
 }

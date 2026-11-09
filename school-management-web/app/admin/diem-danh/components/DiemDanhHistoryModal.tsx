@@ -27,7 +27,7 @@ export default function DiemDanhHistoryModal({
       <div className="space-y-4">
         {loading ? (
           <div className="flex h-36 flex-col items-center justify-center gap-2 text-xs text-slate-400">
-            <Loader2 className="animate-spin text-rose-500" size={24} />
+            <Loader2 className="animate-spin text-emerald-500" size={24} />
             Đang tải dữ liệu điểm danh...
           </div>
         ) : logs.length === 0 ? (
@@ -68,7 +68,7 @@ export default function DiemDanhHistoryModal({
                         : isLate
                         ? 'bg-amber-50 text-amber-700'
                         : isAbsent
-                        ? 'bg-rose-50 text-rose-700'
+                        ? 'bg-emerald-50 text-emerald-700'
                         : 'bg-slate-100 text-slate-500'
                     }`}>
                       {log.trangThai}

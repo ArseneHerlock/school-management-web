@@ -52,7 +52,7 @@ export function MatrixTable({
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50/80">
-              <th className="sticky left-0 z-20 bg-slate-50/95 backdrop-blur-xs p-3.5 w-10 text-center border-r border-slate-200">
+              <th className="sticky left-0 z-20 bg-slate-50/95 backdrop-blur-xs p-2 sm:p-3.5 w-8 sm:w-10 text-center border-r border-slate-200">
                 <button
                   type="button"
                   onClick={onToggleSelectAll}
@@ -67,19 +67,21 @@ export function MatrixTable({
                 </button>
               </th>
 
-              <th className="sticky left-10 z-20 bg-slate-50/95 backdrop-blur-xs p-3.5 min-w-[180px] max-w-[220px] font-black text-slate-800 border-r border-slate-200">
-                <span>Học sinh trong lớp</span>
-                <span className="block text-[10px] text-slate-400 font-normal">
-                  ({classStudents.length} học sinh)
+              <th className="sticky left-8 sm:left-10 z-20 bg-slate-50/95 backdrop-blur-xs p-2 sm:p-3.5 w-[100px] min-w-[100px] sm:min-w-[180px] sm:max-w-[220px] font-black text-slate-800 border-r border-slate-200">
+                <span>Học sinh</span>
+                <span className="hidden sm:inline"> trong lớp</span>
+                <span className="block text-[9px] sm:text-[10px] text-slate-400 font-normal">
+                  ({classStudents.length} trẻ)
                 </span>
               </th>
 
-              <th className="p-3.5 min-w-[200px] max-w-[240px] font-black text-slate-800 border-r border-slate-200 bg-amber-50/30">
+              <th className="p-2 sm:p-3.5 min-w-[60px] sm:min-w-[200px] sm:max-w-[240px] font-black text-slate-800 border-r border-slate-200 bg-amber-50/30">
                 <div className="flex items-center gap-1.5 text-amber-900">
                   <MessageSquare size={13} className="text-amber-600 shrink-0" />
-                  <span>Nhận xét buổi học của bé</span>
+                  <span className="hidden sm:inline">Nhận xét buổi học của bé</span>
+                  <span className="sm:hidden text-[11px]">Nhận xét</span>
                 </div>
-                <span className="block text-[10px] text-amber-700/80 font-normal mt-0.5">
+                <span className="hidden sm:block text-[10px] text-amber-700/80 font-normal mt-0.5">
                   Đồng bộ sang Sổ Bé Ngoan tháng
                 </span>
               </th>
@@ -91,13 +93,14 @@ export function MatrixTable({
                 return (
                   <th
                     key={crit.id}
-                    className={`p-3 min-w-[150px] max-w-[190px] font-extrabold border-r border-slate-200 align-top transition-colors ${domainStyle.headerBg}`}
+                    className={`p-2 sm:p-3 min-w-[56px] sm:min-w-[150px] sm:max-w-[190px] font-extrabold border-r border-slate-200 align-top transition-colors ${domainStyle.headerBg}`}
                   >
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <div className="flex items-center justify-between gap-1 mb-1">
                       <span
-                        className={`inline-block text-[9px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${domainStyle.pillClass}`}
+                        className={`inline-block text-[8px] sm:text-[9px] font-black px-1 sm:px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${domainStyle.pillClass}`}
                       >
-                        {domainStyle.domainLabel}
+                        <span className="sm:hidden">{parsed.targetCode || 'TC'}</span>
+                        <span className="hidden sm:inline">{domainStyle.domainLabel}</span>
                       </span>
                       <button
                         type="button"
@@ -109,19 +112,19 @@ export function MatrixTable({
                       </button>
                     </div>
 
-                    <p className="text-slate-900 leading-snug line-clamp-2" title={parsed.fullName}>
+                    <p className="hidden sm:block text-slate-900 leading-snug line-clamp-2" title={parsed.fullName}>
                       <strong className="text-orange-600 mr-1">{parsed.targetCode}</strong>
                       <span>{parsed.description}</span>
                     </p>
 
-                    <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 font-mono">{crit.code}</span>
+                    <div className="mt-1 sm:mt-2 pt-1 sm:pt-1.5 border-t border-slate-200/60 flex items-center justify-between">
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono hidden sm:inline">{crit.code}</span>
                       <button
                         type="button"
                         onClick={() => onMarkColPass(crit.id)}
-                        className="text-[10px] font-bold text-orange-600 hover:underline cursor-pointer"
+                        className="text-[9px] sm:text-[10px] font-bold text-orange-600 hover:underline cursor-pointer w-full sm:w-auto text-center"
                       >
-                        Chấm Đạt cột
+                        Đạt cột
                       </button>
                     </div>
                   </th>
@@ -143,7 +146,7 @@ export function MatrixTable({
                     isSelected ? 'bg-white' : 'bg-slate-50/40 opacity-75'
                   }`}
                 >
-                  <td className="sticky left-0 z-10 bg-inherit p-3.5 text-center border-r border-slate-100">
+                  <td className="sticky left-0 z-10 bg-inherit p-2 sm:p-3.5 text-center border-r border-slate-100">
                     <button
                       type="button"
                       onClick={() => onToggleStudent(st.id)}
@@ -157,18 +160,18 @@ export function MatrixTable({
                     </button>
                   </td>
 
-                  <td className="sticky left-10 z-10 bg-inherit p-3.5 border-r border-slate-100 font-bold text-slate-900">
-                    <div className="flex items-center justify-between gap-2">
+                  <td className="sticky left-8 sm:left-10 z-10 bg-inherit p-2 sm:p-3.5 border-r border-slate-100 font-bold text-slate-900">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <div className="truncate">
-                        <span className="block truncate">{st.tenHocSinh}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">
+                        <span className="block truncate text-xs">{st.tenHocSinh}</span>
+                        <span className="text-[9px] sm:text-[10px] text-slate-400 font-normal">
                           {st.gioiTinh} · {st.ngaySinh?.slice(0, 4) || '2022'}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => onMarkRowPass(st.id)}
-                        className="text-[10px] font-bold text-orange-600 hover:underline shrink-0 cursor-pointer"
+                        className="text-[9px] sm:text-[10px] font-bold text-orange-600 hover:underline shrink-0 cursor-pointer self-start sm:self-auto"
                         title="Đánh dấu tất cả chỉ số đạt cho bé này"
                       >
                         Đạt hết
@@ -176,14 +179,27 @@ export function MatrixTable({
                     </div>
                   </td>
 
-                  <td className="p-2.5 border-r border-slate-100 bg-amber-50/20">
-                    <textarea
-                      rows={2}
-                      value={remarkVal}
-                      onChange={(e) => onChangeChildRemark(st.id, e.target.value)}
-                      placeholder="Ghi nhận xét riêng của bé trong hoạt động này..."
-                      className="w-full rounded-xl border border-amber-200/80 bg-white p-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-amber-400 resize-none"
-                    />
+                  <td className="p-1.5 sm:p-2.5 border-r border-slate-100 bg-amber-50/20">
+                    {/* Mobile: compact input or button */}
+                    <div className="sm:hidden">
+                      <input
+                        type="text"
+                        value={remarkVal}
+                        onChange={(e) => onChangeChildRemark(st.id, e.target.value)}
+                        placeholder="Nhận xét..."
+                        className="w-full rounded-lg border border-amber-200/80 bg-white px-1.5 py-1 text-[11px] font-medium text-slate-800 placeholder:text-slate-400 outline-none"
+                      />
+                    </div>
+                    {/* Desktop: multiline textarea */}
+                    <div className="hidden sm:block">
+                      <textarea
+                        rows={2}
+                        value={remarkVal}
+                        onChange={(e) => onChangeChildRemark(st.id, e.target.value)}
+                        placeholder="Ghi nhận xét riêng của bé trong hoạt động này..."
+                        className="w-full rounded-xl border border-amber-200/80 bg-white p-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-amber-400 resize-none"
+                      />
+                    </div>
                   </td>
 
                   {displayCriteria.map((crit) => {

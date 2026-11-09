@@ -70,7 +70,7 @@ export default function HoatDongScheduleModal({
           <div className="space-y-3">
             <div>
               <label className="font-bold text-slate-700 flex items-center gap-1.5">
-                <CalendarDays size={14} className="text-rose-500" />
+                <CalendarDays size={14} className="text-emerald-500" />
                 Ngày diễn ra *
               </label>
               <input
@@ -80,7 +80,7 @@ export default function HoatDongScheduleModal({
                 onChange={(e) =>
                   setScheduleForm((p: any) => ({ ...p, date: e.target.value }))
                 }
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 outline-none focus:border-rose-400 font-semibold"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 outline-none focus:border-emerald-400 font-semibold"
               />
             </div>
 
@@ -103,7 +103,7 @@ export default function HoatDongScheduleModal({
                     className={`p-1.5 rounded-lg border text-center font-bold text-[11px] transition cursor-pointer ${
                       scheduleForm.startTime === s.start &&
                       scheduleForm.endTime === s.end
-                        ? "bg-rose-50 border-rose-400 text-rose-700"
+                        ? "bg-emerald-50 border-emerald-400 text-emerald-700"
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -129,7 +129,7 @@ export default function HoatDongScheduleModal({
                       startTime: e.target.value,
                     }))
                   }
-                  className="mt-1 w-full rounded-xl border border-rose-200 p-2 outline-none focus:border-rose-400 font-semibold"
+                  className="mt-1 w-full rounded-xl border border-emerald-200 p-2 outline-none focus:border-emerald-400 font-semibold"
                 />
               </div>
               <div>
@@ -147,7 +147,7 @@ export default function HoatDongScheduleModal({
                       endTime: e.target.value,
                     }))
                   }
-                  className="mt-1 w-full rounded-xl border border-rose-200 p-2 outline-none focus:border-rose-400 font-semibold"
+                  className="mt-1 w-full rounded-xl border border-emerald-200 p-2 outline-none focus:border-emerald-400 font-semibold"
                 />
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function HoatDongScheduleModal({
                 onChange={(e) =>
                   setScheduleForm((p: any) => ({ ...p, classId: e.target.value }))
                 }
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 outline-none focus:border-rose-400 font-semibold"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 outline-none focus:border-emerald-400 font-semibold"
               >
                 <option value="SCHOOL_WIDE">Toàn trường (Tất cả các lớp)</option>
                 {classesList.map((c) => (
@@ -185,7 +185,7 @@ export default function HoatDongScheduleModal({
                   }))
                 }
                 placeholder="VD: Sân cỏ trường, Hội trường lớn, Phòng thể chất..."
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 outline-none focus:border-rose-400"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 outline-none focus:border-emerald-400"
               />
             </div>
           </div>
@@ -196,7 +196,7 @@ export default function HoatDongScheduleModal({
                 <span className="font-extrabold text-slate-700 text-xs">
                   Lịch hoạt động ngày {scheduleForm.date || "đã chọn"}:
                 </span>
-                <span className="text-[11px] font-bold text-rose-600">
+                <span className="text-[11px] font-bold text-emerald-600">
                   {eventsOnDate.length} sự kiện
                 </span>
               </div>
@@ -209,7 +209,7 @@ export default function HoatDongScheduleModal({
                       className="text-amber-600 shrink-0 mt-0.5"
                     />
                     <div>
-                      <p className="font-black text-rose-700">CẢNH BÁO TRÙNG GIỜ!</p>
+                      <p className="font-black text-emerald-700">CẢNH BÁO TRÙNG GIỜ!</p>
                       <p className="font-medium text-slate-700 mt-0.5">
                         Trùng khung giờ với <b>{conflictEvent.title}</b> (
                         {conflictEvent.startTime} - {conflictEvent.endTime})
@@ -250,7 +250,7 @@ export default function HoatDongScheduleModal({
                             : ev.className || "Lớp"}
                         </p>
                       </div>
-                      <span className="font-mono font-bold text-[11px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md shrink-0">
+                      <span className="font-mono font-bold text-[11px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md shrink-0">
                         {ev.startTime} - {ev.endTime}
                       </span>
                     </div>
@@ -277,7 +277,7 @@ export default function HoatDongScheduleModal({
           <button
             type="submit"
             disabled={isScheduling}
-            className="rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 px-5 py-2 font-bold text-white hover:from-rose-600 hover:to-amber-600 shadow-md cursor-pointer"
+            className="rounded-xl bg-gradient-to-r from-emerald-500 to-amber-500 px-5 py-2 font-bold text-white hover:from-emerald-600 hover:to-amber-600 shadow-md cursor-pointer"
           >
             {isScheduling ? "Đang xếp lịch..." : "Xác nhận xếp lịch"}
           </button>

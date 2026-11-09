@@ -17,6 +17,7 @@ export default function HoatDongPage() {
   const [activeTab, setActiveTab] = useState<HoatDongTab>("catalog");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [classFilter, setClassFilter] = useState<string>("ALL");
 
   const {
     activities,
@@ -188,6 +189,9 @@ export default function HoatDongPage() {
         <HoatDongCatalog
           activities={activities}
           criteria={criteria}
+          classesList={classesList}
+          classFilter={classFilter}
+          setClassFilter={setClassFilter}
           search={search}
           setSearch={setSearch}
           statusFilter={statusFilter}

@@ -135,7 +135,7 @@ export default function HoatDongCriteriaModal({
           <button
             type="button"
             onClick={handleOpenAddCriterion}
-            className="inline-flex items-center gap-1 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-700 transition cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer shrink-0"
           >
             <Plus size={13} /> Tạo tiêu chí mới
           </button>
@@ -167,7 +167,7 @@ export default function HoatDongCriteriaModal({
               value={critSearchQuery}
               onChange={(e) => setCritSearchQuery(e.target.value)}
               placeholder="Tìm kiếm chỉ số theo tên hoặc mã MT..."
-              className="w-full rounded-xl border border-slate-200 py-1.5 pl-8 pr-3 text-xs outline-none focus:border-rose-500"
+              className="w-full rounded-xl border border-slate-200 py-1.5 pl-8 pr-3 text-xs outline-none focus:border-emerald-500"
             />
           </div>
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
@@ -176,7 +176,7 @@ export default function HoatDongCriteriaModal({
               onClick={() => setSelectedFilterDomainId("ALL")}
               className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
                 selectedFilterDomainId === "ALL"
-                  ? "bg-rose-600 text-white shadow-xs"
+                  ? "bg-emerald-600 text-white shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -189,7 +189,7 @@ export default function HoatDongCriteriaModal({
                 onClick={() => setSelectedFilterDomainId(d.id)}
                 className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
                   selectedFilterDomainId === d.id
-                    ? "bg-rose-600 text-white shadow-xs"
+                    ? "bg-emerald-600 text-white shadow-xs"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -247,7 +247,7 @@ export default function HoatDongCriteriaModal({
                     <button
                       type="button"
                       onClick={() => void onDeleteCriterion(c.id)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition cursor-pointer"
                       title="Xóa tiêu chí khỏi hệ thống"
                     >
                       <Trash2 size={13} />
@@ -260,7 +260,7 @@ export default function HoatDongCriteriaModal({
                     }
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                       isLinked
-                        ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
+                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                         : "bg-emerald-600 text-white hover:bg-emerald-700"
                     }`}
                   >

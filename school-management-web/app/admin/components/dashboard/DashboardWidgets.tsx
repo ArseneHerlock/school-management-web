@@ -16,7 +16,7 @@ export function DashboardKpi({
   return (
     <button
       onClick={onClick}
-      className="admin-card p-4 text-left transition hover:-translate-y-0.5 hover:border-rose-300"
+      className="admin-card p-4 text-left transition hover:-translate-y-0.5 hover:border-emerald-300"
     >
       <div className="admin-icon">
         <Icon size={18} />
@@ -43,7 +43,7 @@ export function DashboardMetric({
       <p className="mt-1 text-2xl font-black text-slate-800">{value}</p>
       <div className="mt-3 h-2 rounded-full bg-slate-200">
         <div
-          className="h-2 rounded-full bg-rose-600"
+          className="h-2 rounded-full bg-emerald-600"
           style={{ width: `${Math.min(100, pct)}%` }}
         />
       </div>
@@ -64,7 +64,7 @@ export function DashboardQuick({
   return (
     <button
       onClick={onClick}
-      className="admin-card p-4 text-left hover:border-rose-300 transition"
+      className="admin-card p-4 text-left hover:border-emerald-300 transition"
     >
       <p className="font-bold text-slate-800">{label}</p>
       <p className="mt-1 text-xs text-slate-500">{text}</p>

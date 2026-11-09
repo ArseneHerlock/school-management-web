@@ -80,7 +80,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
             </label>
           ))}
         </div>
-        {error && <div className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+        {error && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{error}</div>}
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
@@ -91,7 +91,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({
           <button
             disabled={saving}
             onClick={onSave}
-            className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-bold text-white transition disabled:opacity-50"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             Lưu

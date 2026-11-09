@@ -1,87 +1,47 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import {
   Sparkles,
   RefreshCw,
   Search,
-  Calendar,
-  Users,
   CheckCircle2,
-  XCircle,
-  Info,
-  Clock,
-  Layers,
-  FileText,
   ArrowLeft,
-  Camera,
   Plus,
-  Eye,
-  Check,
 } from "lucide-react";
 import Link from "next/link";
-import { getActivities, ActivityItem } from "@/services/development";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import ActivityMomentsModal from "./components/ActivityMomentsModal";
 import TeacherPostMomentModal from "../components/TeacherPostMomentModal";
-import { loadLiveTeacherContext } from "../data";
+import { CreateActivityModal } from "./components/CreateActivityModal";
+import { TeacherActivityCard } from "./components/TeacherActivityCard";
+import { useTeacherActivities } from "./useTeacherActivities";
 
 export default function TeacherActivitiesPage() {
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [teacherClassInfo, setTeacherClassInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE">("ACTIVE");
-
-  // State xem khoảnh khắc của hoạt động
-  const [selectedActivityForMoments, setSelectedActivityForMoments] =
-    useState<ActivityItem | null>(null);
-
-  // State đăng khoảnh khắc cho hoạt động
-  const [postMomentActivity, setPostMomentActivity] =
-    useState<ActivityItem | null>(null);
-  const [toastMessage, setToastMessage] = useState<string>("");
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [res, ctx] = await Promise.all([
-        getActivities({ page: 1, pageSize: 200, includeInactive: true }),
-        loadLiveTeacherContext().catch(() => null),
-      ]);
-      setActivities(res.items || []);
-      if (ctx?.cls) setTeacherClassInfo(ctx.cls);
-    } catch {
-      setActivities([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void load();
-  }, []);
-
-  const filtered = useMemo(() => {
-    return activities.filter((a) => {
-      if (statusFilter === "ACTIVE" && !a.isActive) return false;
-      if (search.trim()) {
-        const kw = search.toLowerCase();
-        return (
-          a.name.toLowerCase().includes(kw) ||
-          a.code.toLowerCase().includes(kw) ||
-          (a.description || "").toLowerCase().includes(kw)
-        );
-      }
-      return true;
-    });
-  }, [activities, statusFilter, search]);
+  const {
+    activities,
+    teacherClassInfo,
+    loading,
+    search,
+    setSearch,
+    scopeFilter,
+    setScopeFilter,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
+    selectedActivityForMoments,
+    setSelectedActivityForMoments,
+    postMomentActivity,
+    setPostMomentActivity,
+    toastMessage,
+    setToastMessage,
+    load,
+    filtered,
+  } = useTeacherActivities();
 
   if (loading && activities.length === 0) {
     return (
       <LoadingScreen
-        message="Đang tải Hoạt động toàn trường..."
-        subMessage="Đồng bộ kế hoạch hoạt động ngoại khóa từ Ban giám hiệu"
+        message="Đang tải Hoạt động rèn luyện..."
+        subMessage="Đồng bộ danh sách hoạt động toàn trường & hoạt động riêng của lớp"
         theme="orange"
       />
     );
@@ -89,7 +49,6 @@ export default function TeacherActivitiesPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Back Link & Header */}
       <div>
         <Link
           href="/teacher"
@@ -98,36 +57,34 @@ export default function TeacherActivitiesPage() {
           <ArrowLeft size={14} /> Quay lại Không gian Giáo viên
         </Link>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
-                <Sparkles size={13} className="mr-1.5" /> KẾ HOẠCH TOÀN TRƯỜNG
-              </span>
-              <span className="text-xs text-slate-400 font-medium">
-                Chế độ làm theo (Read-only)
-              </span>
-            </div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900 mt-1">
-              Hoạt động & Sự kiện toàn trường
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              Kế hoạch hoạt động {teacherClassInfo ? `— ${teacherClassInfo.name || teacherClassInfo.tenLop}` : ''}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Các sự kiện ngoại khóa, ngày hội, hoạt động chuyên đề do Ban giám hiệu ban hành. Thầy/Cô có thể bấm vào từng hoạt động để <b>xem khoảnh khắc</b> hoặc <b>đăng ảnh của lớp</b>.
-            </p>
           </div>
 
-          <button
-            onClick={() => void load()}
-            disabled={loading}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 cursor-pointer"
-          >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            <span>Tải lại</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => void load()}
+              disabled={loading}
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 cursor-pointer"
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+              <span>Tải lại</span>
+            </button>
+
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-xs font-bold shadow-md shadow-orange-600/20 transition cursor-pointer"
+            >
+              <Plus size={15} />
+              <span>Tạo hoạt động cho lớp</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Thông báo Toast */}
       {toastMessage && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800 flex justify-between items-center shadow-xs">
           <span className="flex items-center gap-2">
@@ -143,158 +100,84 @@ export default function TeacherActivitiesPage() {
         </div>
       )}
 
-      {/* Banner điều hướng nhanh sang Lịch Dạy */}
-      <div className="rounded-3xl border border-purple-200 bg-gradient-to-r from-purple-50 via-indigo-50 to-white p-5 text-xs text-purple-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-600/30">
-            <Calendar size={20} />
-          </div>
-          <div>
-            <p className="font-black text-sm text-purple-950">
-              Hoạt động đã xuất hiện trực tiếp trên Lịch Dạy của lớp
-            </p>
-            <p className="mt-0.5 text-purple-800 leading-relaxed">
-              Ban giám hiệu đã xếp lịch hoạt động theo ngày & giờ cho từng lớp. Thầy/Cô vào <b>Thời khóa biểu</b> để nhấn trực tiếp vào hoạt động và chọn <b>Đánh giá trẻ</b> hoặc <b>Đăng khoảnh khắc</b>!
-            </p>
-          </div>
-        </div>
-
-        <Link
-          href="/teacher/schedule"
-          className="flex items-center gap-2 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 text-xs font-black shadow-md shadow-purple-600/20 transition shrink-0"
-        >
-          <span>Mở Thời khóa biểu lớp</span>
-          <ArrowLeft size={14} className="rotate-180" />
-        </Link>
-      </div>
-
-      {/* Thanh tìm kiếm & Lọc */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-xs outline-none focus:border-orange-400 focus:bg-white font-medium"
-            placeholder="Tìm theo tên hoạt động, mã, từ khóa..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-500">Hiển thị:</span>
-          <select
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 outline-none focus:border-orange-400 cursor-pointer"
-            value={statusFilter}
-            onChange={(e: any) => setStatusFilter(e.target.value)}
-          >
-            <option value="ACTIVE">Đang diễn ra ({activities.filter((a) => a.isActive).length})</option>
-            <option value="ALL">Tất cả ({activities.length})</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Danh sách hoạt động chuẩn 2026 */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className={`group rounded-3xl border bg-white p-5 shadow-2xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between ${
-              item.isActive
-                ? "border-slate-200 hover:border-orange-300"
-                : "border-slate-200/60 bg-slate-50/50 opacity-75"
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200 shadow-2xs">
+        <div className="flex items-center gap-1.5 rounded-xl bg-slate-100 p-1 text-xs">
+          <button
+            onClick={() => setScopeFilter("ALL")}
+            className={`rounded-lg px-3 py-1.5 font-bold transition cursor-pointer ${
+              scopeFilter === "ALL"
+                ? "bg-white shadow-xs text-slate-800"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <span className="rounded-xl bg-orange-50 px-2.5 py-1 font-mono text-[11px] font-bold text-orange-700 border border-orange-200/50">
-                  #{item.code}
-                </span>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                    item.isActive
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-slate-200 text-slate-600"
-                  }`}
-                >
-                  {item.isActive ? (
-                    <>
-                      <CheckCircle2 size={12} /> Đang diễn ra
-                    </>
-                  ) : (
-                    <>
-                      <Clock size={12} /> Đã kết thúc
-                    </>
-                  )}
-                </span>
-              </div>
+            Tất cả ({activities.length})
+          </button>
+          <button
+            onClick={() => setScopeFilter("CLASS")}
+            className={`rounded-lg px-3 py-1.5 font-bold transition cursor-pointer ${
+              scopeFilter === "CLASS"
+                ? "bg-white shadow-xs text-purple-700"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Hoạt động của lớp ({activities.filter((a) => a.scope === "CLASS").length})
+          </button>
+          <button
+            onClick={() => setScopeFilter("SCHOOL")}
+            className={`rounded-lg px-3 py-1.5 font-bold transition cursor-pointer ${
+              scopeFilter === "SCHOOL"
+                ? "bg-white shadow-xs text-blue-700"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Hoạt động của trường ({activities.filter((a) => a.scope !== "CLASS").length})
+          </button>
+        </div>
 
-              <h3
-                onClick={() => setSelectedActivityForMoments(item)}
-                className="mt-3 text-base font-black text-slate-900 leading-snug cursor-pointer group-hover:text-orange-600 transition"
-              >
-                {item.name}
-              </h3>
+        <div className="relative w-full sm:w-72">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={14}
+          />
+          <input
+            type="text"
+            placeholder="Tìm tên, lĩnh vực..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-2xl border border-slate-200 py-1.5 pl-9 pr-3 text-xs outline-none focus:border-orange-400"
+          />
+        </div>
+      </div>
 
-              <p className="mt-1.5 text-xs text-slate-500 line-clamp-3 leading-relaxed">
-                {item.description || "Chưa có mô tả chi tiết."}
-              </p>
-
-              {item.instructions && (
-                <div className="mt-3.5 rounded-2xl bg-orange-50/60 p-3 text-xs text-orange-900 border border-orange-100">
-                  <b className="text-orange-950 block mb-1 flex items-center gap-1">
-                    <FileText size={13} /> Hướng dẫn cho lớp:
-                  </b>
-                  <p className="line-clamp-2 text-[11px] leading-relaxed">{item.instructions}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span className="flex items-center gap-1">
-                  <Users size={13} />
-                  <span>
-                    Độ tuổi: <b>{item.minAgeMonths ?? 18} - {item.maxAgeMonths ?? 72} tháng</b>
-                  </span>
-                </span>
-                <span className="text-[11px] font-semibold text-orange-600">
-                  Toàn trường
-                </span>
-              </div>
-
-              {/* 2 nút thao tác nhanh: Xem khoảnh khắc & Đăng ảnh */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setSelectedActivityForMoments(item)}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100 text-orange-700 py-2 text-xs font-black transition cursor-pointer shadow-2xs"
-                >
-                  <Camera size={14} />
-                  <span>Khoảnh khắc</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPostMomentActivity(item)}
-                  className="flex items-center justify-center gap-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white py-2 text-xs font-black transition cursor-pointer shadow-xs shadow-orange-500/20"
-                >
-                  <Plus size={14} />
-                  <span>Đăng ảnh</span>
-                </button>
-              </div>
-            </div>
-          </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((item) => (
+          <TeacherActivityCard
+            key={item.id}
+            item={item}
+            teacherClassInfo={teacherClassInfo}
+            onViewMoments={setSelectedActivityForMoments}
+            onPostMoment={setPostMomentActivity}
+          />
         ))}
 
         {!filtered.length && !loading && (
           <div className="col-span-full py-16 text-center text-slate-400 bg-white rounded-3xl border border-slate-200">
             <Sparkles size={36} className="mx-auto text-slate-300 mb-2" />
-            <p className="font-semibold text-slate-600">Không có hoạt động nào đang hiển thị.</p>
+            <p className="font-semibold text-slate-600">Không tìm thấy hoạt động nào phù hợp.</p>
           </div>
         )}
       </div>
 
-      {/* Modal hiển thị khoảnh khắc tương ứng riêng cho hoạt động này */}
+      <CreateActivityModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        classId={teacherClassInfo?.id}
+        onSuccess={(name) => {
+          setToastMessage(`Đã tạo thành công hoạt động "${name}" cho lớp!`);
+          void load();
+        }}
+      />
+
       <ActivityMomentsModal
         isOpen={Boolean(selectedActivityForMoments)}
         onClose={() => setSelectedActivityForMoments(null)}
@@ -305,20 +188,19 @@ export default function TeacherActivitiesPage() {
         }}
       />
 
-      {/* Modal đăng khoảnh khắc cho hoạt động */}
-      <TeacherPostMomentModal
-        isOpen={Boolean(postMomentActivity)}
-        onClose={() => setPostMomentActivity(null)}
-        defaultActivityId={postMomentActivity?.id}
-        defaultActivityTitle={postMomentActivity?.name}
-        defaultClassId={teacherClassInfo?.id}
-        defaultClassName={teacherClassInfo?.tenLop}
-        onSuccess={() => {
-          setToastMessage(
-            `Đã đăng tải khoảnh khắc thành công cho hoạt động "${postMomentActivity?.name}"!`
-          );
-        }}
-      />
+      {postMomentActivity && (
+        <TeacherPostMomentModal
+          isOpen={Boolean(postMomentActivity)}
+          onClose={() => setPostMomentActivity(null)}
+          onSuccess={() => {
+            setToastMessage("Đăng khoảnh khắc lên Bảng tin lớp thành công!");
+          }}
+          defaultActivityId={postMomentActivity.id}
+          defaultActivityTitle={postMomentActivity.name}
+          defaultClassId={teacherClassInfo?.id}
+          defaultClassName={teacherClassInfo?.name || teacherClassInfo?.tenLop}
+        />
+      )}
     </div>
   );
 }

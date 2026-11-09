@@ -88,8 +88,8 @@ export default function MedicationsTable({
                       Đã uống ({med.GioUongThucTe || "Đúng giờ"})
                     </span>
                   ) : isIssue ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
-                      <AlertTriangle size={13} className="text-rose-600" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <AlertTriangle size={13} className="text-emerald-600" />
                       Sự cố ({med.GhiChuGiaoVien || "Gặp vấn đề"})
                     </span>
                   ) : (

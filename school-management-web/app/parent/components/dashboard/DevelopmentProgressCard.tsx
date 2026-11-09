@@ -22,10 +22,10 @@ interface DevelopmentProgressCardProps {
 }
 
 const CLUSTER_BADGES: Record<number, { text: string; bg: string; textClass: string }> = {
-  1: { text: 'Nhóm 1: Phát triển xuất sắc', bg: 'bg-emerald-100', textClass: 'text-emerald-800' },
-  2: { text: 'Nhóm 2: Phát triển đạt chuẩn', bg: 'bg-blue-100', textClass: 'text-blue-800' },
-  3: { text: 'Nhóm 3: Đang tiếp tục rèn luyện', bg: 'bg-amber-100', textClass: 'text-amber-800' },
-  4: { text: 'Nhóm 4: Cần phối hợp hỗ trợ', bg: 'bg-rose-100', textClass: 'text-rose-800' },
+  1: { text: 'Cụm 1: Toàn diện / Vượt trội', bg: 'bg-purple-100', textClass: 'text-purple-800' },
+  2: { text: 'Cụm 2: Đạt chuẩn / Vững vàng', bg: 'bg-emerald-100', textClass: 'text-emerald-800' },
+  3: { text: 'Cụm 3: Không đồng đều / Lệch pha', bg: 'bg-amber-100', textClass: 'text-amber-800' },
+  4: { text: 'Cụm 4: Cần hỗ trợ can thiệp sớm', bg: 'bg-rose-100', textClass: 'text-rose-800' },
 }
 
 export const DevelopmentProgressCard: React.FC<DevelopmentProgressCardProps> = ({

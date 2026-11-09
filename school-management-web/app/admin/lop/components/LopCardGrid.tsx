@@ -33,7 +33,7 @@ export const LopCardGrid: React.FC<LopCardGridProps> = ({
   if (loading) {
     return (
       <div className="admin-card col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
-        <Loader2 className="animate-spin text-rose-500 mb-2" size={28} />
+        <Loader2 className="animate-spin text-emerald-500 mb-2" size={28} />
         <span className="text-xs font-semibold">Đang cập nhật danh sách lớp...</span>
       </div>
     );
@@ -48,56 +48,61 @@ export const LopCardGrid: React.FC<LopCardGridProps> = ({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
       {filtered.map(function (classItem) {
-        const grade = findGrade(classItem.khoiId);
-        const teacher1 = findStaff(classItem.giaoVienChuNhiemId);
-        const teacher2 = findStaff(classItem.giaoVienPhuId || '');
+        const rawCls = classItem as any;
+        const grade = findGrade(classItem.khoiId || rawCls.KhoiId || '');
+        const gv1Id = classItem.giaoVienChuNhiemId || rawCls.GiaoVienChuNhiemId || '';
+        const gv2Id = classItem.giaoVienPhuId || rawCls.GiaoVienPhuId || '';
+        const teacher1 = findStaff(gv1Id);
+        const teacher2 = findStaff(gv2Id);
+        const gv1Name = teacher1?.fullName || (teacher1 as any)?.FullName || classItem.tenGiaoVienChuNhiem || rawCls.TenGiaoVienChuNhiem;
+        const gv2Name = teacher2?.fullName || (teacher2 as any)?.FullName || classItem.tenGiaoVienPhu || rawCls.TenGiaoVienPhu;
         const currentCount = countStudentsInClass(classItem);
         const isFull = currentCount >= classItem.siSo;
 
         return (
           <div
             key={classItem.id}
-            className="admin-card p-5 transition-all hover:-translate-y-1 hover:shadow-md relative overflow-hidden flex flex-col justify-between"
+            className="admin-card p-3.5 sm:p-5 transition-all hover:-translate-y-0.5 hover:shadow-md relative overflow-hidden flex flex-col justify-between rounded-2xl sm:rounded-3xl"
           >
             <div>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 font-bold text-sm shadow-2xs">
+              <div className="flex items-start justify-between gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 font-black text-xs sm:text-sm shadow-2xs shrink-0">
                     {classItem.tenLop.slice(-2)}
                   </div>
                   <div>
-                    <span className="rounded-md bg-rose-100/70 px-2 py-0.5 text-[10px] font-bold text-rose-800">
+                    <span className="rounded-md bg-emerald-100/70 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-800">
                       {grade?.tenKhoi || 'Chưa phân khối'}
                     </span>
-                    <h2 className="mt-1 text-base font-black text-slate-900 tracking-tight">
+                    <h2 className="mt-0.5 text-sm sm:text-base font-black text-slate-900 tracking-tight">
                       {classItem.tenLop}
                     </h2>
                   </div>
                 </div>
 
-                <div className="flex gap-1">
+                <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => onEdit(classItem)}
-                    className="icon-btn"
+                    className="icon-btn p-1.5"
                     title="Chỉnh sửa thông tin lớp"
                   >
-                    <Edit3 size={15} />
+                    <Edit3 size={14} />
                   </button>
                   <button
                     onClick={() => onRemove(classItem)}
-                    className="icon-btn danger"
+                    className="icon-btn danger p-1.5"
                     title="Xóa lớp học"
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
 
               {/* Thống kê sĩ số */}
-              <div className="mt-4 rounded-2xl bg-slate-50/80 p-3 border border-slate-100">
-                <div className="flex items-center justify-between text-xs mb-1.5">
+              <div className="mt-2.5 sm:mt-4 rounded-xl sm:rounded-2xl bg-slate-50/80 p-2.5 sm:p-3 border border-slate-100">
+                <div className="flex items-center justify-between text-[11px] sm:text-xs mb-1">
                   <span className="font-semibold text-slate-600">Sĩ số trẻ:</span>
                   <span className="font-black text-slate-900">
                     <span className={isFull ? 'text-amber-600' : 'text-emerald-600'}>
@@ -106,7 +111,7 @@ export const LopCardGrid: React.FC<LopCardGridProps> = ({
                     / {classItem.siSo} trẻ
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-200 h-1.5 sm:h-2 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${
                       isFull ? 'bg-amber-500' : 'bg-emerald-500'
@@ -119,31 +124,32 @@ export const LopCardGrid: React.FC<LopCardGridProps> = ({
               </div>
 
               {/* Thông tin giáo viên */}
-              <div className="mt-4 space-y-2 text-xs">
-                <div className="flex items-center justify-between py-1 border-b border-dashed border-slate-100">
-                  <span className="text-slate-400 font-medium">Giáo viên phụ trách 1:</span>
-                  <span className="font-bold text-slate-700">
-                    {teacher1 ? teacher1.fullName : <i className="text-rose-400 font-normal">Chưa gán</i>}
+              <div className="mt-2.5 sm:mt-4 space-y-1 sm:space-y-2 text-[11px] sm:text-xs">
+                <div className="flex items-center justify-between py-0.5 border-b border-dashed border-slate-100">
+                  <span className="text-slate-400 font-medium">GV 1 (Chính):</span>
+                  <span className="font-bold text-slate-700 truncate max-w-[170px] text-right">
+                    {gv1Name || <i className="text-slate-400 font-normal">Chưa gán</i>}
                   </span>
                 </div>
-                <div className="flex items-center justify-between py-1">
-                  <span className="text-slate-400 font-medium">Giáo viên phụ trách 2:</span>
-                  <span className="font-bold text-slate-700">
-                    {teacher2 ? teacher2.fullName : <i className="text-rose-400 font-normal">Chưa gán</i>}
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-slate-400 font-medium">GV 2 (Phụ):</span>
+                  <span className="font-bold text-slate-700 truncate max-w-[170px] text-right">
+                    {gv2Name || <i className="text-slate-400 font-normal">Chưa gán</i>}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400">
-                Năm học: {classItem.namHoc}
+            <div className="mt-3 sm:mt-5 pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400">
+                {classItem.namHoc}
               </span>
               <button
                 onClick={() => onViewStudents(classItem)}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700"
+                className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
               >
-                <Users size={14} /> Danh sách trẻ
+                <span>Xem danh sách trẻ</span>
+                <Users size={12} />
               </button>
             </div>
           </div>

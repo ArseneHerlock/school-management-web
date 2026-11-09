@@ -144,20 +144,9 @@ export default function GoodChildPage() {
     <section className="space-y-6 pb-12">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-md bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
-              GIÁM SÁT THI ĐUA NỀ NẾP
-            </span>
-            <span className="flex items-center gap-1 text-xs text-slate-500">
-              <Flower2 size={13} className="text-rose-500" /> Theo dõi rèn luyện toàn trường
-            </span>
-          </div>
-          <h1 className="mt-1 text-2xl font-black text-slate-800">
-            Giám sát phong trào thi đua bé ngoan toàn trường
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Theo dõi bé ngoan
           </h1>
-          <p className="text-xs text-slate-500">
-            Tổng hợp dữ liệu hoa bé ngoan thứ 6 và cháu ngoan Bác Hồ giữa các lớp. Giáo viên chủ nhiệm trực tiếp chấm hoa và nhận xét cho từng bé.
-          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -193,7 +182,7 @@ export default function GoodChildPage() {
             onClick={() => void load()}
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
           >
-            <RefreshCw size={14} className={busy ? "animate-spin text-rose-500" : ""} />
+            <RefreshCw size={14} className={busy ? "animate-spin text-emerald-500" : ""} />
             Làm mới
           </button>
         </div>

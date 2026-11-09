@@ -57,12 +57,12 @@ export default function ClassMatrixStatsPills({
       </div>
 
       <div className="flex items-center gap-2.5">
-        <div className="h-9 w-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+        <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
           <XCircle size={16} />
         </div>
         <div>
           <p className="text-[11px] text-slate-400">Cần rèn luyện thêm</p>
-          <p className="font-black text-rose-700 text-sm">
+          <p className="font-black text-emerald-700 text-sm">
             {totalClassFail} lượt
           </p>
         </div>

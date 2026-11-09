@@ -104,11 +104,7 @@ export default function LearningPage() {
     <section className="space-y-5">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="admin-eyebrow">LEARNING SERVICE</p>
           <h1 className="admin-title">Sản phẩm học tập</h1>
-          <p className="admin-subtitle">
-            Quản lý riêng sản phẩm học tập; theo dõi rèn luyện nằm trong phân hệ khen thưởng.
-          </p>
         </div>
         <div className="flex gap-2">
           <button
@@ -235,7 +231,7 @@ export default function LearningPage() {
                 onChange={(e) => setDraft({ ...draft, title: e.target.value })}
               />
               <textarea
-                className="min-h-20 rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                className="min-h-20 rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 placeholder="Mô tả"
                 value={draft.description}
                 onChange={(e) =>

@@ -57,7 +57,7 @@ export default function DanhGiaModals({
           <div>
             <label className="text-xs font-bold text-slate-600">Mã lĩnh vực</label>
             <input
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs outline-none"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs outline-none"
               value={domainForm.code}
               onChange={(e) => setDomainForm((p: any) => ({ ...p, code: e.target.value }))}
             />
@@ -65,7 +65,7 @@ export default function DanhGiaModals({
           <div>
             <label className="text-xs font-bold text-slate-600">Tên lĩnh vực</label>
             <input
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs outline-none"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs outline-none"
               value={domainForm.name}
               onChange={(e) => setDomainForm((p: any) => ({ ...p, name: e.target.value }))}
             />
@@ -74,7 +74,7 @@ export default function DanhGiaModals({
             <button onClick={onCloseDomainModal} className="rounded-xl border px-3 py-1.5 text-xs">
               Hủy
             </button>
-            <button onClick={onSaveDomain} className="rounded-xl bg-rose-600 px-3 py-1.5 text-xs text-white">
+            <button onClick={onSaveDomain} className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs text-white">
               Lưu
             </button>
           </div>
@@ -92,7 +92,7 @@ export default function DanhGiaModals({
           <div>
             <label className="text-xs font-bold text-slate-600">Thuộc lĩnh vực</label>
             <select
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs outline-none"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs outline-none"
               value={criterionForm.developmentDomainId}
               onChange={(e) => setCriterionForm((p: any) => ({ ...p, developmentDomainId: e.target.value }))}
             >
@@ -108,7 +108,7 @@ export default function DanhGiaModals({
             <div>
               <label className="text-xs font-bold text-slate-600">Mã tiêu chí</label>
               <input
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs outline-none"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs outline-none"
                 value={criterionForm.code}
                 onChange={(e) => setCriterionForm((p: any) => ({ ...p, code: e.target.value }))}
               />
@@ -116,7 +116,7 @@ export default function DanhGiaModals({
             <div>
               <label className="text-xs font-bold text-slate-600">Tên tiêu chí</label>
               <input
-                className="mt-1 w-full rounded-xl border border-rose-200 p-2 text-xs outline-none"
+                className="mt-1 w-full rounded-xl border border-emerald-200 p-2 text-xs outline-none"
                 value={criterionForm.name}
                 onChange={(e) => setCriterionForm((p: any) => ({ ...p, name: e.target.value }))}
               />
@@ -126,7 +126,7 @@ export default function DanhGiaModals({
             <button onClick={onCloseCriterionModal} className="rounded-xl border px-3 py-1.5 text-xs">
               Hủy
             </button>
-            <button onClick={onSaveCriterion} className="rounded-xl bg-rose-600 px-3 py-1.5 text-xs text-white">
+            <button onClick={onSaveCriterion} className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs text-white">
               Lưu
             </button>
           </div>
@@ -146,7 +146,7 @@ export default function DanhGiaModals({
             <label className="text-xs font-bold text-slate-600">Ghi chú / Nhận xét của giáo viên</label>
             <textarea
               rows={3}
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none"
               value={adminMatrixDetailModal.comment}
               onChange={() => onSaveDetailModal()}
               placeholder="Nhập ghi chú quan sát..."
@@ -155,7 +155,7 @@ export default function DanhGiaModals({
           <div>
             <label className="text-xs font-bold text-slate-600">Minh chứng / Hình ảnh</label>
             <input
-              className="mt-1 w-full rounded-xl border border-rose-200 p-2.5 text-xs outline-none"
+              className="mt-1 w-full rounded-xl border border-emerald-200 p-2.5 text-xs outline-none"
               value={adminMatrixDetailModal.evidence}
               onChange={() => {}}
               placeholder="Link hình ảnh hoặc ghi chú minh chứng..."

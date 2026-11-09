@@ -166,7 +166,7 @@ export default function ResourcePage({
             <div className="admin-icon"><Database size={18} /></div>
             <div>
               <p className="text-xs text-slate-400">Tổng bản ghi từ API</p>
-              <p className="mt-1 text-2xl font-black">{rows.length}</p>
+              <p className="mt-1 text-2xl font-black text-slate-800">{rows.length}</p>
             </div>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function ResourcePage({
             <div className="admin-icon"><TrendingUp size={18} /></div>
             <div>
               <p className="text-xs text-slate-400">Đang hiển thị</p>
-              <p className="mt-1 text-2xl font-black">{filtered.length}</p>
+              <p className="mt-1 text-2xl font-black text-emerald-600">{filtered.length}</p>
             </div>
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function ResourcePage({
             <div className="admin-icon"><Layers3 size={18} /></div>
             <div>
               <p className="text-xs text-slate-400">Nhóm dữ liệu</p>
-              <p className="mt-1 text-2xl font-black">{primaryChart.length}</p>
+              <p className="mt-1 text-2xl font-black text-slate-800">{primaryChart.length}</p>
             </div>
           </div>
         </div>
@@ -204,12 +204,12 @@ export default function ResourcePage({
         </div>
       </div>
 
-      {error && <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+      {error && <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{error}</div>}
 
       <div className="card-frame overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-rose-50/80 text-left text-xs uppercase tracking-wide text-rose-700">
+            <thead className="bg-emerald-50/80 text-left text-xs uppercase tracking-wide text-emerald-800 font-bold">
               <tr>
                 {columns.map((c) => (
                   <th key={c.key} className="px-4 py-3">{c.label}</th>
@@ -217,11 +217,11 @@ export default function ResourcePage({
                 <th className="px-4 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-rose-50">
+            <tbody className="divide-y divide-emerald-50/60">
               {loading ? (
                 <tr>
                   <td colSpan={columns.length + 1} className="p-10 text-center text-slate-400">
-                    <Loader2 className="mx-auto animate-spin" />
+                    <Loader2 className="mx-auto animate-spin text-emerald-600" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
@@ -232,7 +232,7 @@ export default function ResourcePage({
                 </tr>
               ) : (
                 paginatedRows.map((r, i) => (
-                  <tr key={r.id || r.staffId || i} className="hover:bg-rose-50/30">
+                  <tr key={r.id || r.staffId || i} className="hover:bg-emerald-50/30 transition-colors">
                     {columns.map((c) => (
                       <td key={c.key} className="px-4 py-3 text-slate-700">
                         {String(valueOf(r, c.key) ?? '—')}
@@ -240,11 +240,11 @@ export default function ResourcePage({
                     ))}
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <button onClick={() => start(r)} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600">
+                        <button onClick={() => start(r)} className="rounded-lg p-2 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 transition">
                           <Edit3 size={15} />
                         </button>
                         {canDelete && (
-                          <button onClick={() => void remove(r)} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600">
+                          <button onClick={() => void remove(r)} className="rounded-lg p-2 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition">
                             <Trash2 size={15} />
                           </button>
                         )}

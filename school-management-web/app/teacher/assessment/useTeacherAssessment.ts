@@ -1,24 +1,17 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { currentUser, getClasses, getStudents } from '@/services';
-import { loadLiveTeacherContext } from '../data';
-import {
-  getActivities,
-  getDomains,
-  getCriteria,
-  getAssessments,
-  ActivityItem,
-  DomainItem,
-  CriterionItem,
-  AssessmentItem,
-} from '@/services/development';
+import { currentUser } from '@/services';
+import { DomainItem, CriterionItem, AssessmentItem, ActivityItem } from '@/services/development';
 import {
   findFocusedActivity,
   buildBatchItems,
   calculateProgressStats,
   calculateClassBreakdown,
   calculateRadarData,
+  calculateStudentCompetencyProfile,
 } from './assessmentBatchHelpers';
+import { fetchAssessmentInitialData, buildMatrixAndRemarks } from './assessmentMatrixBuilder';
+import { useAssessmentModals } from './useAssessmentModals';
 
 export type TeacherViewTab = 'dashboard' | 'matrix';
 
@@ -62,20 +55,7 @@ export function useTeacherAssessment() {
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
   const [auditMode, setAuditMode] = useState(false);
 
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [cellDetailModal, setCellDetailModal] = useState({
-    open: false,
-    studentId: '',
-    criterionId: '',
-    studentName: '',
-    criterionName: '',
-    comment: '',
-    evidence: '',
-  });
-  const [childRadarModal, setChildRadarModal] = useState<{ open: boolean; student: any | null }>({
-    open: false,
-    student: null,
-  });
+  const modals = useAssessmentModals();
 
   useEffect(() => {
     try {
@@ -93,25 +73,20 @@ export function useTeacherAssessment() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Tải thông tin lớp học được phân công của giáo viên hiện tại
-      const teacherCtx = await loadLiveTeacherContext().catch(() => null);
-      const assignedCls = teacherCtx?.cls;
-      const assignedClsId = (assignedCls as any)?.id || (assignedCls as any)?.Id || '';
-      const assignedClsName = assignedCls?.tenLop || (assignedCls as any)?.TenLop || 'Lớp Mầm 1';
-      const teacherName = (teacherCtx?.me as any)?.name || (teacherCtx?.me as any)?.fullName || (teacherCtx?.me as any)?.hoTen || 'Giáo viên';
+      const {
+        assignedClsId,
+        assignedClsName,
+        teacherName,
+        focusedObj,
+        activeCls,
+        actItems,
+        allCrits,
+        batchItems,
+        stuList,
+      } = await fetchAssessmentInitialData(focusedScheduleContext, selectedClassId);
 
       setCurrentTeacherName(teacherName);
       setCurrentClassName(assignedClsName);
-
-      let focusedObj = focusedScheduleContext;
-      if (!focusedObj) {
-        try {
-          const raw = sessionStorage.getItem('teacher_focused_activity');
-          if (raw) focusedObj = JSON.parse(raw);
-        } catch {}
-      }
-
-      const activeCls = assignedClsId || focusedObj?.classId || selectedClassId || '';
       setSelectedClassId(activeCls);
 
       if (assignedClsId) {
@@ -123,45 +98,9 @@ export function useTeacherAssessment() {
         }]);
       }
 
-      // 2. Tải song song: Hoạt động kèm tiêu chí riêng, danh sách học sinh và đánh giá theo lớp
-      const batchUrl = activeCls ? `/api/assessment/batch?classId=${activeCls}` : '/api/assessment/batch';
-      const [actRes, assRes, stuRes] = await Promise.all([
-        fetch('/api/activities-with-criteria')
-          .then((r) => (r.ok ? r.json() : []))
-          .catch(() => []),
-        fetch(batchUrl)
-          .then((r) => (r.ok ? r.json() : { items: [] }))
-          .catch(() => ({ items: [] })),
-        activeCls ? getStudents({ lopId: activeCls }).catch(() => []) : Promise.resolve([]),
-      ]);
-
-      const actItems: any[] = Array.isArray(actRes) ? actRes : [];
       setActivities(actItems);
-
-      const allCrits: CriterionItem[] = actItems.flatMap((a: any) =>
-        (a.criteria || []).map((c: any) => ({
-          id: c.id,
-          code: c.code,
-          name: c.name,
-          description: c.description || c.observationGuide,
-          developmentDomainId: a.id,
-          activityId: a.id,
-          activityName: a.name,
-          isActive: true,
-        }))
-      );
       setAllCriteria(allCrits);
-
-      const batchItems = Array.isArray(assRes?.items) ? assRes.items : [];
       setExistingAssessments(batchItems);
-
-      const rawStuList = Array.isArray(stuRes) ? stuRes : [];
-      const stuList = rawStuList.map((s: any) => ({
-        ...s,
-        id: s.id || s.Id,
-        tenHocSinh: s.tenHocSinh || s.TenHocSinh,
-        lopId: s.lopId || s.LopId,
-      }));
       setClassStudents(stuList);
       setSelectedStudentIds(new Set(stuList.map((s: any) => s.id)));
 
@@ -175,7 +114,6 @@ export function useTeacherAssessment() {
           setTargetActivityTitle(matchResult.rawTitle);
         }
       } else if (!selectedActivityId && actItems.length > 0) {
-        // Tự động chọn hoạt động đầu tiên để giáo viên đánh giá
         setSelectedActivityId(actItems[0].id);
         setTargetActivityTitle(actItems[0].name);
       }
@@ -217,46 +155,12 @@ export function useTeacherAssessment() {
 
   useEffect(() => {
     if (classStudents.length === 0) return;
-    const newMatrix: Record<string, Record<string, any>> = {};
-    const newRemarks: Record<string, any> = {};
-    const critsToPopulate = allCriteria.length > 0 ? allCriteria : displayCriteria;
-    const displayIds = new Set(displayCriteria.map((c) => c.id));
-
-    // Fast lookup map for existing assessments
-    const assessmentLookup = new Map<string, any>();
-    existingAssessments.forEach((a: any) => {
-      const cId = a.childId || a.ChildId;
-      const crId = a.developmentCriterionId || a.DevelopmentCriterionId;
-      if (cId && crId) {
-        assessmentLookup.set(`${cId}_${crId}`, a);
-      }
-    });
-
-    classStudents.forEach((st) => {
-      const sId = st.id || st.Id;
-      newMatrix[sId] = {};
-      let latestRemark = '';
-      critsToPopulate.forEach((crit) => {
-        const found = assessmentLookup.get(`${sId}_${crit.id}`);
-
-        newMatrix[sId][crit.id] = found
-          ? {
-              result: found.result ?? found.Result ?? null,
-              existingId: found.id || found.Id,
-              comment: found.comment || found.Comment || '',
-              evidence: found.evidence || found.Evidence || '',
-              isDirty: false,
-            }
-          : { result: null, isDirty: false };
-
-        if ((found?.comment || found?.Comment) && displayIds.has(crit.id) && !latestRemark) {
-          latestRemark = found.comment || found.Comment;
-        }
-      });
-
-      newRemarks[sId] = { comment: latestRemark, isDirty: false };
-    });
-
+    const { newMatrix, newRemarks } = buildMatrixAndRemarks(
+      classStudents,
+      allCriteria,
+      displayCriteria,
+      existingAssessments
+    );
     setMatrix(newMatrix);
     setChildActivityRemarks(newRemarks);
   }, [classStudents, displayCriteria, allCriteria, existingAssessments, selectedActivityId]);
@@ -290,7 +194,7 @@ export function useTeacherAssessment() {
       const batchItems = buildBatchItems(matrix, childActivityRemarks, displayCriteria, selectedActivityId);
 
       if (batchItems.length === 0) {
-        setConfirmModalOpen(false);
+        modals.setConfirmModalOpen(false);
         setToast({ msg: 'Không có thay đổi nào cần lưu.', type: 'success' });
         setIsSaving(false);
         return;
@@ -311,7 +215,7 @@ export function useTeacherAssessment() {
         throw new Error(errData.error || 'Lưu đánh giá thất bại');
       }
 
-      setConfirmModalOpen(false);
+      modals.setConfirmModalOpen(false);
       setToast({ msg: `Đã lưu thành công ${batchItems.length} chỉ số đánh giá hoạt động!`, type: 'success' });
       await loadData();
     } catch (err: any) {
@@ -331,8 +235,18 @@ export function useTeacherAssessment() {
   }, [activities, allCriteria, classStudents, matrix]);
 
   const radarData = useMemo(() => {
-    return calculateRadarData(childRadarModal.student, activities, allCriteria, matrix);
-  }, [childRadarModal.student, activities, allCriteria, matrix]);
+    return calculateRadarData(modals.childRadarModal.student, activities, allCriteria, matrix);
+  }, [modals.childRadarModal.student, activities, allCriteria, matrix]);
+
+  const competencyProfile = useMemo(() => {
+    return calculateStudentCompetencyProfile(
+      modals.childRadarModal.student,
+      activities,
+      allCriteria,
+      matrix,
+      childActivityRemarks
+    );
+  }, [modals.childRadarModal.student, activities, allCriteria, matrix, childActivityRemarks]);
 
   return {
     focusedScheduleContext,
@@ -368,12 +282,7 @@ export function useTeacherAssessment() {
     setSelectedStudentIds,
     auditMode,
     setAuditMode,
-    confirmModalOpen,
-    setConfirmModalOpen,
-    cellDetailModal,
-    setCellDetailModal,
-    childRadarModal,
-    setChildRadarModal,
+    ...modals,
     loadData,
     displayCriteria,
     dirtyCount,
@@ -382,5 +291,6 @@ export function useTeacherAssessment() {
     progressStats,
     classBreakdown,
     radarData,
+    competencyProfile,
   };
 }

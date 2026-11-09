@@ -34,35 +34,35 @@ export const CLUSTER_CONFIG: Record<
   }
 > = {
   1: {
-    name: "Nhóm 1: Phát triển xuất sắc & Nổi trội",
-    shortName: "Xuất sắc - Nổi trội",
+    name: "Cụm 1: Phát triển Toàn diện / Vượt trội",
+    shortName: "Toàn diện - Vượt trội",
     color: "#10b981", // Emerald
     bg: "bg-emerald-50",
     border: "border-emerald-200",
-    desc: "Đạt vượt mức các chỉ tiêu phát triển 5 lĩnh vực",
+    desc: "Phát triển xuất sắc ở cả 5 lĩnh vực, thẩm mỹ sáng tạo và nhận thức nổi trội",
   },
   2: {
-    name: "Nhóm 2: Phát triển tốt (Đạt chuẩn)",
-    shortName: "Đạt chuẩn tốt",
+    name: "Cụm 2: Phát triển Đạt chuẩn / Vững vàng",
+    shortName: "Đạt chuẩn - Vững vàng",
     color: "#3b82f6", // Blue
     bg: "bg-blue-50",
     border: "border-blue-200",
-    desc: "Đạt chuẩn hầu hết các chỉ tiêu theo lứa tuổi",
+    desc: "Đạt chuẩn vững vàng 4 lĩnh vực cốt lõi theo mốc phát triển Bộ GD&ĐT",
   },
   3: {
-    name: "Nhóm 3: Phát triển mức khá (Đang phát triển)",
-    shortName: "Mức khá",
+    name: "Cụm 3: Phát triển Không đồng đều / Lệch pha",
+    shortName: "Không đồng đều",
     color: "#f59e0b", // Amber
     bg: "bg-amber-50",
     border: "border-amber-200",
-    desc: "Đang tiệm cận chuẩn, cần củng cố một số chỉ tiêu",
+    desc: "Nhận thức hoặc thể chất khá nhưng có độ vênh ở kỹ năng xã hội hoặc ngôn ngữ",
   },
   4: {
-    name: "Nhóm 4: Cần đồng hành & Rèn luyện thêm",
-    shortName: "Cần rèn luyện",
+    name: "Cụm 4: Có nguy cơ chậm phát triển / Cần hỗ trợ can thiệp sớm",
+    shortName: "Cần hỗ trợ can thiệp",
     color: "#ef4444", // Rose/Red
-    bg: "bg-rose-50",
-    border: "border-rose-200",
-    desc: "Chưa đạt nhiều chỉ tiêu, cần giáo viên hỗ trợ tăng cường",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+    desc: "Rơi vào vùng cần can thiệp sớm, nhà trường và gia đình cần phối hợp hỗ trợ",
   },
 };

@@ -33,23 +33,23 @@ export const ClassroomSafetyWatchlist: React.FC<ClassroomSafetyWatchlistProps> =
   const displayItems = showAll ? items : items.slice(0, 4);
 
   return (
-    <div className="rounded-3xl border border-rose-200/80 bg-white p-4 sm:p-6 shadow-xs max-w-full min-w-0">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3.5 border-b border-rose-100">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
-            <ShieldAlert size={17} />
+    <div className="rounded-2xl sm:rounded-3xl border border-rose-200/80 bg-white p-3.5 sm:p-5 shadow-xs max-w-full min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-rose-100">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-600 shrink-0">
+            <ShieldAlert size={15} />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-black text-slate-800">
-              Sổ theo dõi an toàn & y tế của trẻ hôm nay
+            <h3 className="text-xs sm:text-sm font-black text-slate-800">
+              Sổ an toàn & y tế của trẻ hôm nay
             </h3>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block">
               Theo dõi lịch uống thuốc, dị ứng dinh dưỡng và dặn dò đặc biệt từ phụ huynh
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-black text-rose-700 self-start sm:self-auto">
-          {items.length} Lưu ý cần chăm sóc
+        <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-black text-rose-700 self-start sm:self-auto">
+          {items.length} Lưu ý
         </span>
       </div>
 

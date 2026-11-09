@@ -7,17 +7,23 @@ export const TOKEN_KEY = "school_access_token";
 export const PWD_KEY = "school_password_change_token";
 
 /**
- * Lấy Access Token đang lưu trong trình duyệt
+ * Lấy Access Token đang lưu trong trình duyệt hoặc cookie
  */
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  return localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) return token;
+  try {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + TOKEN_KEY + "=([^;]*)"));
+    if (match) return decodeURIComponent(match[1]);
+  } catch {}
+  return null;
 }
 
 /**
- * Lưu hoặc xóa Access Token trong trình duyệt
+ * Lưu hoặc xóa Access Token trong trình duyệt và cookie
  */
 export function setAccessToken(tokenValue: string | null): void {
   if (typeof window === "undefined") {
@@ -25,8 +31,14 @@ export function setAccessToken(tokenValue: string | null): void {
   }
   if (tokenValue) {
     localStorage.setItem(TOKEN_KEY, tokenValue);
+    try {
+      document.cookie = `${TOKEN_KEY}=${encodeURIComponent(tokenValue)}; path=/; max-age=604800; SameSite=Lax`;
+    } catch {}
   } else {
     localStorage.removeItem(TOKEN_KEY);
+    try {
+      document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
+    } catch {}
   }
 }
 
@@ -37,7 +49,13 @@ export function getPasswordChangeToken(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  return localStorage.getItem(PWD_KEY);
+  const token = localStorage.getItem(PWD_KEY);
+  if (token) return token;
+  try {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + PWD_KEY + "=([^;]*)"));
+    if (match) return decodeURIComponent(match[1]);
+  } catch {}
+  return null;
 }
 
 /**
@@ -49,8 +67,14 @@ export function setPasswordChangeToken(tokenValue: string | null): void {
   }
   if (tokenValue) {
     localStorage.setItem(PWD_KEY, tokenValue);
+    try {
+      document.cookie = `${PWD_KEY}=${encodeURIComponent(tokenValue)}; path=/; max-age=604800; SameSite=Lax`;
+    } catch {}
   } else {
     localStorage.removeItem(PWD_KEY);
+    try {
+      document.cookie = `${PWD_KEY}=; path=/; max-age=0; SameSite=Lax`;
+    } catch {}
   }
 }
 
@@ -64,9 +88,11 @@ export function logout(): void {
     try {
       localStorage.removeItem("school_user");
       localStorage.removeItem("school_current_user");
-      localStorage.removeItem("school_access_token");
-      localStorage.removeItem("school_password_change_token");
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(PWD_KEY);
       sessionStorage.clear();
+      document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
+      document.cookie = `${PWD_KEY}=; path=/; max-age=0; SameSite=Lax`;
     } catch {}
     window.location.href = "/login";
   }

@@ -48,7 +48,7 @@ export function CriterionGuideModal({ criterion, onClose }: CriterionGuideModalP
 
           <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-3.5 space-y-1.5">
             <h4 className="font-extrabold text-orange-950 text-xs">
-              Gợi ý quan sát trẻ trong hoạt động:
+              Tiêu chí đánh giá trong hoạt động:
             </h4>
             <ul className="list-disc list-inside space-y-1 text-orange-900/90 text-[11px]">
               <li>Quan sát mức độ trẻ chủ động tham gia và hoàn thành hoạt động.</li>

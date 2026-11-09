@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   ArrowLeft,
   Calendar,
@@ -12,24 +12,12 @@ import {
   FileText,
   ExternalLink,
 } from 'lucide-react';
-import { api } from "@/services";
 import { getFullApiUrl } from '@/services/client';
-import { parseNewsImageAndText, extractPdfUrl } from './newsHelper';
+import { extractPdfUrl } from './newsHelper';
 import PdfViewer from './PdfViewer';
+import { useNewsDetail, NewsDetail } from './useNewsDetail';
 
-export interface NewsDetail {
-  id: string;
-  tieuDe: string;
-  tomTat?: string;
-  noiDung?: string;
-  hinhAnh?: string;
-  hinhAnhs?: string[];
-  phamVi?: number;
-  trangThai?: number;
-  ngayTao?: string;
-  ngayXuatBan?: string;
-  nhanSuId?: string;
-}
+export type { NewsDetail };
 
 interface NewsDetailPageProps {
   newsId: string;
@@ -46,57 +34,7 @@ export default function NewsDetailPage({
   onEdit,
   onDelete,
 }: NewsDetailPageProps) {
-  const [article, setArticle] = useState<NewsDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    setError('');
-
-    api
-      .get<any>('news', `/api/news/${newsId}`)
-      .then((res) => {
-        if (!isMounted) return;
-        const data = res?.data || res;
-        const rawTomTat = data.tomTat || data.summary || '';
-        const rawNoiDung = data.noiDung || data.content || rawTomTat;
-        const fromTomTat = parseNewsImageAndText(rawTomTat);
-        const fromNoiDung = parseNewsImageAndText(rawNoiDung);
-        let img = data.hinhAnh || data.imageUrl || fromNoiDung.imageUrl || fromTomTat.imageUrl || null;
-        if (img && !img.includes('unsplash.com')) {
-          img = getFullApiUrl(img.replace(/-+$/, ''));
-        } else {
-          img = undefined;
-        }
-
-        setArticle({
-          id: data.id || newsId,
-          tieuDe: data.tieuDe || data.title || 'Tin tức nhà trường',
-          tomTat: fromTomTat.cleanText,
-          noiDung: fromNoiDung.cleanText || fromTomTat.cleanText || data.noiDung,
-          hinhAnh: img,
-          hinhAnhs: img ? [img] : [],
-          phamVi: data.phamVi,
-          trangThai: data.trangThai,
-          ngayTao: data.ngayTao || data.createdAt,
-          ngayXuatBan: data.ngayXuatBan || data.publishedAt,
-          nhanSuId: data.nhanSuId,
-        });
-      })
-      .catch((err) => {
-        if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Không tải được nội dung bài viết');
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [newsId]);
+  const { article, loading, error } = useNewsDetail(newsId);
 
   if (loading) {
     return (
@@ -131,7 +69,6 @@ export default function NewsDetailPage({
       })
     : '';
 
-  // Detect whether content is a PDF document
   const rawContent = article.noiDung || article.tomTat || '';
   const detectedPdfUrl = extractPdfUrl(article.noiDung) || extractPdfUrl(article.tomTat);
   const isPdfContent =
@@ -148,7 +85,6 @@ export default function NewsDetailPage({
 
   return (
     <article className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-2 space-y-4 font-sans overflow-x-hidden">
-      {/* Top Header & Navigation Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -237,7 +173,6 @@ export default function NewsDetailPage({
         </div>
       </div>
 
-      {/* Featured Banner Image */}
       {article.hinhAnh && (
         <div className="w-full max-h-72 sm:max-h-96 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs">
           <img
@@ -251,17 +186,14 @@ export default function NewsDetailPage({
         </div>
       )}
 
-      {/* Summary Excerpt Callout */}
       {article.tomTat && !article.tomTat.startsWith('/api') && (
         <div className="rounded-xl border-l-4 border-blue-600 bg-blue-50/70 p-3.5 sm:p-4 text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed shadow-2xs">
           {article.tomTat}
         </div>
       )}
 
-      {/* Main Content Area: High-Fidelity Canvas PDF VIEWER or REGULAR TEXT */}
       {isPdfContent && pdfUrl ? (
         <div className="space-y-4">
-          {/* PDF Action Card */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-rose-50 via-red-50 to-orange-50 p-3.5 sm:p-4 rounded-2xl border border-rose-200 shadow-2xs">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -299,7 +231,6 @@ export default function NewsDetailPage({
             </div>
           </div>
 
-          {/* High-Fidelity Native Canvas PDF Viewer: Renders real PDF pages on all devices */}
           <PdfViewer url={pdfUrl} title={article.tieuDe} />
         </div>
       ) : (

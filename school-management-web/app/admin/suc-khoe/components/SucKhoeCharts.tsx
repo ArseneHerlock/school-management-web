@@ -50,7 +50,7 @@ export const SucKhoeCharts: React.FC<SucKhoeChartsProps> = ({
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+                <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                   <HeartPulse size={16} />
                 </span>
                 <div>

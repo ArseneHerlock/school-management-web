@@ -1,7 +1,4 @@
 import { api, currentUser } from "../client";
-import { getClasses } from "../classes";
-import { getStaffByUserId } from "../staff";
-import { getStudents } from "../students";
 import { isEvaluableActivity } from "@/app/components/schedule/WeeklyTimetable";
 import {
   AppNotification,
@@ -11,14 +8,7 @@ import {
   resolveRealtimeTimestamp,
   stripEmbeddedImageTags,
 } from "./types";
-
-let teacherContextCache: {
-  userId: string;
-  expiresAt: number;
-  matchedClass: any;
-  studentMap: Map<string, string>;
-  parentNameByUserId: Map<string, string>;
-} | null = null;
+import { getOrLoadTeacherContext } from "./teacherNotificationContext";
 
 const conversationMessagesCache = new Map<
   string,
@@ -42,55 +32,8 @@ export async function fetchTeacherNotifications(): Promise<AppNotification[]> {
 
     try {
       const nowMs = Date.now();
-      let matchedClass: any = null;
-      let studentMap = new Map<string, string>();
-      let parentNameByUserId = new Map<string, string>();
-
-      if (
-        teacherContextCache &&
-        teacherContextCache.userId === user.id &&
-        teacherContextCache.expiresAt > nowMs
-      ) {
-        matchedClass = teacherContextCache.matchedClass;
-        studentMap = teacherContextCache.studentMap;
-        parentNameByUserId = teacherContextCache.parentNameByUserId;
-      } else {
-        const [staffMember, allClasses, allParents] = await Promise.all([
-          getStaffByUserId(user.id).catch(() => null),
-          getClasses().catch(() => []),
-          api.get<any[]>("parents", "/api/parents").catch(() => []),
-        ]);
-
-        matchedClass = allClasses.find(
-          (c) => staffMember?.staffId && c.giaoVienChuNhiemId === staffMember.staffId
-        );
-
-        const classStudents = matchedClass
-          ? await getStudents({ lopId: matchedClass.id }).catch(() => [])
-          : [];
-
-        classStudents.forEach((s) => {
-          studentMap.set(String(s.id), s.tenHocSinh);
-        });
-
-        if (Array.isArray(allParents)) {
-          allParents.forEach((p: any) => {
-            const uid = String(p.taiKhoanId || p.TaiKhoanId || p.id || p.Id || "")
-              .toLowerCase()
-              .trim();
-            const name = String(p.hoTen || p.HoTen || "");
-            if (uid && name) parentNameByUserId.set(uid, name);
-          });
-        }
-
-        teacherContextCache = {
-          userId: user.id,
-          expiresAt: nowMs + 5 * 60 * 1000,
-          matchedClass,
-          studentMap,
-          parentNameByUserId,
-        };
-      }
+      const { matchedClass, studentMap, parentNameByUserId } =
+        await getOrLoadTeacherContext(user.id);
 
       const nextWeekDate = new Date();
       nextWeekDate.setDate(nextWeekDate.getDate() + 7);
